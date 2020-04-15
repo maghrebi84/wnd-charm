@@ -70,3 +70,17 @@ The WND-CHARM Python API additionally requires the Python development package, S
 ## Test Images
 
 Please also visit the [IICBU Biological Image Repository](https://ome.irp.nia.nih.gov/iicbu2008), which provides a benchmark for testing and comparing the performance of image analysis algorithms for biological imaging.
+
+## What is new?
+
+The performance of WND-CHARM was profiled and improved using the following techniques.
+
+* Multi-threading capability (OpenMP directives) was added for the performance bottlenecks which were in the following codes. 
+    * /src/statistics/FeatureStatistics.cpp
+    * /src/textures/gabor.cpp
+    * /src/transforms/chebyshev.cpp
+* Optimization technique of Data Locality was implememted in the following code. 
+    * /src/CombFirst4Moments.cpp 
+    
+The number of threads can be set using `export OMP_NUM_THREADS=10`. Overall, the performance of WND-CHARM was improved by 45% using the new changes and by running with 10 threads.
+       
