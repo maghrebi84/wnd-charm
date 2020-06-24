@@ -62,239 +62,53 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-#include <ome/files/in/OMETIFFReader.h>
-#include <ome/files/FormatReader.h>
-#include <ome/files/in/TIFFReader.h>
-#include <ome/files/tiff/IFD.h>
-
 #include <tiffio.h>
-//using namespace ome::files::tiff; //Has conflicts with #include <tiffio.h>
 
-// value of 1: using OMELibrary to read tiled tiff formats
-//Any other value: using libtiff to read tiled tiff formats
-#define useOMELibrary 1
 
 using namespace std;
-using ome::files::dimension_size_type;
-using ome::files::FormatReader;
-using ome::files::MetadataMap;
-using ome::files::VariantPixelBuffer;
-using ome::files::PixelBuffer;
+//-----------------------------------------------------------------------
 
-void readMetadata(const FormatReader& reader, std::ostream& stream)
-{
-    // Get total number of images (series)
-    dimension_size_type ic = reader.getSeriesCount();
-    stream << "Image count: " << ic << '\n';
 
-    // Loop over images
-    for (dimension_size_type i = 0 ; i < ic; ++i)
-    {
-        // Change the current series to this index
-        reader.setSeries(i);
+//-----------------------------------------------------------------------
 
-        // Print image dimensions (for this image index)
-        stream << "Dimensions for Image " << i << ':'
-               << "\n\tX = " << reader.getSizeX()
-               << "\n\tY = " << reader.getSizeY()
-               << "\n\tZ = " << reader.getSizeZ()
-               << "\n\tT = " << reader.getSizeT()
-               << "\n\tC = " << reader.getSizeC()
-               << "\n\tEffectiveC = " << reader.getEffectiveSizeC();
 
-        for (dimension_size_type channel = 0;
-             channel < reader.getEffectiveSizeC();
-             ++channel)
-        {
-            stream << "\n\tChannel " << channel << ':'
-                   << "\n\t\tRGB = " << (reader.isRGB(channel) ? "true" : "false")
-                   << "\n\t\tRGBC = " << reader.getRGBChannelCount(channel);
-        }
-        stream << '\n';
-
-        // Get total number of planes (for this image index)
-        dimension_size_type pc = reader.getImageCount();
-        stream << "\tPlane count: " << pc << '\n';
-
-        // Loop over planes (for this image index)
-        for (dimension_size_type p = 0 ; p < pc; ++p)
-        {
-            // Print plane position (for this image index and plane index)
-            std::array<dimension_size_type, 3> coords =
-                    reader.getZCTCoords(p);
-            stream << "\tPosition of Plane " << p << ':'
-                   << "\n\t\tTheZ = " << coords[0]
-                   << "\n\t\tTheT = " << coords[2]
-                   << "\n\t\tTheC = " << coords[1]
-                   << '\n';
-        }
-    }
-}
-
-void readOriginalMetadata(const FormatReader& reader, std::ostream& stream, int tileType, uint32_t& tileWidth, uint32_t& tileLength,
-                          uint32_t& imageWidth, uint32_t& imageLength,uint32_t& bitsPerSample,uint16_t& samplesPerPixel)
-{
-    // Get total number of images (series)
-    dimension_size_type ic = reader.getSeriesCount();
-    stream << "Image count: " << ic << '\n';
-
-    // Get global metadata
-    const MetadataMap& global = reader.getGlobalMetadata();
-
-    // Print global metadata
-    stream << "Global metadata:\n" << global << '\n'; //Nothing printed
-
-    // Loop over images
-    for (dimension_size_type i = 0 ; i < ic; ++i)
-    {
-        // Change the current series to this index
-        reader.setSeries(i);
-
-        // Print series metadata
-        const MetadataMap& series = reader.getSeriesMetadata();
-        const MetadataMap::key_type imageWidthKey ="ImageWidth";
-        const MetadataMap::key_type imageLengthKey ="ImageLength";
-        const MetadataMap::key_type bitsPerSampleKey ="BitsPerSample";
-        const MetadataMap::key_type samplesPerPixelKey ="SamplesPerPixel";
-
-        imageWidth = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(imageWidthKey));
-        imageLength = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(imageLengthKey));
-        bitsPerSample = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(bitsPerSampleKey));
-        samplesPerPixel= ome::compat::get<uint16_t>(reader.getSeriesMetadataValue(samplesPerPixelKey));
-
-        if (tileType==1){
-            const MetadataMap::key_type tileWidthKey ="TileWidth";
-            const MetadataMap::key_type tileLengthKey ="TileLength";
-            tileWidth = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileWidthKey));
-            tileLength = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileLengthKey));
-        }
-
-        // Print image dimensions (for this image index)
-        stream << "Metadata for Image " << i << ":\n"
-               << series
-               << '\n';
-    }
-}
 
 /* global variable */
 extern int verbosity;
 
-struct Visitor
-{
-//    double is used since it can contain the value for any pixel type
-    typedef std::vector<double> result_type;
-    result_type myvec;
 
-    // Get min and max for any non-complex pixel type
-    template<typename T>
-    result_type operator() (const T& v)
-    {
-        typedef typename T::element_type::value_type value_type;
 
-        for (auto i=0; i<v->num_elements();i++){
-            value_type tmp = v->data()[i];
-            myvec.push_back(static_cast<double>(tmp));
-        }
-        return myvec;
-    }
-//----------------------------------------------------------------------------------------------
-//The rest was kept from the OME online example as it is necessary for compilation
-//However, functionality to read complex pixel values are not implemented and is left for future
-//----------------------------------------------------------------------------------------------
-    // Less than comparison for real part of complex numbers
-    template <typename T>
-    static bool
-    complex_real_less(const T& lhs, const T& rhs)
-    {
-        return std::real(lhs) < std::real(rhs);
-    }
-
-    // Greater than comparison for real part of complex numbers
-    template <typename T>
-    static bool
-    complex_real_greater(const T& lhs, const T& rhs)
-    {
-        return std::real(lhs) > std::real(rhs);
-    }
-
-    // This is the same as for simple pixel types, except for the
-    // addition of custom comparison functions and conversion of the
-    // result to the real part.
-    template <typename T>
-    typename boost::enable_if_c<
-    boost::is_complex<T>::value, result_type
-    >::type
-    operator() (const std::shared_ptr<PixelBuffer<T>>& v)
-    {
-        typedef T value_type;
-
-        value_type *min = std::min_element(v->data(),
-                                           v->data() + v->num_elements(),
-                                           complex_real_less<T>);
-        value_type *max = std::max_element(v->data(),
-                                           v->data() + v->num_elements(),
-                                           complex_real_greater<T>);
-
-        myvec.push_back(static_cast<double>(std::real(*min)));
-        myvec.push_back(static_cast<double>(std::real(*max)));
-
-        return myvec;
-    }
-};
 
 /* LoadTIFF
    filename -char *- full path to the image file
 */
 int ImageMatrix::LoadTIFF(char *filename) {
-    //Use OME Library to Read input file
-    if (useOMELibrary==1){
-        cout<<" The input data is processed using OME-Files library"<<endl;
-        // Create TIFF reader
-        shared_ptr<ome::files::FormatReader> reader(std::make_shared<ome::files::in::TIFFReader>());
-        // Set reader options before opening a file
-        reader->setMetadataFiltered(false);
-        reader->setGroupFiles(true);
+    unsigned int h,w,x=0,y=0;
+    unsigned int tileWidth, tileLength;
+    unsigned short int spp=0,bps=0;
+    TIFF *tif = NULL;
+    unsigned char *buf8, *buf8tiled;
+    unsigned short *buf16, *buf16tiled;
+    RGBcolor rgb = {0,0,0};
+    ImageMatrix R_matrix, G_matrix, B_matrix;
+    Moments2 R_stats, G_stats, B_stats;
 
-        // Open the file
-        reader->setId(filename);
+    TIFFSetWarningHandler(NULL);
+    if( (tif = TIFFOpen(filename, "r")) ) {
+        source = filename;
 
-        // Display series core metadata
-        readMetadata(*reader, std::cout);
+        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
+        width = w;
+        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+        height = h;
+        TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
+        bits=bps;
 
-        std::shared_ptr<ome::files::tiff::TIFF> myTiff = ome::files::tiff::TIFF::open(filename, "r");
-        std::shared_ptr<ome::files::tiff::IFD> ifd (myTiff->getDirectoryByIndex(0));
-        int tileType=ifd->getTileInfo().tileType();
-       // int tileCount=ifd->getTileInfo().tileCount();
-
-        uint32_t tileWidth, tileLength, imageWidth, imageLength, bitsPerSample;
-        uint16_t samplesPerPixel;
-
-        // Display global and series original metadata
-        readOriginalMetadata(*reader, std::cout, tileType, tileWidth, tileLength, imageWidth, imageLength, bitsPerSample,samplesPerPixel); 
-
-        // Get total number of images (series)
-        dimension_size_type ic = reader->getSeriesCount();
-        std::cout << "Image count: " << ic << '\n';
-
-        reader->setSeries(0);
-        VariantPixelBuffer buf;
-
-        //The rest is WND-CHARM original LoadTIFF function
-        unsigned int h,w,x=0,y=0;
-        unsigned short int spp=0,bps=0;
-        TIFF *tif = NULL;
-        unsigned char *buf8, *buf8tiled;
-        unsigned short *buf16, *buf16tiled;
-        RGBcolor rgb = {0,0,0};
-        ImageMatrix R_matrix, G_matrix, B_matrix;
-        Moments2 R_stats, G_stats, B_stats;
-        unsigned int width=imageWidth;
-        unsigned int height=imageLength;
-        unsigned short int bits=bitsPerSample;
-        spp= samplesPerPixel;
+        TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
+        TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
 
         if ( ! (bits == 8 || bits == 16) ) return (0); // only 8 and 16-bit images supported.
+        TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
         if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
         // regardless of how the image comes in, the stored mode is HSV
         if (spp == 3) {
@@ -312,32 +126,29 @@ int ImageMatrix::LoadTIFF(char *filename) {
         } else {
             ColorMode = cmGRAY;
         }
+        if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
 
         /* allocate the data */
         allocate (width, height);
         writeablePixels pix_plane = WriteablePixels();
         writeableColors clr_plane = WriteableColors();
 
-        if (tileType==1){
-            //---------------------------------------------------------------------------------------
-            //--------------------------- It is tiled tiff format------------------------------------
-            //---------------------------------------------------------------------------------------
-            cout<<"It is tiled tiff format Processed by OME Library"<<endl;
+        if (tileWidth != 0 && tileLength != 0){
+            buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
+            buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
 
             for (y = 0; y < height; y += tileLength) {
                 for (x = 0; x < width; x += tileWidth) {
-
-                    reader->openBytes(0, buf,x,y,tileWidth,tileLength);
-
-                    Visitor visitor;
-                    Visitor::result_type result = ome::compat::visit(visitor, buf.vbuffer());
+                    if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
+                    else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
 
                     //colMin=x , rowMin=y
                     int rowMax = std::min(y + tileLength, height);
                     int colMax = std::min(x + tileWidth, width);
                     //int width = colMax - x;
+
                     for (unsigned int rowtile = 0; rowtile < rowMax - y; ++rowtile) {
-                        int col,count=0;
+                        int col;
                         unsigned int coltile;
                         coltile=0;col=0;
                         while (coltile<colMax - x) {
@@ -346,7 +157,10 @@ int ImageMatrix::LoadTIFF(char *filename) {
                             double val=0;
                             int sample_index;
                             for (sample_index=0;sample_index<spp;sample_index++) {
-                                 val = result[rowtile*tileWidth+col+sample_index];
+                                byte_data=buf8tiled[rowtile*tileWidth+col+sample_index];
+                                short_data=buf16tiled[rowtile*tileWidth+col+sample_index];
+                                if (bits==8) val=(double)byte_data;
+                                else val=(double)(short_data);
                                 if (spp==3 && bits > 8) {  /* RGB image */
                                     if (sample_index==0) R_matrix.WriteablePixels()(y+rowtile,x+coltile) = R_stats.add (val);
                                     if (sample_index==1) G_matrix.WriteablePixels()(y+rowtile,x+coltile) = G_stats.add (val);
@@ -405,23 +219,18 @@ int ImageMatrix::LoadTIFF(char *filename) {
                     }
                 }
             }
-            // Explicitly close reader
-            reader->close();
 
-            return(1);
+            _TIFFfree(buf8tiled);
+            _TIFFfree(buf16tiled);
         }
-        //---------------------------------------------------------------------------------------
-        //--------------------------- It is not tiled tiff format--------------------------------
-        //---------------------------------------------------------------------------------------
         else {
-            cout<<"It is non-tiled tiff format processed by OME library"<<endl;
             /* read TIFF header and determine image size */
-            reader->openBytes(0, buf);
-            Visitor visitor;
-            Visitor::result_type result = ome::compat::visit(visitor, buf.vbuffer());
-
+            buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif)*spp);
+            buf16 = (unsigned short *)_TIFFmalloc( (tsize_t)sizeof(unsigned short)*TIFFScanlineSize(tif)*spp );
             for (y = 0; y < height; y++) {
                 int col;
+                if (bits==8) TIFFReadScanline(tif, buf8, y);
+                else TIFFReadScanline(tif, buf16, y);
                 x=0;col=0;
                 while (x<width) {
                     unsigned char byte_data;
@@ -429,8 +238,10 @@ int ImageMatrix::LoadTIFF(char *filename) {
                     double val=0;
                     int sample_index;
                     for (sample_index=0;sample_index<spp;sample_index++) {
-                        val = result[y*width+col+sample_index];
-
+                        byte_data=buf8[col+sample_index];
+                        short_data=buf16[col+sample_index];
+                        if (bits==8) val=(double)byte_data;
+                        else val=(double)(short_data);
                         if (spp==3 && bits > 8) {  /* RGB image */
                             if (sample_index==0) R_matrix.WriteablePixels()(y,x) = R_stats.add (val);
                             if (sample_index==1) G_matrix.WriteablePixels()(y,x) = G_stats.add (val);
@@ -479,240 +290,21 @@ int ImageMatrix::LoadTIFF(char *filename) {
                 }
             }
 
+            _TIFFfree(buf8);
+            _TIFFfree(buf16);
         }
-        return(1);
-    }
-    //---------------------------------------------------------------------------------------
-    //--------------------------- Use libtiff to read input file-----------------------------
-    //---------------------------------------------------------------------------------------
-    else{
-        cout<<" The input data is processed using libtiff library"<<endl;
-        unsigned int h,w,x=0,y=0;
-        unsigned int tileWidth, tileLength;
-        unsigned short int spp=0,bps=0;
-        TIFF *tif = NULL;
-        unsigned char *buf8, *buf8tiled;
-        unsigned short *buf16, *buf16tiled;
-        RGBcolor rgb = {0,0,0};
-        ImageMatrix R_matrix, G_matrix, B_matrix;
-        Moments2 R_stats, G_stats, B_stats;
+        TIFFClose(tif);
+    } else return(0);
 
-        TIFFSetWarningHandler(NULL);
-        if( (tif = TIFFOpen(filename, "r")) ) {
-            source = filename;
-
-            TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
-            width = w;
-            TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
-            height = h;
-            TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
-            bits=bps;
-
-            TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
-            TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
-
-            if ( ! (bits == 8 || bits == 16) ) return (0); // only 8 and 16-bit images supported.
-            TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
-            if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
-            // regardless of how the image comes in, the stored mode is HSV
-            if (spp == 3) {
-                ColorMode = cmHSV;
-                // If the bits are > 8, we do the read into doubles so that later
-                // we can scale the image to its actual signal range.
-                if (bits > 8) {
-                    R_matrix.ColorMode = cmGRAY;
-                    R_matrix.allocate (width, height);
-                    G_matrix.ColorMode = cmGRAY;
-                    G_matrix.allocate (width, height);
-                    B_matrix.ColorMode = cmGRAY;
-                    B_matrix.allocate (width, height);
-                }
-            } else {
-                ColorMode = cmGRAY;
-            }
-            if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
-
-            /* allocate the data */
-            allocate (width, height);
-            writeablePixels pix_plane = WriteablePixels();
-            writeableColors clr_plane = WriteableColors();
-
-            if (tileWidth != 0 && tileLength != 0){
-                buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
-                buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
-
-                for (y = 0; y < height; y += tileLength) {
-                    for (x = 0; x < width; x += tileWidth) {
-                        if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
-                        else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
-
-                        //colMin=x , rowMin=y
-                        int rowMax = std::min(y + tileLength, height);
-                        int colMax = std::min(x + tileWidth, width);
-                        //int width = colMax - x;
-
-                        for (unsigned int rowtile = 0; rowtile < rowMax - y; ++rowtile) {
-                            int col;
-                            unsigned int coltile;
-                            coltile=0;col=0;
-                            while (coltile<colMax - x) {
-                                unsigned char byte_data;
-                                unsigned short short_data;
-                                double val=0;
-                                int sample_index;
-                                for (sample_index=0;sample_index<spp;sample_index++) {
-                                    byte_data=buf8tiled[rowtile*tileWidth+col+sample_index];
-                                    short_data=buf16tiled[rowtile*tileWidth+col+sample_index];
-                                    if (bits==8) val=(double)byte_data;
-                                    else val=(double)(short_data);
-                                    if (spp==3 && bits > 8) {  /* RGB image */
-                                        if (sample_index==0) R_matrix.WriteablePixels()(y+rowtile,x+coltile) = R_stats.add (val);
-                                        if (sample_index==1) G_matrix.WriteablePixels()(y+rowtile,x+coltile) = G_stats.add (val);
-                                        if (sample_index==2) B_matrix.WriteablePixels()(y+rowtile,x+coltile) = B_stats.add (val);
-                                    } else if (spp == 3) {
-                                        if (sample_index==0) rgb.r = (unsigned char)(R_stats.add (val));
-                                        if (sample_index==1) rgb.g = (unsigned char)(G_stats.add (val));
-                                        if (sample_index==2) rgb.b = (unsigned char)(B_stats.add (val));
-                                    }
-                                }
-                                if (spp == 3 && bits == 8) {
-                                    pix_plane (y+rowtile, x+coltile) = stats.add (RGB2GRAY (rgb));
-                                    clr_plane (y+rowtile, x+coltile) = RGB2HSV(rgb);
-                                } else if (spp == 1) {
-                                    pix_plane (y+rowtile, x+coltile) = stats.add (val);
-                                }
-                                coltile++;
-                                col+=spp;
-                            }
-                        }
-                    }
-                }
-                // Do the conversion to unsigned chars based on the input signal range
-                // i.e. scale global RGB min-max to 0-255
-                if (spp == 3 && bits > 8) {
-                    //size_t a, num = width*height;
-                    double RGB_min=0, RGB_max=0, RGB_scale=0;
-                    R_matrix.finish();
-                    G_matrix.finish();
-                    B_matrix.finish();
-                    // Get the min and max for all 3 channels
-                    if (R_stats.min() <= G_stats.min() && R_stats.min() <= B_stats.min()) RGB_min = R_stats.min();
-                    else if (G_stats.min() <= R_stats.min() && G_stats.min() <= B_stats.min()) RGB_min = G_stats.min();
-                    else if (B_stats.min() <= R_stats.min() && B_stats.min() <= G_stats.min()) RGB_min = B_stats.min();
-                    if (R_stats.max() >= G_stats.max() && R_stats.max() >= B_stats.max()) RGB_max = R_stats.max();
-                    else if (G_stats.max() >= R_stats.max() && G_stats.max() >= B_stats.max()) RGB_max = G_stats.max();
-                    else if (B_stats.max() >= R_stats.max() && B_stats.max() >= G_stats.max()) RGB_max = B_stats.max();
-                    // Scale the clrData to the global min / max.
-                    RGB_scale = (255.0/(RGB_max-RGB_min));
-
-                    for (y = 0; y < height; y += tileLength) {
-                        for (x = 0; x < width; x += tileWidth) {
-
-                            int rowMax = std::min(y + tileLength, height);
-                            int colMax = std::min(x + tileWidth, width);
-
-                            for (unsigned int row = 0; row < rowMax - y; ++row) {
-                                for (unsigned int col=0; col<colMax - x ; ++col) {
-                                    rgb.r = (unsigned char)( (R_matrix.ReadablePixels()(y+row,x+col) - RGB_min) * RGB_scale);
-                                    rgb.g = (unsigned char)( (G_matrix.ReadablePixels()(y+row,x+col) - RGB_min) * RGB_scale);
-                                    rgb.b = (unsigned char)( (B_matrix.ReadablePixels()(y+row,x+col) - RGB_min) * RGB_scale);
-                                    pix_plane (y+row, x+col) = stats.add (RGB2GRAY (rgb));
-                                    clr_plane (y+row, x+col) = RGB2HSV(rgb);
-                                }
-                            }
-                        }
-                    }
-                }
-
-                _TIFFfree(buf8tiled);
-                _TIFFfree(buf16tiled);
-            }
-            else {
-                /* read TIFF header and determine image size */
-                buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif)*spp);
-                buf16 = (unsigned short *)_TIFFmalloc( (tsize_t)sizeof(unsigned short)*TIFFScanlineSize(tif)*spp );
-                for (y = 0; y < height; y++) {
-                    int col;
-                    if (bits==8) TIFFReadScanline(tif, buf8, y);
-                    else TIFFReadScanline(tif, buf16, y);
-                    x=0;col=0;
-                    while (x<width) {
-                        unsigned char byte_data;
-                        unsigned short short_data;
-                        double val=0;
-                        int sample_index;
-                        for (sample_index=0;sample_index<spp;sample_index++) {
-                            byte_data=buf8[col+sample_index];
-                            short_data=buf16[col+sample_index];
-                            if (bits==8) val=(double)byte_data;
-                            else val=(double)(short_data);
-                            if (spp==3 && bits > 8) {  /* RGB image */
-                                if (sample_index==0) R_matrix.WriteablePixels()(y,x) = R_stats.add (val);
-                                if (sample_index==1) G_matrix.WriteablePixels()(y,x) = G_stats.add (val);
-                                if (sample_index==2) B_matrix.WriteablePixels()(y,x) = B_stats.add (val);
-                            } else if (spp == 3) {
-                                if (sample_index==0) rgb.r = (unsigned char)(R_stats.add (val));
-                                if (sample_index==1) rgb.g = (unsigned char)(G_stats.add (val));
-                                if (sample_index==2) rgb.b = (unsigned char)(B_stats.add (val));
-                            }
-                        }
-                        if (spp == 3 && bits == 8) {
-                            pix_plane (y, x) = stats.add (RGB2GRAY (rgb));
-                            clr_plane (y, x) = RGB2HSV(rgb);
-                        } else if (spp == 1) {
-                            pix_plane (y, x) = stats.add (val);
-                        }
-                        x++;
-                        col+=spp;
-                    }
-                }
-                // Do the conversion to unsigned chars based on the input signal range
-                // i.e. scale global RGB min-max to 0-255
-                if (spp == 3 && bits > 8) {
-                    //size_t a, num = width*height;
-                    double RGB_min=0, RGB_max=0, RGB_scale=0;
-                    R_matrix.finish();
-                    G_matrix.finish();
-                    B_matrix.finish();
-                    // Get the min and max for all 3 channels
-                    if (R_stats.min() <= G_stats.min() && R_stats.min() <= B_stats.min()) RGB_min = R_stats.min();
-                    else if (G_stats.min() <= R_stats.min() && G_stats.min() <= B_stats.min()) RGB_min = G_stats.min();
-                    else if (B_stats.min() <= R_stats.min() && B_stats.min() <= G_stats.min()) RGB_min = B_stats.min();
-                    if (R_stats.max() >= G_stats.max() && R_stats.max() >= B_stats.max()) RGB_max = R_stats.max();
-                    else if (G_stats.max() >= R_stats.max() && G_stats.max() >= B_stats.max()) RGB_max = G_stats.max();
-                    else if (B_stats.max() >= R_stats.max() && B_stats.max() >= G_stats.max()) RGB_max = B_stats.max();
-                    // Scale the clrData to the global min / max.
-                    RGB_scale = (255.0/(RGB_max-RGB_min));
-                    for (y = 0; y < height; y++) {
-                        for (x = 0; x < width; x++) {
-                            rgb.r = (unsigned char)( (R_matrix.ReadablePixels()(y,x) - RGB_min) * RGB_scale);
-                            rgb.g = (unsigned char)( (G_matrix.ReadablePixels()(y,x) - RGB_min) * RGB_scale);
-                            rgb.b = (unsigned char)( (B_matrix.ReadablePixels()(y,x) - RGB_min) * RGB_scale);
-                            pix_plane (y, x) = stats.add (RGB2GRAY (rgb));
-                            clr_plane (y, x) = RGB2HSV(rgb);
-                        }
-                    }
-                }
-                _TIFFfree(buf8);
-                _TIFFfree(buf16);
-            }
-            TIFFClose(tif);
-        }
-
-        else return(0);
-
-        return(1);
-    }
+    return(1);
 }
-
-
 
 /*  SaveTiff
     Save a matrix in TIFF format (16 bits per pixel)
 */
 int ImageMatrix::SaveTiff(char *filename) {
-    //#ifdef ALAKI
     readOnlyPixels pix_plane = ReadablePixels();
+
     unsigned int x,y;
     TIFF* tif = TIFFOpen(filename, "w");
     if (!tif) return(0);
@@ -751,7 +343,6 @@ int ImageMatrix::SaveTiff(char *filename) {
     TIFFClose(tif);
     delete[] BufImage16;
     delete[] BufImage8;
-    //#endif
     return(1);
 }
 
@@ -775,6 +366,7 @@ int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *boundin
     else {
         res=LoadTIFF(image_file_name);
     }
+
     // add the image only if it was loaded properly
     if( res )
     {
