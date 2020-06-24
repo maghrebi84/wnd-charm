@@ -271,7 +271,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
         uint16_t samplesPerPixel;
 
         // Display global and series original metadata
-        readOriginalMetadata(*reader, std::cout, tileType, tileWidth, tileLength, imageWidth, imageLength, bitsPerSample,samplesPerPixel); //Not For OMETIFFREADER
+        readOriginalMetadata(*reader, std::cout, tileType, tileWidth, tileLength, imageWidth, imageLength, bitsPerSample,samplesPerPixel); 
 
         // Get total number of images (series)
         dimension_size_type ic = reader->getSeriesCount();
@@ -282,7 +282,6 @@ int ImageMatrix::LoadTIFF(char *filename) {
 
         //The rest is WND-CHARM original LoadTIFF function
         unsigned int h,w,x=0,y=0;
-        //   unsigned int tileWidth, tileLength;
         unsigned short int spp=0,bps=0;
         TIFF *tif = NULL;
         unsigned char *buf8, *buf8tiled;
@@ -292,8 +291,6 @@ int ImageMatrix::LoadTIFF(char *filename) {
         Moments2 R_stats, G_stats, B_stats;
         unsigned int width=imageWidth;
         unsigned int height=imageLength;
-        //tileWidth=tileWidth0;
-        //tileLength=tileLength0;
         unsigned short int bits=bitsPerSample;
         spp= samplesPerPixel;
 
@@ -321,7 +318,6 @@ int ImageMatrix::LoadTIFF(char *filename) {
         writeablePixels pix_plane = WriteablePixels();
         writeableColors clr_plane = WriteableColors();
 
-        //if (tileWidth != 0 && tileLength != 0){ //   ?????
         if (tileType==1){
             //---------------------------------------------------------------------------------------
             //--------------------------- It is tiled tiff format------------------------------------
