@@ -250,12 +250,16 @@ std::vector<double> FractalFeatures::execute (const ImageMatrix &IN_matrix) cons
 		step = 1;   // avoid an infinite loop if the image is small
 	for( k = 1; k < K; k = k + step ) {  
 		double sum = 0.0;
-		for( x = 0; x < width; x++ )
-			for( y = 0; y < height - k; y++ )
-				sum += fabs( IN_matrix_pix_plane(y,x) - IN_matrix_pix_plane(y+k,x) );
-		for( x = 0; x < width - k; x++ )
-			for( y = 0; y < height; y++ )
-				sum += fabs( IN_matrix_pix_plane(y,x) - IN_matrix_pix_plane(y,x + k) );
+        for( x = 0; x < width; x++ )
+            for( y = 0; y < height - k; y++ ){
+                if(std::isnan(IN_matrix_pix_plane(y,x)) || std::isnan(IN_matrix_pix_plane(y+k,x))) continue; //MM
+                sum += fabs( IN_matrix_pix_plane(y,x) - IN_matrix_pix_plane(y+k,x) );
+            }
+        for( x = 0; x < width - k; x++ )
+            for( y = 0; y < height; y++ ){
+                if(std::isnan(IN_matrix_pix_plane(y,x)) || std::isnan(IN_matrix_pix_plane(y,x+k))) continue; //MM
+                sum += fabs( IN_matrix_pix_plane(y,x) - IN_matrix_pix_plane(y,x + k) );
+            }         
 		if( bin < bins )
 			coeffs[ bin++ ] = sum / ( width * ( width - k ) + height * ( height - k ) );    
 	}
