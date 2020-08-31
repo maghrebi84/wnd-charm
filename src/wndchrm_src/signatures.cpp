@@ -226,7 +226,8 @@ void signatures::FileClose()
 	}
 }
 
-int signatures::SaveToFile (int save_feature_names) {
+//MM int signatures::SaveToFile (int save_feature_names) {
+int signatures::SaveToFile (int save_feature_names, int i) {
 	int sig_index;
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 
@@ -245,6 +246,8 @@ int signatures::SaveToFile (int save_feature_names) {
 	}
 	FILE *wf_fp = wf->fp();
 
+    if (i) fprintf(wf_fp,"\n--------------- ROI for the label number %d -------------\n",i); //MM
+   
 	if ( NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous ) {
 		fprintf(wf_fp,"%f\t%d.%d\n",sample_value,version,feature_vec_type);  /* save the continouos value */
 	} else {

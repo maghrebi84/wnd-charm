@@ -213,6 +213,12 @@ double *GaborEnergy(const ImageMatrix &Im, double* out, double f0, double sig2la
 	for (y = (int)ceil((double)n/2); b < Im.height; y++) {
 		a = 0;
 		for (x = (int)ceil((double)n/2); a < Im.width; x++) {
+		    //MM:
+		    if( std::isnan(c[y*2*(Im.width+n-1)+x*2]) || std::isnan(c[y*2*(Im.width+n-1)+x*2+1]) ) {
+                out[b*Im.width+a]=std::numeric_limits<double>::quiet_NaN();
+                a++;
+            continue;}
+		
 			out[b*Im.width+a] = sqrt(pow(c[y*2*(Im.width+n-1)+x*2],2)+pow(c[y*2*(Im.width+n-1)+x*2+1],2));
 			a++;
 		}
@@ -248,13 +254,26 @@ void GaborTextureFilters2D(const ImageMatrix &Im, double *ratios) {
 	readOnlyPixels pix_plane = e2img.ReadablePixels();
 	// N.B.: for the base of the ratios, the threshold is 0.4 of max energy,
 	// while the comparison thresholds are Otsu.
-	originalScore = (pix_plane.array() > pix_plane.maxCoeff() * 0.4).count();
 
+	//MM originalScore = (pix_plane.array() > pix_plane.maxCoeff() * 0.4).count();
+    //MM:
+    Moments2 local_stats;
+    e2img.GetStats (local_stats);
+    double max_val = local_stats.max();
+    originalScore = (pix_plane.array() > max_val * 0.4).count();
+    
 	for (ii = 0; ii < 7; ii++) {
 		unsigned long afterGaborScore = 0;
 		GaborEnergy(Im, e2img.writable_data_ptr(),f0[ii],sig2lam,gamma,theta,n);
 		writeablePixels e2_pix_plane = e2img.WriteablePixels();
-		e2_pix_plane.array() = (e2_pix_plane.array() / e2_pix_plane.maxCoeff()).unaryExpr (Moments2func(e2img.stats));
+		
+		//MM e2_pix_plane.array() = (e2_pix_plane.array() / e2_pix_plane.maxCoeff()).unaryExpr (Moments2func(e2img.stats));
+		//MM:
+		Moments2 local_stats2;
+        e2img.GetStats (local_stats2);
+        double max_val2 = local_stats2.max();
+        e2_pix_plane.array() = (e2_pix_plane.array() / max_val2).unaryExpr (Moments2func(e2img.stats));
+        
 		GRAYthr = e2img.Otsu();
 		afterGaborScore = (e2_pix_plane.array() > GRAYthr).count();
 		ratios[ii] = (double)afterGaborScore/(double)originalScore;

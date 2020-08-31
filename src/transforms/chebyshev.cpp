@@ -118,7 +118,14 @@ void getChCoeff1D(double *f,double *out,double *Tj,int N,int width) {
 		}
 
 		out[jj] = 0;
-		for (int a = 0; a < width; a++) out[jj] += f[a]*tj[a]*0.5;
+		//MM for (int a = 0; a < width; a++) out[jj] += f[a]*tj[a]*0.5;
+        //MM:
+        int flag=0;
+        for (int a = 0; a < width; a++){
+            if (std::isnan(f[a])) {flag=1; continue;}
+            else {out[jj] += f[a]*tj[a]*0.5;}
+        }
+        if(flag=1 && out[jj]==0)  out[jj]=std::numeric_limits<double>::quiet_NaN();
 
 		delete [] tj;
 	}	

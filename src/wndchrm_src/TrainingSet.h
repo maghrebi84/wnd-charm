@@ -103,7 +103,8 @@ typedef struct {
 		int rot_index;
 		int tile_index_x;
 		int tile_index_y;
-	} samples[MAX_SAMPLES_PER_IMAGE];	
+	} samples[MAX_SAMPLES_PER_IMAGE];
+	char* ROIPath; //MM	
 } featureset_t;
 
 

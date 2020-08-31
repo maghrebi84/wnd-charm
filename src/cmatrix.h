@@ -241,14 +241,15 @@ public:
 		_is_clr_writeable = false;
 	}
 	// load from TIFF file
-	int LoadTIFF(char *filename);
+	//MM int LoadTIFF(char *filename);
+    int LoadTIFF(char *filename,double ** LabeledImageMatrix, int ClassID);
 
 	// FIXME: Currently saves this->_pix_plane to grayscale TIF, color info not included!
 	int SaveTiff(char *filename);
 
 	// load an image of any supported format
-	virtual int OpenImage( char *image_file_name, int downsample=0, rect *bounding_rect=NULL,
-		double mean=0, double stdev=0);
+	//MM virtual int OpenImage( char *image_file_name, int downsample=0, rect *bounding_rect=NULL, double mean=0, double stdev=0);
+	virtual int OpenImage( char *image_file_name, double ** LabeledImageMatrix=NULL, int ClassID=0, int downsample=0, rect *bounding_rect=NULL, double mean=0, double stdev=0);
 
 	// constructor helpers
 	void init();

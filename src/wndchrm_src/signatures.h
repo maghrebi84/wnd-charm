@@ -94,7 +94,8 @@ class signatures
     void compute_plan (const ImageMatrix &matrix, const FeatureComputationPlan *plan);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
     void FileClose();
-    int SaveToFile(int save_feature_names);
+    //MM int SaveToFile(int save_feature_names);
+    int SaveToFile(int save_feature_names, int i=0);
     int LoadFromFile(char *filename);
     void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
 	int ReadFromFile (bool wait); // load if exists, or lock and set fpp.

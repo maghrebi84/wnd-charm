@@ -48,6 +48,8 @@
 #define MAX_SPLITS 10000
 #define MAX_SAMPLES 190000
 
+#include <boost/filesystem.hpp> //MM
+
 /* global variable */
 extern int verbosity;
 
@@ -955,6 +957,22 @@ int main(int argc, char *argv[])
 	randomize();   /* random numbers are used for selecting random samples for testing and training */
 	setup_featureset (&featureset);
 	if (arg_index<argc) {
+      //MM:  		
+      featureset.ROIPath ="";
+      for (int i=arg_index; i<argc; ++i){ 
+            if (strcmp(argv[i],"__LabeledData")==0){
+                featureset.ROIPath = argv[++i];
+                break;}
+      }
+    //MM:    
+    if (strcmp(featureset.ROIPath,"")){
+      if(!boost::filesystem::exists(featureset.ROIPath) || !boost::filesystem::is_directory(featureset.ROIPath))
+      {
+         showError(1,"Incorrect input path for ROI\n");
+          return 0;
+      }
+    }		
+		
 		int res;
 		dataset_path=argv[arg_index++];
 		TrainingSet *dataset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
@@ -976,7 +994,8 @@ int main(int argc, char *argv[])
 			res=dataset->LoadFromPath(dataset_path, save_sigs, &featureset, do_continuous );
 			if (res < 1) showError(1,"Errors reading from '%s'\n",dataset_path);
 			if (dataset_save_fit) {
-				res = dataset->SaveToFile (dataset_save_fit);
+				//MM res = dataset->SaveToFile (dataset_save_fit);
+				if (!strcmp(featureset.ROIPath,"")) res = dataset->SaveToFile (dataset_save_fit);
 				if (res < 1) showError (1,"Could not save dataset to '%s'.\n",dataset_save_fit);
 				if (verbosity>=2) printf ("Saved dataset to '%s'.\n",dataset_save_fit);
 			}

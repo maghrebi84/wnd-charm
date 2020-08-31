@@ -246,7 +246,8 @@ struct Visitor
 /* LoadTIFF
    filename -char *- full path to the image file
 */
-int ImageMatrix::LoadTIFF(char *filename) {
+//MM int ImageMatrix::LoadTIFF(char *filename) {
+int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int ClassID) {
     //Use OME Library to Read input file
     if (useOMELibrary==1){
         cout<<" The input data is processed using OME-Files library"<<endl;
@@ -318,6 +319,16 @@ int ImageMatrix::LoadTIFF(char *filename) {
         writeablePixels pix_plane = WriteablePixels();
         writeableColors clr_plane = WriteableColors();
 
+        if (ClassID){ //MM
+            for (y = 0; y < height; ++y) {
+                for (x = 0; x < width; ++x) {
+
+                    pix_plane (y,x) = stats.add (std::numeric_limits<double>::quiet_NaN());
+
+                }
+            }
+        }
+        
         if (tileType==1){
             //---------------------------------------------------------------------------------------
             //--------------------------- It is tiled tiff format------------------------------------
@@ -341,6 +352,10 @@ int ImageMatrix::LoadTIFF(char *filename) {
                         unsigned int coltile;
                         coltile=0;col=0;
                         while (coltile<colMax - x) {
+                            if (ClassID) //MM
+                                if (abs(LabeledImageMatrix[y+rowtile][x+coltile]-ClassID)>1e-6) {
+                                    coltile++; col+=spp; continue;
+                                }
                             unsigned char byte_data;
                             unsigned short short_data;
                             double val=0;
@@ -755,8 +770,10 @@ int ImageMatrix::SaveTiff(char *filename) {
     return(1);
 }
 
-int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *bounding_rect,
+//MM int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *bounding_rect,
                             double mean, double stdev )
+int ImageMatrix::OpenImage( char *image_file_name, double ** LabeledImageMatrix, int ClassID , int downsample, rect *bounding_rect,
+                            double mean, double stdev)
 {
     int res=0;
 
@@ -767,13 +784,15 @@ int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *boundin
         // submatrix allocates memory on top of *this, so *this can't both be the source
         // and destination of the crop, use a buffer:
         ImageMatrix copy_matrix;
-        res = copy_matrix.LoadTIFF(image_file_name);
+       //MM res = copy_matrix.LoadTIFF(image_file_name);
+        res = copy_matrix.LoadTIFF(image_file_name,LabeledImageMatrix, ClassID);
         submatrix( copy_matrix, (unsigned int)bounding_rect->x, (unsigned int)bounding_rect->y,
                    (unsigned int)bounding_rect->x+bounding_rect->w-1, (unsigned int)bounding_rect->y+bounding_rect->h-1
                    );
     }
     else {
-        res=LoadTIFF(image_file_name);
+       //MM res=LoadTIFF(image_file_name);
+        res=LoadTIFF(image_file_name, LabeledImageMatrix, ClassID);
     }
     // add the image only if it was loaded properly
     if( res )
@@ -1113,13 +1132,16 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
             double sum_h = 0;
             double sum_s = 0;
             double sum_v = 0;
+            int flag=0; //MM
 
             /* the leftmost fraction of pixel */
             a = (unsigned int)(floor(x));
             frac = ceil(x)-x;
             if (frac > 0 && a < old_width) {
-                sum_i += pix_plane_x(new_y,a) * frac;
-                if (ColorMode != cmGRAY) {
+             //MM   sum_i += pix_plane_x(new_y,a) * frac;
+                if(!std::isnan(pix_plane_x(new_y,a))) {sum_i += pix_plane_x(new_y,a) * frac; flag=1;}
+                
+                if (ColorMode != cmGRAY) { //MM: Removing nan values for ColorMode is left for the future
                     sum_h += clr_plane_x(new_y,a).h * frac;
                     sum_s += clr_plane_x(new_y,a).s * frac;
                     sum_v += clr_plane_x(new_y,a).v * frac;
@@ -1129,7 +1151,9 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
             /* the middle full pixels */
             for (a = (unsigned int)(ceil(x)); a < floor(x+dx); a++) {
                 if (a < old_width) {
-                    sum_i += pix_plane_x(new_y,a);
+                //MM    sum_i += pix_plane_x(new_y,a);
+                    if(!std::isnan(pix_plane_x(new_y,a))) {sum_i += pix_plane_x(new_y,a); flag=1;}
+                                        
                     if (ColorMode != cmGRAY) {
                         sum_h += clr_plane_x(new_y,a).h;
                         sum_s += clr_plane_x(new_y,a).s;
@@ -1140,7 +1164,9 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
             /* the right fraction of pixel */
             frac = x+dx - floor(x+dx);
             if (frac > 0 && a < old_width) {
-                sum_i += pix_plane_x(new_y,a) * frac;
+               //MM sum_i += pix_plane_x(new_y,a) * frac;
+                if(!std::isnan(pix_plane_x(new_y,a))) {sum_i += pix_plane_x(new_y,a) * frac; flag=1;}
+                
                 if (ColorMode != cmGRAY) {
                     sum_h += clr_plane_x(new_y,a).h * frac;
                     sum_s += clr_plane_x(new_y,a).s * frac;
@@ -1148,7 +1174,10 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
                 }
             }
 
-            copy_pix_x (new_y,new_x) = sum_i/(dx);
+            //MM copy_pix_x (new_y,new_x) = sum_i/(dx);
+            if (flag==0) copy_pix_x (new_y,new_x)=std::numeric_limits<double>::quiet_NaN();
+            else copy_pix_x (new_y,new_x) = sum_i/(dx);
+                        
             if (ColorMode != cmGRAY) {
                 hsv.h = (byte)(sum_h/(dx));
                 hsv.s = (byte)(sum_s/(dx));
@@ -1177,12 +1206,15 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
             double sum_h = 0;
             double sum_s = 0;
             double sum_v = 0;
-
+            int flag=0; //MM
+            
             a = (unsigned int)(floor(y));
             frac = ceil(y) - y;
             // take also the part of the leftmost pixel (if needed)
             if (frac > 0 && a < old_height) {
-                sum_i += pix_plane_y(a,new_x) * frac;
+              //MM  sum_i += pix_plane_y(a,new_x) * frac;
+               if (!std::isnan(pix_plane_y(a,new_x))) {sum_i += pix_plane_y(a,new_x) * frac; flag=1;}
+                                
                 if (ColorMode != cmGRAY) {
                     sum_h += clr_plane_y(a,new_x).h * frac;
                     sum_s += clr_plane_y(a,new_x).s * frac;
@@ -1191,7 +1223,9 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
             }
             for (a = (unsigned int)(ceil(y)); a < floor(y+dy); a++) {
                 if (a < old_height) {
-                    sum_i += pix_plane_y(a,new_x);
+                  //MM  sum_i += pix_plane_y(a,new_x);
+                    if(!std::isnan(pix_plane_y(a,new_x))) {sum_i += pix_plane_y(a,new_x); flag=1;}
+                                      
                     if (ColorMode != cmGRAY) {
                         sum_h += clr_plane_y(a,new_x).h;
                         sum_s += clr_plane_y(a,new_x).s;
@@ -1201,7 +1235,9 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
             }
             frac=y+dy-floor(y+dy);
             if (frac > 0 && a < old_height) {
-                sum_i += pix_plane_y(a,new_x) * frac;
+               //MM sum_i += pix_plane_y(a,new_x) * frac;
+                if(!std::isnan(pix_plane_y(a,new_x))) { sum_i += pix_plane_y(a,new_x) * frac; flag=1;}
+                
                 if (ColorMode != cmGRAY) {
                     sum_h += clr_plane_y(a,new_x).h * frac;
                     sum_s += clr_plane_y(a,new_x).s * frac;
@@ -1209,7 +1245,10 @@ void ImageMatrix::Downsample (const ImageMatrix &matrix_IN, double x_ratio, doub
                 }
             }
             if (new_x < new_width && new_y < new_height) {
-                copy_pix_y (new_y,new_x) = stats.add (sum_i/dy);
+             //MM   copy_pix_y (new_y,new_x) = stats.add (sum_i/dy);
+                if (flag==0) copy_pix_y (new_y,new_x)=std::numeric_limits<double>::quiet_NaN();
+                else copy_pix_y (new_y,new_x) = stats.add (sum_i/dy);
+                
                 if (ColorMode != cmGRAY) {
                     hsv.h = (byte)(sum_h/(dy));
                     hsv.s = (byte)(sum_s/(dy));
@@ -1285,10 +1324,21 @@ double ImageMatrix::update_median () {
 double ImageMatrix::get_median () const {
     double median;
     size_t num = width * height;
-    std::vector<double> v (num);
+   //MM std::vector<double> v (num);
+    std::vector<double> v; 
 
     readOnlyPixels pix_plane = ReadablePixels();
-    for (size_t i = 0; i < num; i++) v[i] = pix_plane.array().coeff(i);
+
+    
+    //MM for (size_t i = 0; i < num; i++) v[i] = pix_plane.array().coeff(i);
+    for (size_t i = 0; i < num; i++) {  //MM:
+        if(isnan(pix_plane.array().coeff(i))) continue;
+        v.push_back(pix_plane.array().coeff(i));
+    }
+    if (v.size()==0) {cout<<"Error: No Value to compute median for";}
+    num=v.size(); 
+    
+        
     size_t half = num / 2;
     if (num % 2 == 0) {
         nth_element(v.begin(), v.begin()+half, v.end());
@@ -1599,6 +1649,7 @@ void ImageMatrix::histogram(double *bins,unsigned short nbins, bool imhist, cons
     // build the histogram
     for (a = 0; a < num; a++) {
         val = pix_plane.array().coeff(a);
+        if (isnan(val)) continue; //MM
         bin = (unsigned long)(( (val - h_min)*h_scale));
         if (bin >= nbins) bin = nbins-1;
         bins[bin] += 1.0;
@@ -1610,6 +1661,71 @@ void ImageMatrix::histogram(double *bins,unsigned short nbins, bool imhist, cons
 /* fft 2 dimensional transform */
 // http://www.fftw.org/doc/
 double ImageMatrix::fft2 (const ImageMatrix &matrix_IN) {
+
+    //MM:
+    bool ROIflag=false;
+
+    copyFields (matrix_IN);
+    allocate (matrix_IN.width, matrix_IN.height);
+
+    readOnlyPixels in_plane = matrix_IN.ReadablePixels();
+    for (unsigned int x=0;x<width;x++){
+        if (ROIflag) break;
+        for (unsigned int y=0;y<height;y++)
+            if (std::isnan(in_plane(y,x))) {ROIflag=true; break;}
+    }
+
+    //MM:
+    if (ROIflag){
+
+        int cnt=0;
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) ++cnt;
+
+        if(cnt==0) cout<<"Error: No Valid Pixels for FFTW"<<endl;
+
+        fftw_plan p;
+        unsigned int half_height = cnt/2+1;
+
+
+        writeablePixels out_plane = WriteablePixels();
+
+        double *in = (double*) fftw_malloc(sizeof(double) * cnt);
+        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * cnt);
+        p = fftw_plan_dft_r2c_1d(cnt,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+
+        int index=0;
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) in[index++]=in_plane.coeff(y,x);
+
+        fftw_execute(p);
+
+        double *out2 = new double [cnt];
+        // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
+        for (unsigned int y=0;y<half_height;y++) {
+            out2[y] = sqrt( pow(out[y][0],2)+pow(out[y][1],2));    // sqrt(real(X).^2 + imag(X).^2)
+        }
+
+        // complete the rest of the columns
+        for (unsigned int y=half_height;y<cnt;y++)
+            out2[y] = out2[cnt - y];
+
+
+        index=0;
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) out_plane (y,x) = stats.add(out2[index++]);
+
+        // clean up
+        fftw_destroy_plan(p);
+        fftw_free(in);
+        fftw_free(out);
+        delete [] out2;
+    }
+    else {     //MM
+
     fftw_plan p;
     unsigned int half_height = matrix_IN.height/2+1;
 
@@ -1628,7 +1744,7 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN) {
 #endif
 
     writeablePixels out_plane = WriteablePixels();
-    readOnlyPixels in_plane = matrix_IN.ReadablePixels();
+   //MM readOnlyPixels in_plane = matrix_IN.ReadablePixels();
 
     double *in = (double*) fftw_malloc(sizeof(double) * width*height);
     fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
@@ -1700,7 +1816,7 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN) {
     // 	fftw_destroy_plan(p);
     // 	fftw_free(in);
     // 	fftw_free(out);
-
+    }
     return(0);
 }
 
@@ -1808,10 +1924,25 @@ void ImageMatrix::EdgeTransform (const ImageMatrix &matrix_IN) {
 
     for (y = 0; y < height; y++)
         for (x = 0; x < width; x++) {
-            max_x = max_y = 0;
+         /* //MM   max_x = max_y = 0;
             if (y > 0 && y < height-1) max_y=MAX(fabs(in_plane(y,x) - in_plane(y-1,x)), fabs(in_plane(y,x) - in_plane(y+1,x)));
             if (x > 0 && x < width-1)  max_x=MAX(fabs(in_plane(y,x) - in_plane(y,x-1)), fabs(in_plane(y,x) - in_plane(y,x+1)));
             out_plane(y,x) = stats.add (MAX(max_x,max_y));
+         */ 
+            //MM:  
+            if (isnan(in_plane(y,x))) out_plane(y,x) = stats.add (std::numeric_limits<double>::quiet_NaN());
+            else {
+                max_x = max_y = 0;
+                if (y > 0 && y < height-1)
+                    if (!std::isnan(in_plane(y-1,x)) && !std::isnan(in_plane(y+1,x)))
+                        max_y=MAX(fabs(in_plane(y,x) - in_plane(y-1,x)), fabs(in_plane(y,x) - in_plane(y+1,x)));
+
+                if (x > 0 && x < width-1)
+                    if (!std::isnan(in_plane(y,x-1)) && !std::isnan(in_plane(y,x+1)))
+                        max_x=MAX(fabs(in_plane(y,x) - in_plane(y,x-1)), fabs(in_plane(y,x) - in_plane(y,x+1)));
+
+                out_plane(y,x) = stats.add (MAX(max_x,max_y));
+            }
         }
 }
 
@@ -1836,16 +1967,20 @@ void ImageMatrix::PrewittMagnitude2D (const ImageMatrix &matrix_IN) {
             sumy=0;
             for (j = y-1; j <= y+1; j++)
                 if (j >= 0 && j < h && x-1 >= 0)
-                    sumx += pix_plane(j,x-1)*1;//0.3333;
+                    //MM  sumx += pix_plane(j,x-1)*1;//0.3333;
+                    if(!isnan(pix_plane(j,x-1))) sumx += pix_plane(j,x-1)*1;//0.3333;
             for (j = y-1; j <= y+1; j++)
                 if (j >= 0 && j < h && x+1 < w)
-                    sumx += pix_plane(j,x+1)*-1;//-0.3333;
+                    //MM sumx += pix_plane(j,x+1)*-1;//-0.3333;
+                    if(!isnan(pix_plane(j,x+1))) sumx += pix_plane(j,x+1)*-1;//-0.3333;
             for (i = x-1; i <= x+1; i++)
                 if (i >= 0 && i < w && y-1 >= 0)
-                    sumy += pix_plane(y-1,i)*1;//-0.3333;
+                    //MM sumy += pix_plane(y-1,i)*1;//-0.3333;
+                    if(!isnan(pix_plane(y-1,i))) sumy += pix_plane(y-1,i)*1;//-0.3333;
             for (i = x-1; i <= x+1; i++)
                 if (i >= 0 && i < w && y+1 < h)
-                    sumy += pix_plane(y+1,i)*-1;//0.3333;
+                    //MM sumy += pix_plane(y+1,i)*-1;//0.3333;
+                    if(!isnan(pix_plane(y+1,i)))  sumy += pix_plane(y+1,i)*-1;//0.3333;
             out_pix_plane(y,x) = stats.add (sqrt(sumx*sumx+sumy*sumy));
         }
     }
@@ -1873,16 +2008,20 @@ void ImageMatrix::PrewittDirection2D(const ImageMatrix &matrix_IN) {
             sumy=0;
             for (j = y-1; j <= y+1; j++)
                 if (j >= 0 && j < h && x-1 >= 0)
-                    sumx += pix_plane(j,x-1)*1;//0.3333;
+                    //MM sumx += pix_plane(j,x-1)*1;//0.3333;
+                    if(!isnan(pix_plane(j,x-1))) sumx += pix_plane(j,x-1)*1;//0.3333;
             for (j = y-1; j <= y+1; j++)
                 if (j >= 0 && j < h && x+1 < w)
-                    sumx += pix_plane(j,x+1)*-1;//-0.3333;
+                    //MM sumx += pix_plane(j,x+1)*-1;//-0.3333;
+                    if(!isnan(pix_plane(j,x+1))) sumx += pix_plane(j,x+1)*-1;//-0.3333;
             for (i = x-1; i <= x+1; i++)
                 if (i >= 0 && i < w && y-1 >= 0)
-                    sumy += pix_plane(y-1,i)*1;//-0.3333;
+                    //MM sumy += pix_plane(y-1,i)*1;//-0.3333;
+                    if(!isnan(pix_plane(y-1,i))) sumy += pix_plane(y-1,i)*1;//-0.3333;
             for (i = x-1; i <= x+1; i++)
                 if (i >= 0 && i < w && y+1 < h)
-                    sumy += pix_plane(y+1,i)*-1;//0.3333;
+                    //MM sumy += pix_plane(y+1,i)*-1;//0.3333;
+                    if(!isnan(pix_plane(y+1,i))) sumy += pix_plane(y+1,i)*-1;//0.3333;
             if (sumy == 0 || fabs(sumy)<1/INF) out_pix_plane(y,x) = stats.add (3.1415926 * (sumx < 0 ? 1 : 0));
             else out_pix_plane(y,x) = stats.add (atan2(sumy,sumx));
         }
@@ -2091,10 +2230,13 @@ double ImageMatrix::OtsuBinaryMaskTransform (const ImageMatrix &matrix_IN) {
     OtsuGlobalThreshold = matrix_IN.Otsu();
 
     /* classify the pixels by the threshold */
-    for (unsigned int a = 0; a < width*height; a++)
+    for (unsigned int a = 0; a < width*height; a++){
+        if (std::isnan(in_plane.array().coeff(a))) {(out_plane.array())(a)=in_plane.array().coeff(a); continue;} //MM
+
         if (in_plane.array().coeff(a) > OtsuGlobalThreshold) (out_plane.array())(a) = stats.add (1);
         else (out_plane.array())(a) = stats.add (0);
-
+    }
+    
     return(OtsuGlobalThreshold);
 }
 

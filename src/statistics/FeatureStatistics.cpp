@@ -128,10 +128,10 @@ unsigned long bwlabel(ImageMatrix &Im, int level) {
 
 	/* now decrease every non-zero pixel by one because the first group was "2" */
 	for (y=0;y<h;y++)
-		for (x=0;x<w;x++)
-			if (pix_plane(y,x) != 0)
-				pix_plane(y,x) -= 1;
-
+		for (x=0;x<w;x++){
+		    if (std::isnan(pix_plane(y,x))) continue; //MM
+			if (pix_plane(y,x) != 0) pix_plane(y,x) -= 1;
+        }
 	delete [] stack;
 	return(group_counter-1);
 }
@@ -241,6 +241,7 @@ long EulerNumber(const ImageMatrix &Im, int mode) {
 	// update pattern counters by scanning the image.
 	for (y = 1; y < Im.height; y++) {
 		for (x = 1; x < Im.width; x++) {
+		    if(std::isnan(pix_plane(y,x))) continue; //MM
 			// Get the quad-pixel at this image location
 			Imq = 0;
 			if (pix_plane(y-1,x-1) > 0) Imq |=  (1 << 3);

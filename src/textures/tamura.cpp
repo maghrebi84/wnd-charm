@@ -73,7 +73,9 @@ double directionality(const ImageMatrix &image) {
 	sum_r = 0;
 	for (y = 0; y < ydim; ++y) {
 		for (x = 0; x < xdim; ++x) {
+		    if (std::isnan(deltaH_pix_plane(y,x))) {phi_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); continue;} //MM
 			if (deltaH_pix_plane(y,x) >= 0.0001) {
+			    if (std::isnan(deltaV_pix_plane(y,x))) {phi_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); continue;} //MM
 				val = atan(deltaV_pix_plane(y,x) / deltaH_pix_plane(y,x))+(M_PI/2.0+0.001); //+0.001 because otherwise sometimes getting -6.12574e-17
 				phi_pix_plane(y,x) = phi_stats.add (val);
 				sum_r += pow(deltaH_pix_plane(y,x),2)+pow(deltaV_pix_plane(y,x),2)+pow(val,2);
@@ -121,17 +123,21 @@ double efficientLocalMean(const long x,const long y,const long k, const pixDataM
 
 	double unten, links, oben, obenlinks;
 
-	if (startx-1 < 0) links = 0;
+	//MM if (startx-1 < 0) links = 0;
+	if (startx-1 < 0 || std::isnan(laufendeSumme(stopy,startx-1))) links = 0;
 	else links = laufendeSumme(stopy,startx-1);
 
-	if (starty-1 < 0) oben = 0;
+	//MM if (starty-1 < 0) oben = 0;
+	if (starty-1 < 0 || std::isnan(laufendeSumme(stopy-1,startx))) oben = 0;
 	else oben = laufendeSumme(stopy-1,startx);
 
-	if ((starty-1 < 0) || (startx-1 <0)) obenlinks = 0;
+	//MM if ((starty-1 < 0) || (startx-1 <0)) obenlinks = 0;
+	if ((starty-1 < 0) || (startx-1 <0) || std::isnan(laufendeSumme(stopy-1,startx-1))) obenlinks = 0;
 	else obenlinks = laufendeSumme(stopy-1,startx-1);
 
 	unten = laufendeSumme(stopy,startx);
-
+    if(std::isnan(unten)) unten=0; //MM
+    
 	//   cout << "obenlinks = " << obenlinks << " oben = " << oben << " links = " << links << " unten = " <<unten << endl;
 	long counter = (stopy-starty+1)*(stopx-startx+1);
 	return (unten-links-oben+obenlinks)/counter;
@@ -159,13 +165,18 @@ double coarseness(const ImageMatrix &image, double *hist,unsigned int nbins) {
 	double links, oben, obenlinks;
 	for(y = 0; y < yDim; ++y) {
 		for(x = 0; x < xDim; ++x) {
-			if(x < 1) links = 0;
+		    if(std::isnan(image_pix_plane(y,x))) {laufendeSumme(y,x) = image_pix_plane(y,x); continue;} //MM
+		
+			//MM if(x < 1) links = 0;
+			if(x < 1 || std::isnan(image_pix_plane(y,x-1)) ) links = 0;
 			else links = laufendeSumme(y,x-1);
 
-			if(y < 1) oben = 0;
+			//MM if(y < 1) oben = 0;
+			if(y < 1 || std::isnan(image_pix_plane(y-1,x)) ) oben = 0;
 			else oben = laufendeSumme(y-1,x);
 
-			if(y < 1 || x < 1) obenlinks = 0;
+			//MM if(y < 1 || x < 1) obenlinks = 0;
+			if(y < 1 || x < 1 || std::isnan(image_pix_plane(y-1,x-1)) ) obenlinks = 0;
 			else obenlinks = laufendeSumme(y-1,x-1);
 
 			laufendeSumme(y,x) = image_pix_plane(y,x) + links + oben - obenlinks;
@@ -187,8 +198,10 @@ double coarseness(const ImageMatrix &image, double *hist,unsigned int nbins) {
 		lenOfk *= 2;
 		pixDataMat &Ak_pix_plane = *Ak[k-1];
 		for(y = 0; y < yDim; ++y)
-			for(x = 0; x < xDim; ++x)
+			for(x = 0; x < xDim; ++x){
+			    if(std::isnan(laufendeSumme(y,x))) {Ak_pix_plane(y,x) = laufendeSumme(y,x); continue;}//MM
 				Ak_pix_plane(y,x) = efficientLocalMean(x,y,lenOfk,laufendeSumme);
+			}
 	}
 
 	//step 2
@@ -208,9 +221,14 @@ double coarseness(const ImageMatrix &image, double *hist,unsigned int nbins) {
 				int posy2 = y-k2;
 				if(posx1 < (int)xDim && posx2 >= 0)
 					Ekh_pix_plane(y,x) = fabs(Ak_pix_plane(y,posx1) - Ak_pix_plane(y,posx2));
+				else if (posx1 < (int)xDim && std::isnan(Ak_pix_plane(y,posx1))) Ekh_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); //MM
+                else if (posx2 >= 0 && std::isnan(Ak_pix_plane(y,posx2))) Ekh_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); //MM
 				else Ekh_pix_plane(y,x) = 0;
+				
 				if(posy1 < (int)yDim && posy2 >= 0)
 					Ekv_pix_plane(y,x) = fabs(Ak_pix_plane(posy1,x) - Ak_pix_plane(posy2,x));
+				else if (posy1 < (int)yDim && std::isnan(Ak_pix_plane(posy1,x))) Ekh_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); //MM
+                else if (posy2 >= 0 && std::isnan(Ak_pix_plane(posy2,x))) Ekh_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); //MM
 				else Ekv_pix_plane(y,x) = 0;
 			}
 		}
@@ -223,9 +241,12 @@ double coarseness(const ImageMatrix &image, double *hist,unsigned int nbins) {
 		for(x = 0; x < xDim; ++x) {
 			double maxE = 0;
 			int maxk = 0;
+			int allnansFlag=1; //MM			            
 			for(int k = 1; k <= K_VALUE; ++k) {
 				double Ekh_val = (*(Ekh[k-1]))(y,x);
 				double Ekv_val = (*(Ekv[k-1]))(y,x);
+				if (std::isnan(Ekh_val) || std::isnan(Ekv_val)) continue; //MM
+                allnansFlag=0;
 				if(Ekh_val > maxE) {
 					maxE = Ekh_val;
 					maxk = k;
@@ -235,6 +256,7 @@ double coarseness(const ImageMatrix &image, double *hist,unsigned int nbins) {
 					maxk = k;
 				}
 			}
+            if (allnansFlag==1) {Sbest_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); continue;} //MM
 			Sbest_pix_plane(y,x) = Sbest_stats.add(maxk);
 			sum += maxk;
 		}
