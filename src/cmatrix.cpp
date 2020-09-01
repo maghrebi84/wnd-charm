@@ -770,8 +770,7 @@ int ImageMatrix::SaveTiff(char *filename) {
     return(1);
 }
 
-//MM int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *bounding_rect,
-                            double mean, double stdev )
+//MM int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *bounding_rect, double mean, double stdev )
 int ImageMatrix::OpenImage( char *image_file_name, double ** LabeledImageMatrix, int ClassID , int downsample, rect *bounding_rect,
                             double mean, double stdev)
 {
