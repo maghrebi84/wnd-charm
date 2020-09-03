@@ -340,7 +340,8 @@ int signatures::LoadFromFile(char *filename) {
   If the file exists, and is not locked, the sigs will be loaded from it, and no lock will be issued. (return 1, (wf.status = WORMfile::WORM_FINISHED))
   If an error occurs in obtaining the lock (if necessary) or creating the file (if necessary) or reading it (if possible), return -1.
 */
-int signatures::ReadFromFile (bool wait) {
+//MM int signatures::ReadFromFile (bool wait) {
+int signatures::ReadFromFile (bool wait, char * ROIPath) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 
 	if (!wf) wf = new WORMfile (GetFileName (buffer), wait, wait);
