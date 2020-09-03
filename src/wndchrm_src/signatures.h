@@ -97,8 +97,10 @@ class signatures
     //MM int SaveToFile(int save_feature_names);
     int SaveToFile(int save_feature_names, int i=0);
     int LoadFromFile(char *filename);
-    void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
-	int ReadFromFile (bool wait); // load if exists, or lock and set fpp.
+    //MM void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
+	void LoadFromFilep (FILE *value_file, char * ROIPath=""); // implementation for LoadFromFile using a pre-existing FILE*
+	//MM int ReadFromFile (bool wait); // load if exists, or lock and set fpp.
+	int ReadFromFile (bool wait, char * ROIPath=""); // load if exists, or lock and set fpp.
 	char *GetFileName(char *buffer);
 	int CompareToFile (const ImageMatrix &matrix, char *filename, int compute_colors, int large_set);
 };

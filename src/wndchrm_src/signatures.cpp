@@ -282,11 +282,18 @@ int signatures::LoadFromFile(char *filename) {
 	return (ret);
 }
 
-void signatures::LoadFromFilep (FILE *value_file) {
+//MM void signatures::LoadFromFilep (FILE *value_file) {
+    void signatures::LoadFromFilep (FILE *value_file, char * ROIPath ) {
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1],*p_buffer, name[SIGNATURE_NAME_LENGTH];
 	int version_maj = 0, version_min = 0;
 	double val;
 
+    //MM
+    if (strcmp(ROIPath,"")){
+        fgets(buffer,sizeof(buffer),value_file);
+        fgets(buffer,sizeof(buffer),value_file);
+    }
+    
 	/* read the class or value and version */
 	fgets(buffer,sizeof(buffer),value_file);
 	if (NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous) {
@@ -346,7 +353,8 @@ int signatures::ReadFromFile (bool wait) {
 		return (0);
 	} else if (wf->status == WORMfile::WORM_RD) {
 		Clear(); // reset sample count
-		LoadFromFilep (wf->fp());
+		//MM LoadFromFilep (wf->fp());
+		LoadFromFilep (wf->fp(), ROIPath);
 		wf->finish(); // this unlocks, closes, etc.
 		// Of course, if it was empty afterall, its an error.
 		if (count < 1) {

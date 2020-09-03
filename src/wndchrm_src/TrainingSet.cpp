@@ -997,7 +997,8 @@ int TrainingSet::SplitAreas(long tiles_num, TrainingSet **TrainingSets)
    signatures know how to construct their .sig file names from their full_path (image path) and sample_name
 */
 
-int TrainingSet::AddAllSignatures() {
+//MM int TrainingSet::AddAllSignatures() {
+int TrainingSet::AddAllSignatures( char * ROIPath) {
     int samp_index;
     int sample_class;
     double sample_value;
@@ -1023,7 +1024,8 @@ int TrainingSet::AddAllSignatures() {
         errno = 0;
         res = 1;
         if (sample->count < 1) {
-            res = sample->ReadFromFile(1);
+            //MM res = sample->ReadFromFile(1);
+             res = sample->ReadFromFile(1, ROIPath);
         }
 
         if (res > 0) {
@@ -1334,7 +1336,10 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 
         // Done processing path as a dataset.
         // Load all the sigs if other processes are calculating them
-        if ( (res  = AddAllSignatures ()) < 0) return (res);
+       //MM if ( (res  = AddAllSignatures ()) < 0) return (res);
+        if( strcmp(featureset->ROIPath,"") && featureset->uniqueClassesSize>1) return 1; //MM
+        if ( (res  = AddAllSignatures (featureset->ROIPath)) < 0) return (res); //MM
+        
     } else { // its a fit file!
         if (!is_numeric && make_continuous) {
             catError ("WARNING: Trying to make a continuous dataset with non-numeric class labels.  Making discrete classes instead.\n");
@@ -1736,7 +1741,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             if (uniqueClasses.size()==0) printf(" No class were found in the Labled Image ");
         }
 
-
+        featureset->uniqueClassesSize=uniqueClasses.size(); //MM
 
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
             // Open the image once for the first sample

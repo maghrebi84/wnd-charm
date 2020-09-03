@@ -104,7 +104,8 @@ typedef struct {
 		int tile_index_x;
 		int tile_index_y;
 	} samples[MAX_SAMPLES_PER_IMAGE];
-	char* ROIPath; //MM	
+	char* ROIPath; //MM
+	int uniqueClassesSize; //MM	
 } featureset_t;
 
 
@@ -205,8 +206,9 @@ public:
 /* methods */
    TrainingSet(long samples_num, long class_num);                  /* constructor                               */
    ~TrainingSet();                                                 /* destructor                                */
-   int AddAllSignatures();                                         /* load the sample feature values from corresponding files */
-
+ //MM  int AddAllSignatures();                                         /* load the sample feature values from corresponding files */
+    int AddAllSignatures(char * ROIPath = "");                         /* load the sample feature values from corresponding files */
+    
 	int AddImageFile(char *filename, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset);
 	int LoadFromFilesDir(char *path, unsigned short sample_class, double sample_value, int save_sigs, featureset_t *featureset);
 	int LoadFromPath(char *path, int save_sigs, featureset_t *featureset, int make_continuous);
