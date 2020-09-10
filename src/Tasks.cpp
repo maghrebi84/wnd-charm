@@ -366,10 +366,8 @@ void StdFeatureComputationPlans::addLongFeatures (FeatureComputationPlan *the_pl
 	if (color)
 		addColorFeatures (the_plan);
 
-//	addGroupBFeatures (the_plan, "(Fourier ())");
-//	addGroupCFeatures (the_plan, "(Fourier ())");
-//MM:
-    if(the_plan->NaNFlag){
+    //MM
+    if (the_plan->NaNFlag){
         addGroupBFeatures (the_plan, "(Fourier_1D_ColumnWise ())");
         addGroupCFeatures (the_plan, "(Fourier_1D_ColumnWise ())");
 
@@ -378,11 +376,101 @@ void StdFeatureComputationPlans::addLongFeatures (FeatureComputationPlan *the_pl
 
         addGroupBFeatures (the_plan, "(Fourier_2D ())");
         addGroupCFeatures (the_plan, "(Fourier_2D ())");
+
+        addGroupBFeatures (the_plan, "(Wavelet ())");
+        addGroupCFeatures (the_plan, "(Wavelet ())");
+
+        addGroupBFeatures (the_plan, "(Chebyshev ())");
+        addGroupCFeatures (the_plan, "(Chebyshev ())");
+
+        // Fourier, then Chebyshev
+        addGroupCFeatures (the_plan, "(Chebyshev (Fourier_1D_ColumnWise ()))");
+        addGroupCFeatures (the_plan, "(Chebyshev (Fourier_1D_RowWise ()))");
+        addGroupCFeatures (the_plan, "(Chebyshev (Fourier_2D ()))");
+
+        // Fourier, then Wavelet
+        addGroupCFeatures (the_plan, "(Wavelet (Fourier_1D_ColumnWise ()))");
+        addGroupCFeatures (the_plan, "(Wavelet (Fourier_1D_RowWise ()))");
+        addGroupCFeatures (the_plan, "(Wavelet (Fourier_2D ()))");
+
+        // Wavelet, then Fourier
+        addGroupBFeatures (the_plan, "(Fourier_1D_ColumnWise (Wavelet ()))");
+        addGroupCFeatures (the_plan, "(Fourier_1D_ColumnWise (Wavelet ()))");
+
+        addGroupBFeatures (the_plan, "(Fourier_1D_RowWise (Wavelet ()))");
+        addGroupCFeatures (the_plan, "(Fourier_1D_RowWise (Wavelet ()))");
+
+        addGroupBFeatures (the_plan, "(Fourier_2D (Wavelet ()))");
+        addGroupCFeatures (the_plan, "(Fourier_2D (Wavelet ()))");
+
+        // Chebyshev, then Fourier
+        addGroupCFeatures (the_plan, "(Fourier_1D_ColumnWise (Chebyshev ()))");
+        addGroupCFeatures (the_plan, "(Fourier_1D_RowWise (Chebyshev ()))");
+        addGroupCFeatures (the_plan, "(Fourier_2D (Chebyshev ()))");
+
+        // Wavelet, then Chebyshev
+        addGroupCFeatures (the_plan, "(Chebyshev (Wavelet ()))");
+
+        // Edge
+        addGroupBFeatures (the_plan, "(Edge ())");
+        addGroupCFeatures (the_plan, "(Edge ())");
+
+        // Edge, then Fourier
+        addGroupBFeatures (the_plan, "(Fourier_1D_ColumnWise (Edge ()))");
+        addGroupCFeatures (the_plan, "(Fourier_1D_ColumnWise (Edge ()))");
+
+        addGroupBFeatures (the_plan, "(Fourier_1D_RowWise (Edge ()))");
+        addGroupCFeatures (the_plan, "(Fourier_1D_RowWise (Edge ()))");
+
+        addGroupBFeatures (the_plan, "(Fourier_2D (Edge ()))");
+        addGroupCFeatures (the_plan, "(Fourier_2D (Edge ()))");
+
+        // Edge, then wavelet
+        addGroupBFeatures (the_plan, "(Wavelet (Edge ()))");
+        addGroupCFeatures (the_plan, "(Wavelet (Edge ()))");
     }
-    else {
-    addGroupBFeatures (the_plan, "(Fourier ())");
-    addGroupCFeatures (the_plan, "(Fourier ())");
+    else{
+        addGroupBFeatures (the_plan, "(Fourier ())");
+        addGroupCFeatures (the_plan, "(Fourier ())");
+
+        addGroupBFeatures (the_plan, "(Wavelet ())");
+        addGroupCFeatures (the_plan, "(Wavelet ())");
+
+        addGroupBFeatures (the_plan, "(Chebyshev ())");
+        addGroupCFeatures (the_plan, "(Chebyshev ())");
+
+        // Fourier, then Chebyshev
+        addGroupCFeatures (the_plan, "(Chebyshev (Fourier ()))");
+
+        // Fourier, then Wavelet
+        addGroupCFeatures (the_plan, "(Wavelet (Fourier ()))");
+
+        // Wavelet, then Fourier
+        addGroupBFeatures (the_plan, "(Fourier (Wavelet ()))");
+        addGroupCFeatures (the_plan, "(Fourier (Wavelet ()))");
+
+        // Chebyshev, then Fourier
+        addGroupCFeatures (the_plan, "(Fourier (Chebyshev ()))");
+
+        // Wavelet, then Chebyshev
+        addGroupCFeatures (the_plan, "(Chebyshev (Wavelet ()))");
+
+        // Edge
+        addGroupBFeatures (the_plan, "(Edge ())");
+        addGroupCFeatures (the_plan, "(Edge ())");
+
+        // Edge, then Fourier
+        addGroupBFeatures (the_plan, "(Fourier (Edge ()))");
+        addGroupCFeatures (the_plan, "(Fourier (Edge ()))");
+
+        // Edge, then wavelet
+        addGroupBFeatures (the_plan, "(Wavelet (Edge ()))");
+        addGroupCFeatures (the_plan, "(Wavelet (Edge ()))");
     }
+
+/* MM
+	addGroupBFeatures (the_plan, "(Fourier ())");
+	addGroupCFeatures (the_plan, "(Fourier ())");
     
 	addGroupBFeatures (the_plan, "(Wavelet ())");
 	addGroupCFeatures (the_plan, "(Wavelet ())");
@@ -417,7 +505,7 @@ void StdFeatureComputationPlans::addLongFeatures (FeatureComputationPlan *the_pl
 	// Edge, then wavelet
 	addGroupBFeatures (the_plan, "(Wavelet (Edge ()))");
 	addGroupCFeatures (the_plan, "(Wavelet (Edge ()))");
-
+*/
 }
 
 void StdFeatureComputationPlans::addGroupAFeatures (FeatureComputationPlan *the_plan, std::string transform) {
