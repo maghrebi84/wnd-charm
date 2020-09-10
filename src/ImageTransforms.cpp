@@ -71,7 +71,7 @@ static bool FourierTransformReg = ComputationTaskInstances::add (new FourierTran
 
 
 //======================================MM=====================================
-FourierTransform2D::FourierTransform2D () : ImageTransform ("Fourier_2D") {};
+FourierTransform2D::FourierTransform2D () : ImageTransform ("Fourier_2D_Mean") {};
 void FourierTransform2D::execute (const ImageMatrix &matrix_IN, ImageMatrix &matrix_OUT ) const {
     if (verbosity > 3) std::cout << "Performing transform " << name << std::endl;
     matrix_OUT.fft2(matrix_IN, "2DMeanForNan");
