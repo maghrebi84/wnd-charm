@@ -1856,7 +1856,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                     if (featureset->feature_opts.compute_colors) {
                         feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
                     } else {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSet();
+                        //MM feature_plan = StdFeatureComputationPlans::getFeatureSet();
+                        feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
                     }
                 }              
             }

@@ -310,8 +310,12 @@ void FeatureComputationPlanExecutor::reset () {
 	// note that the plan stays.
 }
 
-const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSet () {
-	static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Standard Feature Set");
+//MM const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSet () {
+//MM	static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Standard Feature Set");	
+const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSet (bool flag) {
+    static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Standard Feature Set", flag);
+	
+	
 	if ( the_plan->isFinalized() ) return the_plan;
 
 	addStdFeatures (the_plan);
@@ -475,7 +479,7 @@ void StdFeatureComputationPlans::addColorFeatures (FeatureComputationPlan *the_p
 	addGroupCFeatures (the_plan, "(Chebyshev (Hue ()))");
 }
 
-
+/* MM
 void StdFeatureComputationPlans::addStdFeatures (FeatureComputationPlan *the_plan) {
 
 	const char* the_fs[] = {
@@ -523,5 +527,136 @@ void StdFeatureComputationPlans::addStdFeatures (FeatureComputationPlan *the_pla
 		the_plan->add(the_fs[i]);
 	}
 }
+*/
+
+//MM
+void StdFeatureComputationPlans::addStdFeatures (FeatureComputationPlan *the_plan) {
+
+    if(the_plan->NaNFlag){
+        const char* the_fs[] = {
+            "Chebyshev-Fourier Coefficients ()",
+            "Chebyshev-Fourier Coefficients (Fourier_2D ())",
+            "Chebyshev-Fourier Coefficients (Fourier_1D_ColumnWise ())",
+            "Chebyshev-Fourier Coefficients (Fourier_1D_RowWise ())",
+            "Chebyshev Coefficients ()",
+            "Chebyshev Coefficients (Fourier_2D ())",
+            "Chebyshev Coefficients (Fourier_1D_ColumnWise ())",
+            "Chebyshev Coefficients (Fourier_1D_RowWise ())",
+            "Comb Moments ()",
+            "Comb Moments (Chebyshev ())",
+            "Comb Moments (Chebyshev (Fourier_2D ()))",
+            "Comb Moments (Chebyshev (Fourier_1D_ColumnWise ()))",
+            "Comb Moments (Chebyshev (Fourier_1D_RowWise ()))",
+            "Comb Moments (Fourier_2D ())",
+            "Comb Moments (Fourier_1D_ColumnWise ())",
+            "Comb Moments (Fourier_1D_RowWise ())",
+            "Comb Moments (Wavelet ())",
+            "Comb Moments (Wavelet (Fourier_2D ()))",
+            "Comb Moments (Wavelet (Fourier_1D_ColumnWise ()))",
+            "Comb Moments (Wavelet (Fourier_1D_RowWise ()))",
+            "Edge Features ()",
+            "Otsu Object Features ()",
+            "Inverse-Otsu Object Features ()",
+            "Gabor Textures ()",
+            "Haralick Textures ()",
+            "Haralick Textures (Chebyshev ())",
+            "Haralick Textures (Chebyshev (Fourier_2D ()))",
+            "Haralick Textures (Chebyshev (Fourier_1D_ColumnWise ()))",
+            "Haralick Textures (Chebyshev (Fourier_1D_RowWise ()))",
+            "Haralick Textures (Fourier_2D ())",
+            "Haralick Textures (Fourier_1D_ColumnWise ())",
+            "Haralick Textures (Fourier_1D_RowWise ())",
+            "Haralick Textures (Wavelet ())",
+            "Haralick Textures (Wavelet (Fourier_2D ()))",
+            "Haralick Textures (Wavelet (Fourier_1D_ColumnWise ()))",
+            "Haralick Textures (Wavelet (Fourier_1D_RowWise ()))",
+            "Multiscale Histograms ()",
+            "Multiscale Histograms (Chebyshev ())",
+            "Multiscale Histograms (Chebyshev (Fourier_2D ()))",
+            "Multiscale Histograms (Chebyshev (Fourier_1D_ColumnWise ()))",
+            "Multiscale Histograms (Chebyshev (Fourier_1D_RowWise ()))",
+            "Multiscale Histograms (Fourier_2D ())",
+            "Multiscale Histograms (Fourier_1D_ColumnWise ())",
+            "Multiscale Histograms (Fourier_1D_RowWise ())",
+            "Multiscale Histograms (Wavelet ())",
+            "Multiscale Histograms (Wavelet (Fourier_2D ()))",
+            "Multiscale Histograms (Wavelet (Fourier_1D_ColumnWise ()))",
+            "Multiscale Histograms (Wavelet (Fourier_1D_RowWise ()))",
+            "Radon Coefficients ()",
+            "Radon Coefficients (Chebyshev ())",
+            "Radon Coefficients (Chebyshev (Fourier_2D ()))",
+            "Radon Coefficients (Chebyshev (Fourier_1D_ColumnWise ()))",
+            "Radon Coefficients (Chebyshev (Fourier_1D_RowWise ()))",
+            "Radon Coefficients (Fourier_2D ())",
+            "Radon Coefficients (Fourier_1D_ColumnWise ())",
+            "Radon Coefficients (Fourier_1D_RowWise ())",
+            "Tamura Textures ()",
+            "Tamura Textures (Chebyshev ())",
+            "Tamura Textures (Chebyshev (Fourier_2D ()))",
+            "Tamura Textures (Chebyshev (Fourier_1D_ColumnWise ()))",
+            "Tamura Textures (Chebyshev (Fourier_1D_RowWise ()))",
+            "Tamura Textures (Fourier_2D ())",
+            "Tamura Textures (Fourier_1D_ColumnWise ())",
+            "Tamura Textures (Fourier_1D_RowWise ())",
+            "Tamura Textures (Wavelet ())",
+            "Tamura Textures (Wavelet (Fourier_2D ()))",
+            "Tamura Textures (Wavelet (Fourier_1D_ColumnWise ()))",
+            "Tamura Textures (Wavelet (Fourier_1D_RowWise ()))",
+            "Zernike Coefficients ()",
+            "Zernike Coefficients (Fourier_2D ())",
+            "Zernike Coefficients (Fourier_1D_ColumnWise ())",
+            "Zernike Coefficients (Fourier_1D_RowWise ())"
+        };
+        for (size_t i = 0; i < ( sizeof(the_fs) / sizeof(the_fs[0]) ); i++) {
+            the_plan->add(the_fs[i]);
+        }
+    } 
+    else {
+        const char* the_fs[] = {
+            "Chebyshev-Fourier Coefficients ()",
+            "Chebyshev-Fourier Coefficients (Fourier ())",
+            "Chebyshev Coefficients ()",
+            "Chebyshev Coefficients (Fourier ())",
+            "Comb Moments ()",
+            "Comb Moments (Chebyshev ())",
+            "Comb Moments (Chebyshev (Fourier ()))",
+            "Comb Moments (Fourier ())",
+            "Comb Moments (Wavelet ())",
+            "Comb Moments (Wavelet (Fourier ()))",
+            "Edge Features ()",
+            "Otsu Object Features ()",
+            "Inverse-Otsu Object Features ()",
+            "Gabor Textures ()",
+            "Haralick Textures ()",
+            "Haralick Textures (Chebyshev ())",
+            "Haralick Textures (Chebyshev (Fourier ()))",
+            "Haralick Textures (Fourier ())",
+            "Haralick Textures (Wavelet ())",
+            "Haralick Textures (Wavelet (Fourier ()))",
+            "Multiscale Histograms ()",
+            "Multiscale Histograms (Chebyshev ())",
+            "Multiscale Histograms (Chebyshev (Fourier ()))",
+            "Multiscale Histograms (Fourier ())",
+            "Multiscale Histograms (Wavelet ())",
+            "Multiscale Histograms (Wavelet (Fourier ()))",
+            "Radon Coefficients ()",
+            "Radon Coefficients (Chebyshev ())",
+            "Radon Coefficients (Chebyshev (Fourier ()))",
+            "Radon Coefficients (Fourier ())",
+            "Tamura Textures ()",
+            "Tamura Textures (Chebyshev ())",
+            "Tamura Textures (Chebyshev (Fourier ()))",
+            "Tamura Textures (Fourier ())",
+            "Tamura Textures (Wavelet ())",
+            "Tamura Textures (Wavelet (Fourier ()))",
+            "Zernike Coefficients ()",
+            "Zernike Coefficients (Fourier ())"
+        };
+        for (size_t i = 0; i < ( sizeof(the_fs) / sizeof(the_fs[0]) ); i++) {
+            the_plan->add(the_fs[i]);
+        }
+    }
+}
+
 
 

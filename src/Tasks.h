@@ -374,7 +374,8 @@ class StdFeatureComputationPlans {
 			fv_long_color = 4
 		};
 		static const int feature_vector_major_version = CURRENT_FEATURE_VERSION;
-		static const FeatureComputationPlan *getFeatureSet();
+		//MM static const FeatureComputationPlan *getFeatureSet();
+		static const FeatureComputationPlan *getFeatureSet(bool flag);
 		static const FeatureComputationPlan *getFeatureSetColor();
 		//MM static const FeatureComputationPlan *getFeatureSetLong();
 		static const FeatureComputationPlan *getFeatureSetLong(bool flag);
