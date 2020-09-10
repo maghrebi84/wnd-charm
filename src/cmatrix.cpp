@@ -1659,9 +1659,15 @@ void ImageMatrix::histogram(double *bins,unsigned short nbins, bool imhist, cons
 
 /* fft 2 dimensional transform */
 // http://www.fftw.org/doc/
-double ImageMatrix::fft2 (const ImageMatrix &matrix_IN) {
+/* MM double ImageMatrix::fft2 (const ImageMatrix &matrix_IN) {
+double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
 
-    //MM:
+    copyFields (matrix_IN);
+    allocate (matrix_IN.width, matrix_IN.height);
+
+    readOnlyPixels in_plane = matrix_IN.ReadablePixels();
+
+   //MM:
     bool ROIflag=false;
 
     copyFields (matrix_IN);
@@ -1818,6 +1824,329 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN) {
     }
     return(0);
 }
+*/
+
+
+
+//MM:
+double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
+
+    copyFields (matrix_IN);
+    allocate (matrix_IN.width, matrix_IN.height);
+    readOnlyPixels in_plane = matrix_IN.ReadablePixels();
+
+    if (method == "1DRowWise") {  //ROI Pixels (non-Nan Pixels) are converted to a row-wise array before tranformation
+
+        int cnt=0;
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) ++cnt;
+
+        if(cnt==0) cout<<"Error: No Valid Pixels for FFTW"<<endl;
+
+        fftw_plan p;
+        unsigned int half_height = cnt/2+1;
+
+
+        writeablePixels out_plane = WriteablePixels();
+
+        double *in = (double*) fftw_malloc(sizeof(double) * cnt);
+        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * cnt);
+        p = fftw_plan_dft_r2c_1d(cnt,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+
+        int index=0;
+
+        //row-wise
+        for (unsigned int y=0;y<height;y++)
+            for (unsigned int x=0;x<width;x++)
+                if (!std::isnan(in_plane(y,x))) in[index++]=in_plane.coeff(y,x);
+
+        fftw_execute(p);
+
+        double *out2 = new double [cnt];
+        // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
+        for (unsigned int y=0;y<half_height;y++) {
+            out2[y] = sqrt( pow(out[y][0],2)+pow(out[y][1],2));    // sqrt(real(X).^2 + imag(X).^2)
+        }
+
+        // complete the rest of the columns
+        for (unsigned int y=half_height;y<cnt;y++)
+            out2[y] = out2[cnt - y];
+
+        index=0;
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) out_plane (y,x) = stats.add(out2[index++]);
+                else out_plane (y,x) = stats.add (std::numeric_limits<double>::quiet_NaN());
+
+        // clean up
+        fftw_destroy_plan(p);
+        fftw_free(in);
+        fftw_free(out);
+        delete [] out2;
+    }
+    else if (method == "1DColumnWise") {  //ROI Pixels (non-Nan Pixels) are converted to a column-wise array before tranformation
+
+        int cnt=0;
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) ++cnt;
+
+        if(cnt==0) cout<<"Error: No Valid Pixels for FFTW"<<endl;
+
+        fftw_plan p;
+        unsigned int half_height = cnt/2+1;
+
+
+        writeablePixels out_plane = WriteablePixels();
+
+        double *in = (double*) fftw_malloc(sizeof(double) * cnt);
+        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * cnt);
+        p = fftw_plan_dft_r2c_1d(cnt,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+
+        int index=0;
+
+        //column-wise
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) in[index++]=in_plane.coeff(y,x);
+
+        fftw_execute(p);
+
+        double *out2 = new double [cnt];
+        // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
+        for (unsigned int y=0;y<half_height;y++) {
+            out2[y] = sqrt( pow(out[y][0],2)+pow(out[y][1],2));    // sqrt(real(X).^2 + imag(X).^2)
+        }
+
+        // complete the rest of the columns
+        for (unsigned int y=half_height;y<cnt;y++)
+            out2[y] = out2[cnt - y];
+
+        index=0;
+        for (unsigned int x=0;x<width;x++)
+            for (unsigned int y=0;y<height;y++)
+                if (!std::isnan(in_plane(y,x))) out_plane (y,x) = stats.add(out2[index++]);
+                else out_plane (y,x) = stats.add (std::numeric_limits<double>::quiet_NaN());
+
+        // clean up
+        fftw_destroy_plan(p);
+        fftw_free(in);
+        fftw_free(out);
+        delete [] out2;
+    }
+    else if ( method == "2DMeanForNan") {  //Nan Pixels are substituted by mean value of the ROI pixels
+
+        fftw_plan p;
+        unsigned int half_height = matrix_IN.height/2+1;
+
+#if DEBUG
+        std::cout << "BEFORE: Source writable? " << (matrix_IN._is_pix_writeable ? "yes" : "no" ) << '\n';
+        std::cout << "BEFORE: Target writable? " << (this->_is_pix_writeable ? "yes" : "no") << '\n';
+#endif
+
+        copyFields (matrix_IN);
+        allocate (matrix_IN.width, matrix_IN.height);
+
+#if DEBUG
+        std::cout << "matrix_IN.width " << matrix_IN.width << " matrix_IN.height " << matrix_IN.height << '\n';
+        std::cout << "AFTER: Source writable? " << (matrix_IN._is_pix_writeable ? "yes" : "no") << '\n';
+        std::cout << "AFTER: Target writable? " << (this->_is_pix_writeable ? "yes" : "no") << '\n';
+#endif
+
+        writeablePixels out_plane = WriteablePixels();
+        //Mahdi   readOnlyPixels in_plane = matrix_IN.ReadablePixels();
+
+        double *in = (double*) fftw_malloc(sizeof(double) * width*height);
+        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
+        p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+
+/*            unsigned int x,y;
+              for (x=0;x<width;x++)
+                  for (y=0;y<height;y++)
+                      in[height*x+y]=in_plane.coeff(y,x);
+*/
+
+        double MeanValue= matrix_IN.stats.mean();
+        unsigned int x,y;
+        for (x=0;x<width;x++)
+            for (y=0;y<height;y++){
+                if(std::isnan(in_plane.coeff(y,x))) in[height*x+y]=MeanValue;
+                else in[height*x+y]=in_plane.coeff(y,x);
+            }
+
+        fftw_execute(p);
+
+        // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
+        unsigned long idx;
+        for (x=0;x<width;x++) {
+            for (y=0;y<half_height;y++) {
+                idx = half_height*x+y;
+                out_plane (y,x) = stats.add (sqrt( pow( out[idx][0],2)+pow(out[idx][1],2)));    // sqrt(real(X).^2 + imag(X).^2)
+                //      cout<< x<<"  1   "<<y<<"   "<<  sqrt( pow( out[idx][0],2)+pow(out[idx][1],2)) <<endl;
+            }
+        }
+
+        // complete the first column
+        for (y=half_height;y<height;y++){
+            out_plane (y,0) = stats.add (out_plane (height - y, 0));
+            //            cout<< "x==0" << " 2 " <<y<< "   "<<  out_plane (height - y, 0) <<endl;
+        }
+
+        // complete the rest of the columns
+        for (y=half_height;y<height;y++)
+            for (x=1;x<width;x++)  { // 1 because the first column is already completed
+                out_plane (y,x) = stats.add (out_plane (height - y, width - x));
+                //          cout<< x<<"  3   "<<y<<"   "<<  out_plane (height - y, width - x) <<endl;
+            }
+
+        // clean up
+        fftw_destroy_plan(p);
+        fftw_free(in);
+        fftw_free(out);
+
+        //
+        // 	// Doing this using the Eigen library
+        // 	// FIXME: This doesn't quite work - causes indirect segfault when reading the output into pix_plane
+        // 	using namespace Eigen; // just for this function
+        // 	double *in = (double*) fftw_malloc(sizeof(double) * width*height);
+        // 	fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
+        // 	p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+        // 	// Eigen takes care of converting the input from row major (pix_plane) to column major (Eigen and FFTW's default)
+        // 	Map<Array< double, Dynamic, Dynamic, ColMajor >, Aligned > in_m (&in[0],height,width);
+        // 	in_m = pix_plane;
+        //
+        // 	fftw_execute(p);
+        //
+        // 	// The resultant image uses the modulus (sqrt(norm)) of the complex numbers for pixel values
+        // 	// Map an Eigen matrix onto what was returned by FFTW.
+        // 	// Tricky bits specific to FFTW output:
+        // 	//  We are making two matrixes out the single output - one for the real component and one for complex.
+        // 	//  We are using strides to skip every other element of the output, starting at 0 for real, and 1 for complex.
+        // 	//  We are not using the bottom half, making it symmetrical around the horizontal midline instead, but we still stride over twice the height b/c its complex
+        // 	Map<const Array< double, Dynamic, Dynamic, ColMajor >, Aligned, Stride<Dynamic,2> > out_r (&out[0][0],half_height,width, Stride<Dynamic,2>(height*sizeof(fftw_complex),2));
+        // 	Map<const Array< double, Dynamic, Dynamic, ColMajor >, Aligned, Stride<Dynamic,2> > out_i (&out[0][1],half_height,width, Stride<Dynamic,2>(height*sizeof(fftw_complex),2));
+        // 	pix_plane.topRows(0,0,half_height,width) = (out_r.pow(2)+out_i.pow(2)).sqrt();
+        //
+        // 	// complete the first column
+        // 	unsigned int  odd_pad = (height % 2 == 0 ? 0 : 1);
+        // 	pix_plane.block (half_height,0,half_height-odd_pad,1) = pix_plane.block (odd_pad,0,half_height-odd_pad,1).reverse();
+        //
+        // 	// complete the rest of the columns
+        // 	pix_plane.block (half_height,1,half_height-odd_pad,width-1) = pix_plane.block (odd_pad,1,half_height-odd_pad,width-1).reverse();
+        // 	has_median = false;
+        // 	stats.reset();
+        //
+        // 	// clean up
+        // 	fftw_destroy_plan(p);
+        // 	fftw_free(in);
+        // 	fftw_free(out);
+
+    }
+    else if (method== "default") {  //No NaN pixel value is present in the image
+        fftw_plan p;
+        unsigned int half_height = matrix_IN.height/2+1;
+
+#if DEBUG
+        std::cout << "BEFORE: Source writable? " << (matrix_IN._is_pix_writeable ? "yes" : "no" ) << '\n';
+        std::cout << "BEFORE: Target writable? " << (this->_is_pix_writeable ? "yes" : "no") << '\n';
+#endif
+
+        copyFields (matrix_IN);
+        allocate (matrix_IN.width, matrix_IN.height);
+
+#if DEBUG
+        std::cout << "matrix_IN.width " << matrix_IN.width << " matrix_IN.height " << matrix_IN.height << '\n';
+        std::cout << "AFTER: Source writable? " << (matrix_IN._is_pix_writeable ? "yes" : "no") << '\n';
+        std::cout << "AFTER: Target writable? " << (this->_is_pix_writeable ? "yes" : "no") << '\n';
+#endif
+
+        writeablePixels out_plane = WriteablePixels();
+        //MM   readOnlyPixels in_plane = matrix_IN.ReadablePixels();
+
+        double *in = (double*) fftw_malloc(sizeof(double) * width*height);
+        fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
+        p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+
+        unsigned int x,y;
+        for (x=0;x<width;x++)
+            for (y=0;y<height;y++)
+                in[height*x+y]=in_plane.coeff(y,x);
+
+        fftw_execute(p);
+
+        // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
+        unsigned long idx;
+        for (x=0;x<width;x++) {
+            for (y=0;y<half_height;y++) {
+                idx = half_height*x+y;
+                out_plane (y,x) = stats.add (sqrt( pow( out[idx][0],2)+pow(out[idx][1],2)));    // sqrt(real(X).^2 + imag(X).^2)
+                //      cout<< x<<"  1   "<<y<<"   "<<  sqrt( pow( out[idx][0],2)+pow(out[idx][1],2)) <<endl;
+            }
+        }
+
+        // complete the first column
+        for (y=half_height;y<height;y++){
+            out_plane (y,0) = stats.add (out_plane (height - y, 0));
+            //            cout<< "x==0" << " 2 " <<y<< "   "<<  out_plane (height - y, 0) <<endl;
+        }
+
+        // complete the rest of the columns
+        for (y=half_height;y<height;y++)
+            for (x=1;x<width;x++)  { // 1 because the first column is already completed
+                out_plane (y,x) = stats.add (out_plane (height - y, width - x));
+                //          cout<< x<<"  3   "<<y<<"   "<<  out_plane (height - y, width - x) <<endl;
+            }
+
+        // clean up
+        fftw_destroy_plan(p);
+        fftw_free(in);
+        fftw_free(out);
+
+        //
+        // 	// Doing this using the Eigen library
+        // 	// FIXME: This doesn't quite work - causes indirect segfault when reading the output into pix_plane
+        // 	using namespace Eigen; // just for this function
+        // 	double *in = (double*) fftw_malloc(sizeof(double) * width*height);
+        // 	fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
+        // 	p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+        // 	// Eigen takes care of converting the input from row major (pix_plane) to column major (Eigen and FFTW's default)
+        // 	Map<Array< double, Dynamic, Dynamic, ColMajor >, Aligned > in_m (&in[0],height,width);
+        // 	in_m = pix_plane;
+        //
+        // 	fftw_execute(p);
+        //
+        // 	// The resultant image uses the modulus (sqrt(norm)) of the complex numbers for pixel values
+        // 	// Map an Eigen matrix onto what was returned by FFTW.
+        // 	// Tricky bits specific to FFTW output:
+        // 	//  We are making two matrixes out the single output - one for the real component and one for complex.
+        // 	//  We are using strides to skip every other element of the output, starting at 0 for real, and 1 for complex.
+        // 	//  We are not using the bottom half, making it symmetrical around the horizontal midline instead, but we still stride over twice the height b/c its complex
+        // 	Map<const Array< double, Dynamic, Dynamic, ColMajor >, Aligned, Stride<Dynamic,2> > out_r (&out[0][0],half_height,width, Stride<Dynamic,2>(height*sizeof(fftw_complex),2));
+        // 	Map<const Array< double, Dynamic, Dynamic, ColMajor >, Aligned, Stride<Dynamic,2> > out_i (&out[0][1],half_height,width, Stride<Dynamic,2>(height*sizeof(fftw_complex),2));
+        // 	pix_plane.topRows(0,0,half_height,width) = (out_r.pow(2)+out_i.pow(2)).sqrt();
+        //
+        // 	// complete the first column
+        // 	unsigned int  odd_pad = (height % 2 == 0 ? 0 : 1);
+        // 	pix_plane.block (half_height,0,half_height-odd_pad,1) = pix_plane.block (odd_pad,0,half_height-odd_pad,1).reverse();
+        //
+        // 	// complete the rest of the columns
+        // 	pix_plane.block (half_height,1,half_height-odd_pad,width-1) = pix_plane.block (odd_pad,1,half_height-odd_pad,width-1).reverse();
+        // 	has_median = false;
+        // 	stats.reset();
+        //
+        // 	// clean up
+        // 	fftw_destroy_plan(p);
+        // 	fftw_free(in);
+        // 	fftw_free(out);
+    }
+    else cout<<"Error: Method was not specified in fft2"<<endl;
+
+    return(0);
+}
+
+
+
 
 /* chebyshev transform */
 void ImageMatrix::ChebyshevTransform(const ImageMatrix &matrix_IN, unsigned int N) {

@@ -308,7 +308,8 @@ public:
 	void MultiScaleHistogram(double *out) const;
 	//   double AverageEdge();
 	void EdgeTransform(const ImageMatrix &matrix_IN);                           // gradient binarized using otsu threshold
-	double fft2 (const ImageMatrix &matrix_IN);
+	//MM double fft2 (const ImageMatrix &matrix_IN);
+	double fft2 (const ImageMatrix &matrix_IN, std::string method="default");
 	void ChebyshevTransform (const ImageMatrix &matrix_IN, unsigned int N);
 	void ChebyshevFourierTransform2D (double *coeff) const;
 	void Symlet5Transform (const ImageMatrix &matrix_IN);

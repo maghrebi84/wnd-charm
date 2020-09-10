@@ -1507,7 +1507,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
     // get a feature calculation plan based on our featureset
     const FeatureComputationPlan *feature_plan;
-    if (featureset->feature_opts.large_set) {
+/*MM    if (featureset->feature_opts.large_set) {
         if (featureset->feature_opts.compute_colors) {
             feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
         } else {
@@ -1520,7 +1520,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             feature_plan = StdFeatureComputationPlans::getFeatureSet();
         }
     }
-
+*/
 
     // pre-determine sig files for this image.
     // Primarily, this lets us pre-lock all the signature files for one image (see below).
@@ -1836,6 +1836,31 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                     unlink (old_sig_filename);
                 }
             }
+            
+            //MM
+            if (sig_index == 0 && ii==0){
+                bool NaNAvailableflag=false;
+                if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
+                else if( featureset->uniqueClassesSize == 1 ){
+                    if (image_matrix.stats.n() != image_matrix.width*image_matrix.height) NaNAvailableflag=true;
+                }
+                
+                // get a feature calculation plan based on our featureset
+                if (featureset->feature_opts.large_set) {
+                    if (featureset->feature_opts.compute_colors) {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
+                    } else {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
+                    }
+                } else {
+                    if (featureset->feature_opts.compute_colors) {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
+                    } else {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSet();
+                    }
+                }              
+            }
+
 
             // all hope is lost - compute sigs.
             if (!res) {

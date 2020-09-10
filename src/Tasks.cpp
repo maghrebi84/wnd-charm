@@ -331,8 +331,10 @@ const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetColor () 
 	return (the_plan);
 }
 
-const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetLong () {
-	static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Long Feature Set");
+//MM const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetLong () {
+const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetLong (bool flag) {
+//MM	static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Long Feature Set");
+	    static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Long Feature Set", flag);
 	if ( the_plan->isFinalized() ) return the_plan;
 
 	addLongFeatures (the_plan, false);
@@ -360,9 +362,24 @@ void StdFeatureComputationPlans::addLongFeatures (FeatureComputationPlan *the_pl
 	if (color)
 		addColorFeatures (the_plan);
 
-	addGroupBFeatures (the_plan, "(Fourier ())");
-	addGroupCFeatures (the_plan, "(Fourier ())");
+//	addGroupBFeatures (the_plan, "(Fourier ())");
+//	addGroupCFeatures (the_plan, "(Fourier ())");
+//MM:
+    if(the_plan->NaNFlag){
+        addGroupBFeatures (the_plan, "(Fourier_1D_ColumnWise ())");
+        addGroupCFeatures (the_plan, "(Fourier_1D_ColumnWise ())");
 
+        addGroupBFeatures (the_plan, "(Fourier_1D_RowWise ())");
+        addGroupCFeatures (the_plan, "(Fourier_1D_RowWise ())");
+
+        addGroupBFeatures (the_plan, "(Fourier_2D ())");
+        addGroupCFeatures (the_plan, "(Fourier_2D ())");
+    }
+    else {
+    addGroupBFeatures (the_plan, "(Fourier ())");
+    addGroupCFeatures (the_plan, "(Fourier ())");
+    }
+    
 	addGroupBFeatures (the_plan, "(Wavelet ())");
 	addGroupCFeatures (the_plan, "(Wavelet ())");
 
