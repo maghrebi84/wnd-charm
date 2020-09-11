@@ -319,6 +319,7 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
         writeablePixels pix_plane = WriteablePixels();
         writeableColors clr_plane = WriteableColors();
 
+        //MM FIXME: For Now, ClassID is only implemented for tiled-tiff images in both OME and libtiff
         if (ClassID){ //MM
             for (y = 0; y < height; ++y) {
                 for (x = 0; x < width; ++x) {
@@ -348,7 +349,7 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                     int colMax = std::min(x + tileWidth, width);
                     //int width = colMax - x;
                     for (unsigned int rowtile = 0; rowtile < rowMax - y; ++rowtile) {
-                        int col,count=0;
+                        int col;
                         unsigned int coltile;
                         coltile=0;col=0;
                         while (coltile<colMax - x) {
@@ -571,6 +572,12 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                             unsigned int coltile;
                             coltile=0;col=0;
                             while (coltile<colMax - x) {
+                                
+                                if (ClassID) //MM
+                                    if (abs(LabeledImageMatrix[y+rowtile][x+coltile]-ClassID)>1e-6) {
+                                        coltile++; col+=spp; continue;
+                                }
+                                
                                 unsigned char byte_data;
                                 unsigned short short_data;
                                 double val=0;
