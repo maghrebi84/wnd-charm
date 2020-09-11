@@ -1356,8 +1356,10 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
         return (count);
     }
     if (signature_count != featureset->n_features && !featureset->feature_opts.check_sigs_only) {
+        if (!strcmp(featureset->ROIPath,"")){ //MM
         catError ("WARNING: Number of features specified (%d) do not match the number collected from '%s' (%d)\n", featureset->n_features, path, signature_count);
         catError ("         Either command-line options don't match those stored in the dataset (.fit) file, or the file has been corrupted\n");
+        }
     }
 
     // Set the path and name
