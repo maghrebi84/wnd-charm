@@ -1630,6 +1630,11 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         vector<double> uniqueClasses;
         uniqueClasses.push_back(0);
 
+        //Bounding Box Implementation
+     //MM   uint32_t imageWidth, imageLength;  
+     //MM   unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd; 
+
+
         if (strcmp(featureset->ROIPath,"")){
             //    if (featureset->ROIPath !=""){
             uniqueClasses.pop_back();
@@ -1671,7 +1676,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             int tileType=ifd->getTileInfo().tileType();
             int tileCount=ifd->getTileInfo().tileCount();
 
-            uint32_t tileWidth, tileLength, imageWidth, imageLength, bitsPerSample;
+            uint32_t tileWidth, tileLength, bitsPerSample;
+            uint32_t imageWidth, imageLength;  //Bounding Box Implementation: Comment here
             uint16_t samplesPerPixel;
 
             // Display global and series original metadata
@@ -1765,11 +1771,42 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             printf( "Image size=(%d,%d)\n", image_matrix.width, image_matrix.height );
 #endif
 
+            //Bounding Box Implementation
+/*            ROIHeightBeg= imageLength;
+            ROIHeightEnd=0;
+            ROIWidthBeg= imageWidth;
+            ROIWidthEnd=0;
+            
+            for (unsigned int y = 0; y < imageLength; ++y)
+                for (unsigned int x = 0; x < imageWidth; ++x){
+                    if (LabeledImageMatrix[y][x] !=uniqueClasses[ii]) continue;
+                    if (y < ROIHeightBeg) ROIHeightBeg=y;
+                    if (y > ROIHeightEnd) ROIHeightEnd=y;
+                    if (x < ROIWidthBeg) ROIWidthBeg=x;
+                    if (x > ROIWidthEnd) ROIWidthEnd=x;
+                }
+            
+            ImageMatrix ROI_Bounding_Box;
+            
+            ROI_Bounding_Box.allocate (ROI_Bounding_Box.ROIWidth+1, ROI_Bounding_Box.ROIHeight+1);
+            writeablePixels pix_plane = ROI_Bounding_Box.WriteablePixels();
+            readOnlyPixels in_plane = image_matrix.ReadablePixels();
+            
+            for (unsigned int y = 0; y < ROIHeightEnd - ROIHeightBeg+1; ++y)
+                for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
+                    pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
+                    
+                }
+*/
+
+
             if (rot_index > 0) {
                 rot_matrix.Rotate (image_matrix, 90.0 * rot_index);
                 rot_matrix_indx = rot_index;
                 rot_matrix_p = &rot_matrix;
             } else {
+               //MM Bounding Box:
+               //MM rot_matrix_p = &ROI_Bounding_Box;
                 rot_matrix_p = &image_matrix;
                 rot_matrix_indx = 0;
             }
