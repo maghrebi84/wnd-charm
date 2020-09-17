@@ -347,6 +347,66 @@ const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetLong (boo
 	return (the_plan);
 }
 
+
+//MM
+const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetbyName (char *ImageTransformationName, char *FeatureAlgorithmName) {
+    static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Long Feature Set");
+    if ( the_plan->isFinalized() ) return the_plan;
+
+    std::string FeatureName,TransformationName;
+
+    if      (!strcmp(FeatureAlgorithmName,"Edge"))      FeatureName= "Edge Features ";
+    else if (!strcmp(FeatureAlgorithmName,"Otsu")) FeatureName= "Otsu Object Features ";
+    else if (!strcmp(FeatureAlgorithmName,"Inverse-Otsu")) FeatureName= "Inverse-Otsu Object Features ";
+    else if (!strcmp(FeatureAlgorithmName,"Gabor")) FeatureName= "Gabor Textures ";
+    else if (!strcmp(FeatureAlgorithmName,"Chebyshev-Fourier")) FeatureName= "Chebyshev-Fourier Coefficients ";
+    else if (!strcmp(FeatureAlgorithmName,"Chebyshev")) FeatureName= "Chebyshev Coefficients ";
+    else if (!strcmp(FeatureAlgorithmName,"Zernike")) FeatureName= "Zernike Coefficients ";
+    else if (!strcmp(FeatureAlgorithmName,"Moments")) FeatureName= "Comb Moments ";
+    else if (!strcmp(FeatureAlgorithmName,"Haralick")) FeatureName= "Haralick Textures ";
+    else if (!strcmp(FeatureAlgorithmName,"Histograms")) FeatureName= "Multiscale Histograms ";
+    else if (!strcmp(FeatureAlgorithmName,"Tamura")) FeatureName= "Tamura Textures ";
+    else if (!strcmp(FeatureAlgorithmName,"Radon")) FeatureName= "Radon Coefficients ";
+    else if (!strcmp(FeatureAlgorithmName,"Fractal")) FeatureName= "Fractal Features ";
+    else if (!strcmp(FeatureAlgorithmName,"PixelStatistics")) FeatureName= "Pixel Intensity Statistics ";
+    else if (!strcmp(FeatureAlgorithmName,"Gini")) FeatureName= "Gini Coefficient ";
+    else (std::cout<< "Error: Unrecognized FeatureAlgorithmName");
+
+    if      (!strcmp(ImageTransformationName,"Original"))      TransformationName= "()";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_ColumnWise")) TransformationName= "(Fourier_1D_ColumnWise ())";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_RowWise")) TransformationName= "(Fourier_1D_RowWise ())";
+    else if (!strcmp(ImageTransformationName,"Fourier_2D_Mean")) TransformationName= "(Fourier_2D_Mean ())";
+    else if (!strcmp(ImageTransformationName,"Wavelet")) TransformationName= "(Wavelet ())";
+    else if (!strcmp(ImageTransformationName,"Chebyshev")) TransformationName= "(Chebyshev ())";
+    else if (!strcmp(ImageTransformationName,"Chebyshev-Fourier_1D_ColumnWise")) TransformationName= "(Chebyshev (Fourier_1D_ColumnWise ()))";
+    else if (!strcmp(ImageTransformationName,"Chebyshev-Fourier_1D_RowWise")) TransformationName= "(Chebyshev (Fourier_1D_RowWise ()))";
+    else if (!strcmp(ImageTransformationName,"Chebyshev-Fourier_2D_Mean")) TransformationName= "(Chebyshev (Fourier_2D_Mean ()))";
+    else if (!strcmp(ImageTransformationName,"Wavelet-Fourier_1D_ColumnWise")) TransformationName= "(Wavelet (Fourier_1D_ColumnWise ()))";
+    else if (!strcmp(ImageTransformationName,"Wavelet-Fourier_1D_RowWise")) TransformationName= "(Wavelet (Fourier_1D_RowWise ()))";
+    else if (!strcmp(ImageTransformationName,"Wavelet-Fourier_2D_Mean")) TransformationName= "(Wavelet (Fourier_2D_Mean ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_ColumnWise-Wavelet")) TransformationName= "(Fourier_1D_ColumnWise (Wavelet ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_RowWise-Wavelet")) TransformationName= "(Fourier_1D_RowWise (Wavelet ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_2D_Mean-Wavelet")) TransformationName= "(Fourier_2D_Mean (Wavelet ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_ColumnWise-Chebyshev")) TransformationName= "(Fourier_1D_ColumnWise (Chebyshev ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_RowWise-Chebyshev")) TransformationName= "(Fourier_1D_RowWise (Chebyshev ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_2D_Mean-Chebyshev")) TransformationName= "(Fourier_2D_Mean (Chebyshev ()))";
+    else if (!strcmp(ImageTransformationName,"Chebyshev-Wavelet")) TransformationName= "(Chebyshev (Wavelet ()))";
+    else if (!strcmp(ImageTransformationName,"Edge")) TransformationName= "(Edge ())";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_ColumnWise-Edge")) TransformationName= "(Fourier_1D_ColumnWise (Edge ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_RowWise-Edge")) TransformationName= "(Fourier_1D_RowWise (Edge ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_2D_Mean-Edge")) TransformationName= "(Fourier_2D_Mean (Edge ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_ColumnWise-Edge")) TransformationName= "(Fourier_1D_ColumnWise (Edge ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_1D_RowWise-Edge")) TransformationName= "(Fourier_1D_RowWise (Edge ()))";
+    else if (!strcmp(ImageTransformationName,"Fourier_2D_Mean-Edge")) TransformationName= "(Fourier_2D_Mean (Edge ()))";
+    else if (!strcmp(ImageTransformationName,"Wavelet-Edge")) TransformationName= "(Wavelet (Edge ()))";
+    else (std::cout<< "Error: Unrecognized ImageTransformationName");
+
+    the_plan->add(FeatureName + TransformationName);
+    the_plan->feature_vec_type = fv_long;
+    the_plan->finalize();
+    return (the_plan);
+}
+
 const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetLongColor () {
 	static FeatureComputationPlan *the_plan = new FeatureComputationPlan ("Long Color Feature Set");
 	if ( the_plan->isFinalized() ) return the_plan;

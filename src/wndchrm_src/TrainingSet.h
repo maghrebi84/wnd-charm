@@ -106,6 +106,8 @@ typedef struct {
 	} samples[MAX_SAMPLES_PER_IMAGE];
 	char* ROIPath; //MM
 	int uniqueClassesSize; //MM	
+	char * FeatureAlgorithmName; //MM
+    char * ImageTransformationName; //MM
 } featureset_t;
 
 

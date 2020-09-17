@@ -971,8 +971,21 @@ int main(int argc, char *argv[])
          showError(1,"Incorrect input path for ROI\n");
           return 0;
       }
-    }		
-		
+    }	
+    	
+        //MM:  
+        for (int i=arg_index; i<argc; ++i){
+            if (strcmp(argv[i],"__ImageTransformationName")==0){
+                featureset.ImageTransformationName = argv[++i];
+                break;}
+        }
+        //MM:  
+        for (int i=arg_index; i<argc; ++i){
+            if (strcmp(argv[i],"__FeatureAlgorithmName")==0){
+                featureset.FeatureAlgorithmName = argv[++i];
+                break;}
+        }        
+        		
 		int res;
 		dataset_path=argv[arg_index++];
 		TrainingSet *dataset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);

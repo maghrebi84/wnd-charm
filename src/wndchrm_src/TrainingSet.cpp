@@ -1889,14 +1889,18 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                     if (featureset->feature_opts.compute_colors) {
                         feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
                     } else {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
+                      //MM feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
+                      if (strcmp(featureset->ImageTransformationName,"")) feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+                      else feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
                     }
                 } else {
                     if (featureset->feature_opts.compute_colors) {
                         feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
                     } else {
                         //MM feature_plan = StdFeatureComputationPlans::getFeatureSet();
-                        feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
+                        //MM feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
+                        if (strcmp(featureset->ImageTransformationName,"")) feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+                        else feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);               
                     }
                 }              
             }

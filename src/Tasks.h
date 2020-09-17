@@ -386,6 +386,7 @@ class StdFeatureComputationPlans {
 		static void addGroupCFeatures (FeatureComputationPlan *the_plan, std::string transform);
 		static void addColorFeatures (FeatureComputationPlan *the_plan);
 		static void addStdFeatures (FeatureComputationPlan *the_plan);
+		static const FeatureComputationPlan *getFeatureSetbyName(char * ImageTransformationName, char * FeatureAlgorithmName); //MM
 };
 
 #endif //__TASKS_H_
