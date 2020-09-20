@@ -245,21 +245,43 @@ int signatures::SaveToFile (int save_feature_names, int i) {
 		return(0);
 	}
 	FILE *wf_fp = wf->fp();
-
+	
+/* MM
     if (i) fprintf(wf_fp,"\n--------------- ROI for the label number %d -------------\n",i); //MM
    
 	if ( NamesTrainingSet && ((TrainingSet *)(NamesTrainingSet))->is_continuous ) {
 		fprintf(wf_fp,"%f\t%d.%d\n",sample_value,version,feature_vec_type);  /* save the continouos value */
-	} else {
+/*	} else {
 		fprintf(wf_fp,"%d\t%d.%d\n",sample_class,version,feature_vec_type);  /* save the class index */
 	}
-	fprintf(wf_fp,"%s\n",full_path);
+/*	fprintf(wf_fp,"%s\n",full_path);
 	for (sig_index=0; sig_index < count; sig_index++) {
 		if( save_feature_names && NamesTrainingSet )
 			fprintf( wf_fp, "%.8g\t%s\n", data[sig_index], ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
 		else
 			fprintf( wf_fp, "%.8g\n", data[sig_index] );
 	}
+*/
+
+//MM: Writing Outputs in Columns
+    static int ROIcounts=0;
+    ++ROIcounts;
+
+    if (ROIcounts==1){
+        fprintf( wf_fp, "%s,", "ROI Region" );
+        for (sig_index=0; sig_index < count; sig_index++) {
+            if (sig_index == count -1) fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
+            else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
+        }
+    }
+
+    fprintf( wf_fp, "%d,", i);
+    for (sig_index=0; sig_index < count; sig_index++) {
+        if (sig_index == count -1) fprintf( wf_fp, "%.8g\n", data[sig_index] );
+        else fprintf( wf_fp, "%.8g,", data[sig_index] );
+    }
+
+	
    return(1);
 }
 
