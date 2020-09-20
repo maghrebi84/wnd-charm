@@ -268,7 +268,7 @@ int signatures::SaveToFile (int save_feature_names, int i) {
     ++ROIcounts;
 
     if (ROIcounts==1){
-        fprintf( wf_fp, "%s,", "ROI Region" );
+        fprintf( wf_fp, "%s,", "ROIRegion" );
         for (sig_index=0; sig_index < count; sig_index++) {
             if (sig_index == count -1) fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
             else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
