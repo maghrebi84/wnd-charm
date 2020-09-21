@@ -300,7 +300,8 @@ FeatureGroup::FeatureGroup (const std::string &s, const FeatureAlgorithm *f, con
 	if (algorithm)
 		for (int i = 0; i < algorithm->n_features; i++) {
 			char buf[16];
-			sprintf (buf, " [%d]",i);
+			// sprintf (buf, " [%d]",i);
+			sprintf (buf, "[%d]",i); //MM 
 			labels.insert (labels.end(), name + buf);
 		}
 }
