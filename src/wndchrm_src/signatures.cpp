@@ -253,8 +253,8 @@ int signatures::SaveToFile (int save_feature_names, int i) {
 		fprintf(wf_fp,"%f\t%d.%d\n",sample_value,version,feature_vec_type);  /* save the continouos value */
 /*	} else {
 		fprintf(wf_fp,"%d\t%d.%d\n",sample_class,version,feature_vec_type);  /* save the class index */
-	}
-/*	fprintf(wf_fp,"%s\n",full_path);
+/*	}
+	fprintf(wf_fp,"%s\n",full_path);
 	for (sig_index=0; sig_index < count; sig_index++) {
 		if( save_feature_names && NamesTrainingSet )
 			fprintf( wf_fp, "%.8g\t%s\n", data[sig_index], ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );

@@ -1051,6 +1051,7 @@ int TrainingSet::AddAllSignatures( char * ROIPath) {
         }
     }
     if (read_error ) {
+        if (strcmp(ROIPath,"")) return (count); //MM
         errno = 0;
         std::string stream_str = bad_versions.str();
         if (! stream_str.empty() ) {
