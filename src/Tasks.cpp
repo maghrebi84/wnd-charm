@@ -571,10 +571,10 @@ void StdFeatureComputationPlans::addLongFeatures (FeatureComputationPlan *the_pl
 void StdFeatureComputationPlans::addGroupAFeatures (FeatureComputationPlan *the_plan, std::string transform) {
 	const char* the_fs[] = {
 	// Group A:
-		"EdgeFeatures ",
-		"OtsuObjectFeatures ",
-		"InverseOtsuObjectFeatures ",
-		"GaborTextures "
+		"EdgeFeatures",
+		"OtsuObjectFeatures",
+		"InverseOtsuObjectFeatures",
+		"GaborTextures"
 	};
 	for (size_t i = 0; i < ( sizeof(the_fs) / sizeof(the_fs[0]) ); i++) {
 		the_plan->add(std::string(the_fs[i]) + transform);
@@ -584,9 +584,9 @@ void StdFeatureComputationPlans::addGroupAFeatures (FeatureComputationPlan *the_
 void StdFeatureComputationPlans::addGroupBFeatures (FeatureComputationPlan *the_plan, std::string transform) {
 	const char* the_fs[] = {
 	// Group B:
-		"ChebyshevFourierCoefficients ",
-		"ChebyshevCoefficients ",
-		"ZernikeCoefficients "
+		"ChebyshevFourierCoefficients",
+		"ChebyshevCoefficients",
+		"ZernikeCoefficients"
 	};
 	for (size_t i = 0; i < ( sizeof(the_fs) / sizeof(the_fs[0]) ); i++) {
 		the_plan->add(std::string(the_fs[i]) + transform);
@@ -596,14 +596,14 @@ void StdFeatureComputationPlans::addGroupBFeatures (FeatureComputationPlan *the_
 void StdFeatureComputationPlans::addGroupCFeatures (FeatureComputationPlan *the_plan, std::string transform) {
 	const char* the_fs[] = {
 	// Group C:
-		"CombMoments ",
-		"HaralickTextures ",
-		"MultiscaleHistograms ",
-		"TamuraTextures ",
-		"RadonCoefficients ",
-		"FractalFeatures ",   
-		"PixelIntensity Statistics ",   
-		"GiniCoefficient "
+		"CombMoments",
+		"HaralickTextures",
+		"MultiscaleHistograms",
+		"TamuraTextures",
+		"RadonCoefficients",
+		"FractalFeatures",   
+		"PixelIntensityStatistics",   
+		"GiniCoefficient"
 	};
 	for (size_t i = 0; i < ( sizeof(the_fs) / sizeof(the_fs[0]) ); i++) {
 		the_plan->add(std::string(the_fs[i]) + transform);

@@ -973,13 +973,15 @@ int main(int argc, char *argv[])
       }
     }	
     	
-        //MM:  
+        //MM: 
+        featureset.ImageTransformationName="";
         for (int i=arg_index; i<argc; ++i){
             if (strcmp(argv[i],"__ImageTransformationName")==0){
                 featureset.ImageTransformationName = argv[++i];
                 break;}
         }
         //MM:  
+        featureset.FeatureAlgorithmName="";
         for (int i=arg_index; i<argc; ++i){
             if (strcmp(argv[i],"__FeatureAlgorithmName")==0){
                 featureset.FeatureAlgorithmName = argv[++i];
