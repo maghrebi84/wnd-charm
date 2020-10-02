@@ -1854,21 +1854,23 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
         fftw_plan p;
         unsigned int half_height = cnt/2+1;
 
-
         writeablePixels out_plane = WriteablePixels();
 
         double *in = (double*) fftw_malloc(sizeof(double) * cnt);
         fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * cnt);
+
+        #pragma omp critical
+        {
         p = fftw_plan_dft_r2c_1d(cnt,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
 
         int index=0;
-
         //row-wise
         for (unsigned int y=0;y<height;y++)
             for (unsigned int x=0;x<width;x++)
                 if (!std::isnan(in_plane(y,x))) in[index++]=in_plane.coeff(y,x);
 
         fftw_execute(p);
+        }
 
         double *out2 = new double [cnt];
         // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
@@ -1880,7 +1882,7 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
         for (unsigned int y=half_height;y<cnt;y++)
             out2[y] = out2[cnt - y];
 
-        index=0;
+        int index=0;
         for (unsigned int x=0;x<width;x++)
             for (unsigned int y=0;y<height;y++)
                 if (!std::isnan(in_plane(y,x))) out_plane (y,x) = stats.add(out2[index++]);
@@ -1904,21 +1906,23 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
         fftw_plan p;
         unsigned int half_height = cnt/2+1;
 
-
         writeablePixels out_plane = WriteablePixels();
 
         double *in = (double*) fftw_malloc(sizeof(double) * cnt);
         fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * cnt);
+
+        #pragma omp critical
+        {
         p = fftw_plan_dft_r2c_1d(cnt,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
 
         int index=0;
-
         //column-wise
         for (unsigned int x=0;x<width;x++)
             for (unsigned int y=0;y<height;y++)
                 if (!std::isnan(in_plane(y,x))) in[index++]=in_plane.coeff(y,x);
 
         fftw_execute(p);
+        }
 
         double *out2 = new double [cnt];
         // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
@@ -1930,7 +1934,7 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
         for (unsigned int y=half_height;y<cnt;y++)
             out2[y] = out2[cnt - y];
 
-        index=0;
+        int index=0;
         for (unsigned int x=0;x<width;x++)
             for (unsigned int y=0;y<height;y++)
                 if (!std::isnan(in_plane(y,x))) out_plane (y,x) = stats.add(out2[index++]);
@@ -1966,7 +1970,6 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
 
         double *in = (double*) fftw_malloc(sizeof(double) * width*height);
         fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
-        p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
 
 /*            unsigned int x,y;
               for (x=0;x<width;x++)
@@ -1976,6 +1979,11 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
 
         double MeanValue= matrix_IN.stats.mean();
         unsigned int x,y;
+
+        #pragma omp critical
+        {
+        p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
+
         for (x=0;x<width;x++)
             for (y=0;y<height;y++){
                 if(std::isnan(in_plane.coeff(y,x))) in[height*x+y]=MeanValue;
@@ -1983,6 +1991,7 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
             }
 
         fftw_execute(p);
+        }
 
         // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
         unsigned long idx;
@@ -2073,14 +2082,17 @@ double ImageMatrix::fft2 (const ImageMatrix &matrix_IN, string method) {
 
         double *in = (double*) fftw_malloc(sizeof(double) * width*height);
         fftw_complex *out = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * width*height);
-        p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
 
         unsigned int x,y;
         for (x=0;x<width;x++)
             for (y=0;y<height;y++)
                 in[height*x+y]=in_plane.coeff(y,x);
 
+        #pragma omp critical
+        {
+        p = fftw_plan_dft_r2c_2d(width,height,in,out, FFTW_MEASURE); // FFTW_ESTIMATE: deterministic
         fftw_execute(p);
+        }
 
         // The resultant image uses the modulus (sqrt(nrm)) of the complex numbers for pixel values
         unsigned long idx;

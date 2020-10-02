@@ -1509,7 +1509,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
     }
 
     // get a feature calculation plan based on our featureset
-    const FeatureComputationPlan *feature_plan;
+   //MM const FeatureComputationPlan *feature_plan;
 /*MM    if (featureset->feature_opts.large_set) {
         if (featureset->feature_opts.compute_colors) {
             feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
@@ -1609,9 +1609,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
     // Lazy loading could have been done while generating the sampling parameters above, but this lets us pre-obtain file locks
     // for all the sigs we will calculate.  The code separation b/w sampling parameter setup and the sampling itself points to
     // doing this in a more general way with functional programming (or some other technique).
-    ImageMatrix *rot_matrix_p=NULL, *tile_matrix_p=NULL;
-    ImageMatrix image_matrix, rot_matrix, tile_matrix;
-    int rot_matrix_indx=0;
+
+    //MM ImageMatrix *rot_matrix_p=NULL, *tile_matrix_p=NULL;
+    //MM ImageMatrix image_matrix, rot_matrix, tile_matrix;
+    //MM int rot_matrix_indx=0;
     int tiles_x = featureset->sampling_opts.tiles_x, tiles_y = featureset->sampling_opts.tiles_y, tiles = tiles_x * tiles_y;
     preproc_opts_t *preproc_opts = &(featureset->preproc_opts);
     feature_opts_t *feature_opts = &(featureset->feature_opts);
@@ -1747,12 +1748,14 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
             uniqueClasses.erase(std::find(uniqueClasses.begin(),uniqueClasses.end(),0));
 
-            if (uniqueClasses.size()==0) printf(" No class were found in the Labled Image ");
+            if (uniqueClasses.size()==0) printf(" No class were found in the Labeled Image ");
         }
 
         featureset->uniqueClassesSize=uniqueClasses.size(); //MM
 
+        #pragma omp parallel for //MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
+            ImageMatrix image_matrix; //MM
             // Open the image once for the first sample
             if (sig_index == 0) {
                 // any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
@@ -1763,9 +1766,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 //MM if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
                 if ( (res = image_matrix.OpenImage(filename, LabeledImageMatrix,uniqueClasses[ii],preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
 
-                    catError ("Could not read image file '%s' to recalculate sigs.\n",filename);
+                    catError ("Error: Could not read image file '%s' to recalculate sigs.\n",filename);
                     res = -1; // make sure its negative for cleanup below
-                    break;
+                  //MM  break;
                 }
             }
 #if DEBUG
@@ -1800,6 +1803,13 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 }
 */
 
+
+            ImageMatrix *rot_matrix_p=NULL, *tile_matrix_p=NULL; //MM
+            ImageMatrix rot_matrix, tile_matrix; //MM
+            int rot_matrix_indx=0; //MM
+
+            signatures *ImageSignatures2; //MM
+            ImageSignatures2=ImageSignatures->duplicate();  //MM
 
             if (rot_index > 0) {
                 rot_matrix.Rotate (image_matrix, 90.0 * rot_index);
@@ -1858,28 +1868,29 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             // last ditch effort to avoid re-computing all sigs: see if an old-style sig file exists, and has
             // a set of sigs that matches a small subset of re-computed sigs.
             char old_sig_filename[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1], *char_p;
-            strcpy (old_sig_filename,ImageSignatures->full_path);
+            strcpy (old_sig_filename,ImageSignatures2->full_path);
             if ( (char_p = strrchr (old_sig_filename,'.')) ) *char_p = '\0';
             else char_p = old_sig_filename+strlen(old_sig_filename);
             sprintf (char_p,"_%d_%d.sig",tile_index_x,tile_index_y);
-            if( skip_sig_comparison_check || (res=ImageSignatures->CompareToFile(*tile_matrix_p,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
-                ImageSignatures->LoadFromFile (old_sig_filename);
-                if (ImageSignatures->count < 1) {
+            if( skip_sig_comparison_check || (res=ImageSignatures2->CompareToFile(*tile_matrix_p,old_sig_filename,feature_opts->compute_colors,feature_opts->large_set)) ) {
+                ImageSignatures2->LoadFromFile (old_sig_filename);
+                if (ImageSignatures2->count < 1) {
                     catError ("Error converting old sig file '%s' to '%s'. No samples in file.\n",old_sig_filename,ImageSignatures->GetFileName(buffer));
                     res=0;
                 } else {
                     catError ("Old signature file '%s' converted to '%s' with %d features.\n",old_sig_filename,ImageSignatures->GetFileName(buffer),ImageSignatures->count);
-                    strcpy(ImageSignatures->full_path,filename);
-                    ImageSignatures->sample_class=sample_class;
-                    ImageSignatures->sample_value=sample_value;
+                    strcpy(ImageSignatures2->full_path,filename);
+                    ImageSignatures2->sample_class=sample_class;
+                    ImageSignatures2->sample_value=sample_value;
 
                     unlink (old_sig_filename);
                 }
             }
             
             //MM
-            if (sig_index == 0 && ii==0){
+           // if (sig_index == 0 && ii==0){
                 bool NaNAvailableflag=false;
+                const FeatureComputationPlan *feature_plan;
                 if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
                 else if( featureset->uniqueClassesSize == 1 ){
                     if (image_matrix.stats.n() != image_matrix.width*image_matrix.height) NaNAvailableflag=true;
@@ -1904,28 +1915,37 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                         else feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);               
                     }
                 }              
-            }
+         //   }
 
 
             // all hope is lost - compute sigs.
             if (!res) {
-                ImageSignatures->compute_plan (*tile_matrix_p, feature_plan);
+                ImageSignatures2->compute_plan (*tile_matrix_p, feature_plan);
             }
             // we're saving sigs always now...
             // But we're not releasing the lock yet - we'll release all the locks for the whole image later.
             // This doesn't call close on our file, which would release the lock.
 
+            #pragma omp critical //MM
+            {
+            ImageSignatures->data = ImageSignatures2->data;
+            ImageSignatures->count=ImageSignatures2->count;
+
             //MM ImageSignatures->SaveToFile (1);
             if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1,uniqueClasses[ii]);
             else ImageSignatures->SaveToFile (1);
-            
+            }
+
             our_sigs[sig_index].saved = true;
             if ( (res=AddSample(ImageSignatures)) < 0) {
-                break;
+                std::cout << "Error in AddSample(ImageSignatures) occurred"<<std::endl;
+               //MM break;
             }
             our_sigs[sig_index].added = true;
+            delete ImageSignatures2; //MM
         }
 
+        delete[] LabeledImageMatrix; //MM
     }
     
     // don't release any locks until we're done with this image

@@ -192,6 +192,9 @@ public:
 	// width and height of the picture
 	unsigned int width, height;
 
+   //ROI Bounding Box Dimensions
+  //  unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd, ROIHeight, ROIWidth;  //MM
+
 	// N percents, if user specified for pixel plane to be downsampled on open
 	unsigned short downsampled;
 
