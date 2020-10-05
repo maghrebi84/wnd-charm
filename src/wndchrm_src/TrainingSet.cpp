@@ -1752,6 +1752,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         }
 
         featureset->uniqueClassesSize=uniqueClasses.size(); //MM
+        ImageSignatures->ROIcounts=0;
 
         #pragma omp parallel for //MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
@@ -1930,10 +1931,11 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             {
             ImageSignatures->data = ImageSignatures2->data;
             ImageSignatures->count=ImageSignatures2->count;
+            ++ImageSignatures->ROIcounts;
 
             //MM ImageSignatures->SaveToFile (1);
-            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1,uniqueClasses[ii]);
-            else ImageSignatures->SaveToFile (1);
+            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii]);
+            else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts);
             }
 
             our_sigs[sig_index].saved = true;

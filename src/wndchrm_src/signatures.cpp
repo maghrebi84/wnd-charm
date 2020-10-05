@@ -227,7 +227,7 @@ void signatures::FileClose()
 }
 
 //MM int signatures::SaveToFile (int save_feature_names) {
-int signatures::SaveToFile (int save_feature_names, int i) {
+int signatures::SaveToFile (int save_feature_names, int Count, int i) {
 	int sig_index;
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 
@@ -264,10 +264,11 @@ int signatures::SaveToFile (int save_feature_names, int i) {
 */
 
 //MM: Writing Outputs in Columns
-    static int ROIcounts=0;
-    ++ROIcounts;
+//    static int ROIcounts=0;
+//    ++ROIcounts;
 
-    if (ROIcounts==1){
+//    if (ROIcounts==1){
+    if (Count==1){
         fprintf( wf_fp, "%s,", "ROIRegion" );
         for (sig_index=0; sig_index < count; sig_index++) {
             if (sig_index == count -1) fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );

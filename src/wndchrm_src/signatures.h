@@ -94,8 +94,11 @@ class signatures
     void compute_plan (const ImageMatrix &matrix, const FeatureComputationPlan *plan);
     void normalize(void *TrainSet);                /* normalize the signatures based on the values of the training set */
     void FileClose();
+    
     //MM int SaveToFile(int save_feature_names);
-    int SaveToFile(int save_feature_names, int i=0);
+   //MM int SaveToFile(int save_feature_names, int i=0);
+    int SaveToFile(int save_feature_names, int Count, int i=0);    
+    
     int LoadFromFile(char *filename);
     //MM void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
 	void LoadFromFilep (FILE *value_file, char * ROIPath=""); // implementation for LoadFromFile using a pre-existing FILE*
@@ -103,6 +106,9 @@ class signatures
 	int ReadFromFile (bool wait, char * ROIPath=""); // load if exists, or lock and set fpp.
 	char *GetFileName(char *buffer);
 	int CompareToFile (const ImageMatrix &matrix, char *filename, int compute_colors, int large_set);
+	
+	int ROIcounts; //MM
+	
 };
 
 #endif
