@@ -784,7 +784,9 @@ int main(int argc, char *argv[])
         return(1);
     }
 
-    if (strcmp(argv[arg_index],"train")==0) train=1;
+   //MM if (strcmp(argv[arg_index],"train")==0) train=1;
+    train=1;
+
     if (strcmp(argv[arg_index],"test")==0) {
         test=1;
         split_ratio = 0.75;
@@ -975,21 +977,37 @@ int main(int argc, char *argv[])
 
         //MM:
         featureset.ImageTransformationName="";
-        for (int i=arg_index; i<argc; ++i){
+        for (int i=0; i<argc; ++i){
             if (strcmp(argv[i],"__ImageTransformationName")==0){
                 featureset.ImageTransformationName = argv[++i];
                 break;}
         }
         //MM:
         featureset.FeatureAlgorithmName="";
-        for (int i=arg_index; i<argc; ++i){
+        for (int i=0; i<argc; ++i){
             if (strcmp(argv[i],"__FeatureAlgorithmName")==0){
                 featureset.FeatureAlgorithmName = argv[++i];
                 break;}
         }
 
+        //MM:
+        for (int ii=0; ii<argc; ++ii){
+            if (strcmp(argv[ii],"__DesiredFeatures")==0){
+                if (strcmp(argv[++ii],"LongSet")==0) feature_opts->large_set=1;
+                break;
+            }
+        }
+
         int res;
-        dataset_path=argv[arg_index++];
+
+        //MM dataset_path=argv[arg_index++];
+        for (int j=0; j<argc; ++j){
+            if (strcmp(argv[j],"__DataPath")==0){
+                dataset_path=argv[++j];
+                break;
+            }
+        }
+
         TrainingSet *dataset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
 
         if (train || check_sigs_only) {
