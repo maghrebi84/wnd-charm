@@ -1762,6 +1762,14 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         featureset->uniqueClassesSize=uniqueClasses.size(); //MM
         ImageSignatures->ROIcounts=0;
 
+        //MM
+        /**
+         * Query about the number of available CPU processors and set it as OpenMP threads
+         */
+        int nProcessors = omp_get_num_procs();
+        omp_set_num_threads(nProcessors-1);
+        std::cout <<"Total Number of Processes in the OpenMP Parallel Region = "<< nProcessors-1 <<std::endl;
+
         #pragma omp parallel for //MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
             ImageMatrix image_matrix; //MM
