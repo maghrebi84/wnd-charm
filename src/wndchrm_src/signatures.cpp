@@ -392,6 +392,19 @@ int signatures::ReadFromFile (bool wait, char * ROIPath) {
 	}
 }
 
+//MM:
+int signatures::ReadFromFile2 (bool wait, char* OutputPath) {
+    char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
+
+    if (!wf) wf = new WORMfile (GetFileName2 (buffer, OutputPath), wait, wait);
+    else wf->reopen(wait, wait);
+
+    if (!wf) return (-1);
+    if (wf->status == WORMfile::WORM_WR) {
+        return (0);
+    }
+}
+
 /*
   get the filename for storing the signature.
   The filename is generated from the full path of the image, plus a sample name.
@@ -412,6 +425,29 @@ char *signatures::GetFileName (char *buffer) {
 
 	sprintf(char_p,"%s.sig",sample_name);
 	return (buffer);
+}
+
+//MM:
+char *signatures::GetFileName2 (char *buffer, char* OutputPath) {
+    char *char_p, *char_p2;
+
+    if (wf) {
+        strcpy (buffer, wf->path.c_str());
+        return buffer;
+    }
+
+    char_p = strrchr(full_path,'/')+1;
+    std::string tmp;
+    tmp=OutputPath;
+    tmp+= char_p;
+
+    strcpy(buffer,tmp.c_str());
+    char_p = strrchr(buffer,'.');
+    if (!char_p)
+        char_p=buffer+strlen(buffer);
+
+    sprintf(char_p,"%s.sig",sample_name);
+    return (buffer);
 }
 
 

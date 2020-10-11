@@ -998,6 +998,15 @@ int main(int argc, char *argv[])
             }
         }
 
+        //MM:
+        featureset.OutputPath="";
+        for (int jj=0; jj<argc; ++jj){
+            if (strcmp(argv[jj],"__OutputPath")==0){
+                 featureset.OutputPath= argv[++jj];
+                break;
+            }
+        }
+
         int res;
 
         //MM dataset_path=argv[arg_index++];

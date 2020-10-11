@@ -1338,7 +1338,8 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
         // Done processing path as a dataset.
         // Load all the sigs if other processes are calculating them
        //MM if ( (res  = AddAllSignatures ()) < 0) return (res);
-        if( strcmp(featureset->ROIPath,"") && featureset->uniqueClassesSize>1) return 1; //MM
+       //MM if( strcmp(featureset->ROIPath,"") && featureset->uniqueClassesSize>1) return 1;
+        if( strcmp(featureset->ROIPath,"")) return 1; //MM
         if ( (res  = AddAllSignatures (featureset->ROIPath)) < 0) return (res); //MM
         
     } else { // its a fit file!
@@ -1553,7 +1554,14 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         strcpy (ImageSignatures->sample_name,featureset->samples[sample_index].sample_name);
         // ask for an exclusive write-lock if file doesn't exist
         // if its the last sample, then we wait for the lock.
-        res = ImageSignatures->ReadFromFile(0);
+
+        //MM res = ImageSignatures->ReadFromFile(0);
+        if (strcmp(featureset->OutputPath,"")){
+             res = ImageSignatures->ReadFromFile2(0, featureset->OutputPath);
+        } else {
+             res = ImageSignatures->ReadFromFile(0);
+        }
+
 
         if (res == 0 && ImageSignatures->wf && ImageSignatures->wf->status == WORMfile::WORM_WR) { // got a lock: file didn't exist previously, and is not locked by another process.
             if (verbosity>=2) printf ("Adding '%s' for sig calc.\n",ImageSignatures->GetFileName(buffer));
