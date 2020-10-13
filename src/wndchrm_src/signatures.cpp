@@ -97,6 +97,26 @@ signatures *signatures::duplicate() {
 	return(new_samp);
 }
 
+//MM:
+signatures *signatures::duplicate2() {
+    signatures *new_samp;
+    new_samp=new signatures();
+    new_samp->sample_class=sample_class;
+    new_samp->sample_value=sample_value;
+    new_samp->interpolated_value=interpolated_value;
+    new_samp->count=count;
+    new_samp->NamesTrainingSet=NamesTrainingSet;
+    new_samp->ScoresTrainingSet=ScoresTrainingSet;
+    strcpy(new_samp->full_path,full_path);
+
+    new_samp->Resize (count);
+    new_samp->data = data;
+    //wf = NULL;
+    new_samp->version = version;
+    new_samp->feature_vec_type = feature_vec_type;
+    return(new_samp);
+}
+
 /* Resize
    Allocate memory for specified number of signatures
    nsigs -size_t - number of signatures to preallocate

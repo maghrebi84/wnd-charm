@@ -1826,7 +1826,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             int rot_matrix_indx=0; //MM
 
             signatures *ImageSignatures2; //MM
-            ImageSignatures2=ImageSignatures->duplicate();  //MM
+            ImageSignatures2=ImageSignatures->duplicate2();  //MM
 
             if (rot_index > 0) {
                 rot_matrix.Rotate (image_matrix, 90.0 * rot_index);

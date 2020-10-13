@@ -87,6 +87,7 @@ class signatures
     signatures();                       // constructor
     ~signatures();                      // destructor
     signatures *duplicate();            // create an identical signature vector object */
+    signatures *duplicate2(); //MM
     void Resize(size_t nsigs);          // call before adding sigs
     void Add(const char *name, double value);
 	void SetFeatureVectorType();
