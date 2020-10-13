@@ -1017,6 +1017,16 @@ int main(int argc, char *argv[])
             }
         }
 
+        //MM
+        std::cout<<"------------The following Input Arguments were read------------"<<std::endl;
+        std::cout<<"The full path to the input intensity image: "<< dataset_path<<std::endl;
+        std::cout<<"The full path to the input mask image: "<< featureset.ROIPath<<std::endl;
+        std::cout<<"The feature extraction set (Long set?): "<< feature_opts->large_set <<std::endl;
+        std::cout<<"The desired image transformation algorithm: "<< featureset.ImageTransformationName <<std::endl;
+        std::cout<<"The desired feature extraction algorithm: "<< featureset.FeatureAlgorithmName <<std::endl;
+        std::cout<<"The full path to the output file: "<< featureset.OutputPath<<std::endl;
+
+
         TrainingSet *dataset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
 
         if (train || check_sigs_only) {
