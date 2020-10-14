@@ -459,6 +459,7 @@ char *signatures::GetFileName2 (char *buffer, char* OutputPath) {
     char_p = strrchr(full_path,'/')+1;
     std::string tmp;
     tmp=OutputPath;
+    tmp +="/";
     tmp+= char_p;
 
     strcpy(buffer,tmp.c_str());

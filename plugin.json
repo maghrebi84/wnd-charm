@@ -1,22 +1,22 @@
 {
     "name": "WNDCHARM-ROI",
-    "version": "0.1.0",
+    "version": "0.1.5",
     "title": "Multi-threaded WND-CHARM with ROI Capability",
     "description": "Multi-threaded WND-CHARM with support for Region of Interest (ROI)",
     "author": "Mahdi Maghrebi",
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
-    "containerId": "labshare/polus-wnd-charm-plugin:0.1.0",
+    "containerId": "labshare/polus-wnd-charm-plugin:0.1.5",
     "inputs": [    
         {
             "name": "DataPath",
             "type": "collection",
-            "description": "The full path to input tiled-tiff Image",
+            "description": "The full path to input tiled-tiff image",
             "required": "True"
         },
         {
             "name": "LabeledData",
             "type": "collection",
-            "description": "The full path to input tiled-tiff mask for ROI Computations (Optional)"
+            "description": "The full path to input tiled-tiff mask for ROI computations (Optional)"
         },      
         {
             "name": "DesiredFeatures",
@@ -28,7 +28,7 @@
   					"SpecificAlgorithm"				 
 				]
 			},
-            "description": "The desired Set of features to be computed",
+            "description": "The desired set of features to be computed",
             "required": "True"
         },      
         {
@@ -65,7 +65,7 @@
 					"Wavelet-Edge"					 
 				]
 			},
-            "description": "The desired algorithm for image transformation",
+            "description": "The desired algorithm for image transformation (Optional)",
             "required": "True"
         },
         {
@@ -90,15 +90,15 @@
 					"Gini"
 				]
             },
-            "description": "The desired feature extraction algorithm",
+            "description": "The desired feature extraction algorithm (Optional)",
             "required": "True"
         }
     ],
     "outputs": [
         {
             "name": "OutputPath",
-            "type": "collection",
-            "description": "The full path to output containing the computed features"
+            "type": "genericData",
+            "description": "The path to the directory containing the computed features"
         }
     ],
     "ui": [
@@ -109,7 +109,7 @@
         },
         {
             "key": "inputs.LabeledData",
-            "title": "Input tiled-tiff mask for ROI computations",
+            "title": "Input tiled-tiff mask for ROI computations (Optional)",
             "description": "Insert the path to the image collection"         
         },
         {

@@ -1905,7 +1905,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             }
             
             //MM
-           // if (sig_index == 0 && ii==0){
+   /*        // if (sig_index == 0 && ii==0){
                 bool NaNAvailableflag=false;
                 const FeatureComputationPlan *feature_plan;
                 if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
@@ -1933,6 +1933,25 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                     }
                 }              
          //   }
+*/
+                //MM:
+                if (featureset->feature_opts.large_set) {
+                    if (featureset->feature_opts.compute_colors) {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
+                    } else {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
+                    }
+                }
+                else if (strcmp(featureset->ImageTransformationName,"")) {
+                    feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+                }
+                else {
+                    if (featureset->feature_opts.compute_colors) {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
+                    } else {
+                        feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
+                    }
+                }
 
 
             // all hope is lost - compute sigs.

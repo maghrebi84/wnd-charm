@@ -49,7 +49,7 @@
 #define MAX_SAMPLES 190000
 
 #include <boost/filesystem.hpp> //MM
-
+#include <iostream>  //MM
 /* global variable */
 extern int verbosity;
 
@@ -962,7 +962,7 @@ int main(int argc, char *argv[])
         //MM:
         featureset.ROIPath ="";
         for (int i=arg_index; i<argc; ++i){
-            if (strcmp(argv[i],"__LabeledData")==0){
+            if (strcmp(argv[i],"--LabeledData")==0){
                 featureset.ROIPath = argv[++i];
                 break;}
         }
@@ -978,21 +978,21 @@ int main(int argc, char *argv[])
         //MM:
         featureset.ImageTransformationName="";
         for (int i=0; i<argc; ++i){
-            if (strcmp(argv[i],"__ImageTransformationName")==0){
+            if (strcmp(argv[i],"--ImageTransformationName")==0){
                 featureset.ImageTransformationName = argv[++i];
                 break;}
         }
         //MM:
         featureset.FeatureAlgorithmName="";
         for (int i=0; i<argc; ++i){
-            if (strcmp(argv[i],"__FeatureAlgorithmName")==0){
+            if (strcmp(argv[i],"--FeatureAlgorithmName")==0){
                 featureset.FeatureAlgorithmName = argv[++i];
                 break;}
         }
 
         //MM:
         for (int ii=0; ii<argc; ++ii){
-            if (strcmp(argv[ii],"__DesiredFeatures")==0){
+            if (strcmp(argv[ii],"--DesiredFeatures")==0){
                 if (strcmp(argv[++ii],"LongSet")==0) feature_opts->large_set=1;
                 break;
             }
@@ -1001,7 +1001,7 @@ int main(int argc, char *argv[])
         //MM:
         featureset.OutputPath="";
         for (int jj=0; jj<argc; ++jj){
-            if (strcmp(argv[jj],"__OutputPath")==0){
+            if (strcmp(argv[jj],"--OutputPath")==0){
                  featureset.OutputPath= argv[++jj];
                 break;
             }
@@ -1011,7 +1011,7 @@ int main(int argc, char *argv[])
 
         //MM dataset_path=argv[arg_index++];
         for (int j=0; j<argc; ++j){
-            if (strcmp(argv[j],"__DataPath")==0){
+            if (strcmp(argv[j],"--DataPath")==0){
                 dataset_path=argv[++j];
                 break;
             }
