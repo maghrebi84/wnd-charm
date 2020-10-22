@@ -50,6 +50,8 @@
 
 #include <boost/filesystem.hpp> //MM
 #include <iostream>  //MM
+#include <string> //MM
+
 /* global variable */
 extern int verbosity;
 
@@ -1149,6 +1151,15 @@ int main(int argc, char *argv[])
         ShowHelp();
         showError(1,"An input parameter must be specified.\n");
     }
+
+
+   //MM: Converting .sig output files to .csv
+    std::string tmp= featureset.output;
+    std::string cmd1= "cd " +tmp ;
+    std::string cmd2= "for f in *.sig; do mv -- \"$f\" \"${f%.sig}.csv\"; done ;";
+    std::string cmd3= cmd1 + " ; "+ cmd2;
+    system(cmd3.c_str());
+
 
     return(1);
 }

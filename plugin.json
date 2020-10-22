@@ -1,11 +1,11 @@
 {
     "name": "WNDCHARM-ROI",
-    "version": "0.1.5",
+    "version": "0.1.14",
     "title": "Multi-threaded WND-CHARM with ROI Capability",
     "description": "Multi-threaded WND-CHARM with support for Region of Interest (ROI)",
     "author": "Mahdi Maghrebi",
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
-    "containerId": "labshare/polus-wnd-charm-plugin:0.1.5",
+    "containerId": "labshare/polus-wnd-charm-plugin:0.1.14",
     "inputs": [    
         {
             "name": "DataPath",
@@ -96,8 +96,8 @@
     ],
     "outputs": [
         {
-            "name": "OutputPath",
-            "type": "genericData",
+            "name": "output",
+            "type": "csvCollection",
             "description": "The path to the directory containing the computed features"
         }
     ],

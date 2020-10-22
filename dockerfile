@@ -86,8 +86,12 @@ RUN ./configure --prefix=/home/ LIBS='-L/tmp/ome-files/out/lib -lome-files -lome
 
 RUN make install
 
-RUN mkdir /home/input /home/output
+RUN mkdir /home/input 
+RUN mkdir /home/output 
+RUN mkdir /home/mask 
 
 ENTRYPOINT ["/home/bin/wndchrm"]
 
-#sudo docker run -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir:/home/input -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading:/home/output alaki11 __DesiredFeatures LongSet __DataPath /home/input/Data __LabeledData /home/input/LabeledData  __ImageTransformationName  Chebyshev-Fourier_1D_ColumnWise  __FeatureAlgorithmName PixelStatistics __OutputPath /home/output/outfile 
+# sudo docker build -t labshare/polus-wnd-charm-plugin:0.1.5 .
+
+#sudo docker run -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/Data:/home/input -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/LabeledData:/home/mask -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/Output:/home/output  labshare/polus-wnd-charm-plugin:0.1.6 --DataPath /home/input --LabeledData /home/mask  --ImageTransformationName  Chebyshev-Fourier_1D_ColumnWise  --FeatureAlgorithmName PixelStatistics --OutputPath /home/output 
