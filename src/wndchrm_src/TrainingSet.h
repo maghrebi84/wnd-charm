@@ -108,7 +108,7 @@ typedef struct {
 	int uniqueClassesSize; //MM	
 	char * FeatureAlgorithmName; //MM
     char * ImageTransformationName; //MM
-    char * OutputPath;
+    char * output; //MM
 } featureset_t;
 
 

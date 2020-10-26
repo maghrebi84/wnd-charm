@@ -1001,10 +1001,10 @@ int main(int argc, char *argv[])
         }
 
         //MM:
-        featureset.OutputPath="";
+        featureset.output="";
         for (int jj=0; jj<argc; ++jj){
-            if (strcmp(argv[jj],"--OutputPath")==0){
-                 featureset.OutputPath= argv[++jj];
+            if (strcmp(argv[jj],"--output")==0){
+                 featureset.output= argv[++jj];
                 break;
             }
         }
@@ -1026,7 +1026,7 @@ int main(int argc, char *argv[])
         std::cout<<"The feature extraction set (Long set?): "<< feature_opts->large_set <<std::endl;
         std::cout<<"The desired image transformation algorithm: "<< featureset.ImageTransformationName <<std::endl;
         std::cout<<"The desired feature extraction algorithm: "<< featureset.FeatureAlgorithmName <<std::endl;
-        std::cout<<"The full path to the output file: "<< featureset.OutputPath<<std::endl;
+        std::cout<<"The full path to the output file: "<< featureset.output<<std::endl;
 
 
         TrainingSet *dataset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);

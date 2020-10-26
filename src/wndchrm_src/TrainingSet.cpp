@@ -1556,8 +1556,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         // if its the last sample, then we wait for the lock.
 
         //MM res = ImageSignatures->ReadFromFile(0);
-        if (strcmp(featureset->OutputPath,"")){
-             res = ImageSignatures->ReadFromFile2(0, featureset->OutputPath);
+        if (strcmp(featureset->output,"")){
+             res = ImageSignatures->ReadFromFile2(0, featureset->output);
         } else {
              res = ImageSignatures->ReadFromFile(0);
         }
@@ -1905,7 +1905,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             }
             
             //MM
-   /*        // if (sig_index == 0 && ii==0){
+           // if (sig_index == 0 && ii==0){
                 bool NaNAvailableflag=false;
                 const FeatureComputationPlan *feature_plan;
                 if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
@@ -1914,7 +1914,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 }
                 
                 // get a feature calculation plan based on our featureset
-                if (featureset->feature_opts.large_set) {
+    /*            if (featureset->feature_opts.large_set) {
                     if (featureset->feature_opts.compute_colors) {
                         feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
                     } else {
