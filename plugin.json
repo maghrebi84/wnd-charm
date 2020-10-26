@@ -1,11 +1,11 @@
 {
     "name": "WNDCHARM-ROI",
-    "version": "0.1.14",
+    "version": "0.1.19",
     "title": "Multi-threaded WND-CHARM with ROI Capability",
     "description": "Multi-threaded WND-CHARM with support for Region of Interest (ROI)",
     "author": "Mahdi Maghrebi",
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
-    "containerId": "labshare/polus-wnd-charm-plugin:0.1.14",
+    "containerId": "labshare/polus-wnd-charm-plugin:0.1.19",
     "inputs": [    
         {
             "name": "DataPath",
@@ -16,7 +16,8 @@
         {
             "name": "LabeledData",
             "type": "collection",
-            "description": "The full path to input tiled-tiff mask for ROI computations (Optional)"
+            "description": "The full path to input tiled-tiff mask for ROI computations (Optional)",
+            "required": "True"
         },      
         {
             "name": "DesiredFeatures",
@@ -66,7 +67,7 @@
 				]
 			},
             "description": "The desired algorithm for image transformation (Optional)",
-            "required": "True"
+            "required": "False"
         },
         {
             "name": "FeatureAlgorithmName",
@@ -91,7 +92,7 @@
 				]
             },
             "description": "The desired feature extraction algorithm (Optional)",
-            "required": "True"
+            "required": "False"
         }
     ],
     "outputs": [

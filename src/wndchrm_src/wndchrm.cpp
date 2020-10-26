@@ -1160,8 +1160,9 @@ int main(int argc, char *argv[])
     std::string cmd3= cmd1 + " ; "+ cmd2;
     system(cmd3.c_str());
 
-
-    return(1);
+    return(0);
+    //MM: WIPP Plugin fails with non-zero return
+    //MM return(1);
 }
 
 
