@@ -92,6 +92,6 @@ RUN mkdir /home/mask
 
 ENTRYPOINT ["/home/bin/wndchrm"]
 
-# sudo docker build -t labshare/polus-wnd-charm-plugin:0.1.5 .
+#sudo docker build -t labshare/polus-wnd-charm-plugin:0.2.0 .
 
-#sudo docker run -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/Data:/home/input -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/LabeledData:/home/mask -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/Output:/home/output  labshare/polus-wnd-charm-plugin:0.1.6 --DataPath /home/input --LabeledData /home/mask  --ImageTransformationName  Chebyshev-Fourier_1D_ColumnWise  --FeatureAlgorithmName PixelStatistics --OutputPath /home/output 
+#sudo docker run -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/Data:/home/input -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/LabeledData:/home/mask -v /home/maghrebim2/Work/WND-CHARM/ROI/MultiThreading/Working_Dir2/Output:/home/output  labshare/polus-wnd-charm-plugin:0.2.0 --DataPath /home/input --LabeledData /home/mask  --ImageTransformationName  Chebyshev-Fourier_1D_ColumnWise  --FeatureAlgorithmName PixelStatistics --output /home/output 
