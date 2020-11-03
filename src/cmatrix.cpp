@@ -2310,6 +2310,7 @@ void ImageMatrix::PrewittMagnitude2D (const ImageMatrix &matrix_IN) {
 
     for (x = 0; x < w; x++) {
         for (y = 0; y < h; y++) {
+            if(isnan(pix_plane(y,x))) continue; //MM
             sumx=0;
             sumy=0;
             for (j = y-1; j <= y+1; j++)
@@ -2351,6 +2352,7 @@ void ImageMatrix::PrewittDirection2D(const ImageMatrix &matrix_IN) {
 
     for (x = 0; x < w; x++)
         for (y = 0;y < h; y++) {
+            if(isnan(pix_plane(y,x))) continue;
             sumx=0;
             sumy=0;
             for (j = y-1; j <= y+1; j++)
