@@ -53,6 +53,9 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
     #pragma omp parallel 
 	{
 		double* cThread = new double[mc*nc];
+
+                for (int aa=0; aa<mc*nc; aa++) cThread[aa]=std::numeric_limits<double>::quiet_NaN();
+
         #pragma omp for schedule(dynamic) 
 		for (int j = 0; j < mb; ++j) {    /* For each element in b */
 			for (int i = 0; i < nb; ++i) {
@@ -63,9 +66,25 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
 				double *q = a;
 				for (int l = 0; l < ma; l++) {               /* For each row of a ... */
 					for (int k = 0; k < na; k++) {
-						*(p++) += *(q) * wr;	        /* multiply by the real weight and add.      */
-						*(p++) += *(q++) * wi;       /* multiply by the imaginary weight and add. */
-					}
+
+                                             //MM *(p++) += *(q) * wr;	        /* multiply by the real weight and add.      */
+                                             //MM *(p++) += *(q++) * wi;       /* multiply by the imaginary weight and add. */
+                                             //MM:
+                                            if ( !std::isnan(*q) ) {
+                                                if ( std::isnan(*p) )
+                                                {
+                                                    *(p++) = *(q) * wr;	        /* multiply by the real weight and add.      */
+                                                    *(p++) = *(q++) * wi;       /* multiply by the imaginary weight and add. */
+                                                }
+                                                else {
+                                                    *(p++) += *(q) * wr;	        /* multiply by the real weight and add.      */
+                                                    *(p++) += *(q++) * wi;       /* multiply by the imaginary weight and add. */
+                                                }
+                                            }
+                                            else {q++; p=p+2;}
+
+
+                                        }
 					p += (nb-1)*2;	                /* Jump to next row position of a in c */
 					//		*flopcnt += 2*ma*na;
 				}
