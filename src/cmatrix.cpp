@@ -2542,11 +2542,15 @@ double ImageMatrix::Otsu(bool dynamic_range) const {
     }
 
     // omega & myu generation
-    omega[0] = hist[0] / (width * height);
+    //MM omega[0] = hist[0] / (width * height);
+    omega[0] = hist[0] / stats.n();
+
     myu[0] = 0.0;
     for (i = 1; i < OTSU_LEVELS; i++) {
-        omega[i] = omega[i-1] + (hist[i] / (width * height));
-        myu[i] = myu[i-1] + i*(hist[i] / (width * height));
+      //MM  omega[i] = omega[i-1] + (hist[i] / (width * height));
+      //MM  myu[i] = myu[i-1] + i*(hist[i] / (width * height));
+        omega[i] = omega[i-1] + (hist[i] / stats.n());
+        myu[i] = myu[i-1] + i*(hist[i] / stats.n());
     }
 
     // maximization of inter-class variance

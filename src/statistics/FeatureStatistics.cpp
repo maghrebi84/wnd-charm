@@ -257,7 +257,44 @@ long EulerNumber(const ImageMatrix &Im, int mode) {
 			else if (i == 8 && i == 9) Cd++;
 		}
 	}
-	
+
+
+   //MM: We need to take into consideration the first column and the first row of the image when nan values exists
+   // as they might not be included by the neighboring pixels in the next row/column. The neighboring Pixles might be
+   //excluded in the computations due to their nan values
+        for (x = 0; x < Im.width-1; x++) {
+            if(std::isnan(pix_plane(0,x))) continue; //MM
+            // Get the quad-pixel at this image location
+            Imq = 0;
+            if (pix_plane(0 ,x) > 0) {
+                if (!pix_plane(1 ,x)> 0 || !pix_plane(1 ,x+1)>0 ) Imq |=  (1 << 0);
+            }
+            // find the matching pattern
+            for (i = 0; i < 10; i++) if (Imq == Px[i]) break;
+            // unsigned i always >= 0
+            // if      (i >= 0 && i <= 3) C1++;
+            if (i <= 3) C1++;
+            else if (i >= 4 && i <= 7) C3++;
+            else if (i == 8 && i == 9) Cd++;
+        }
+        for (y = 0; y < Im.height-1; y++) {
+            if(std::isnan(pix_plane(y,0))) continue; //MM
+            // Get the quad-pixel at this image location
+            Imq = 0;
+            if (pix_plane(y ,0) > 0) {
+                if (!pix_plane(y ,1)> 0 || !pix_plane(y+1 ,1)>0 ) Imq |=  (1 << 0);
+            }
+            // find the matching pattern
+            for (i = 0; i < 10; i++) if (Imq == Px[i]) break;
+            // unsigned i always >= 0
+            // if      (i >= 0 && i <= 3) C1++;
+            if (i <= 3) C1++;
+            else if (i >= 4 && i <= 7) C3++;
+            else if (i == 8 && i == 9) Cd++;
+        }
+
+
+
 	if (mode == 4)
 		return ( (C1 - C3 + (2*Cd)) / 4);
 	else
