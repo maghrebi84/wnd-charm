@@ -175,6 +175,8 @@ private:
 
 public:
 
+    bool BoundingBoxFlag; //MM
+
 	// N.B.: Re: ctor, see note in implementation
 	ImageMatrix () : _pix_plane (NULL,0,0), _clr_plane (NULL,0,0), downsampled(0),
         norm_mean(0), norm_stdev(0) { init(); };

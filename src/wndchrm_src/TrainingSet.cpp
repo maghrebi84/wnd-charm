@@ -1808,7 +1808,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 }
             
             ImageMatrix ROI_Bounding_Box;
-            
+            ROI_Bounding_Box.BoundingBoxFlag=true;
             ROI_Bounding_Box.allocate (ROI_Bounding_Box.ROIWidth+1, ROI_Bounding_Box.ROIHeight+1);
             writeablePixels pix_plane = ROI_Bounding_Box.WriteablePixels();
             readOnlyPixels in_plane = image_matrix.ReadablePixels();

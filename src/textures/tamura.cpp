@@ -37,10 +37,52 @@ double directionality(const ImageMatrix &image) {
 	double Hd[NBINS];
 
 	ImageMatrix deltaH;
-	deltaH.copy(image);
+        //MM  deltaH.copy(image);
 	ImageMatrix deltaV;
-	deltaV.copy(image);
-	
+        //MM  deltaV.copy(image);
+
+ //MM:
+ if (image.BoundingBoxFlag==true){  //Make a Padding area of size 2 pixels around Bounding Box
+        deltaH.allocate (image.width+4, image.height+4);
+        writeablePixels deltaHpix_plane = deltaH.WriteablePixels();
+        deltaV.allocate (image.width+4, image.height+4);
+        writeablePixels deltaVpix_plane = deltaV.WriteablePixels();
+        readOnlyPixels in_plane = image.ReadablePixels();
+
+        for (y = 0; y < ydim; ++y) {
+            for (x = 0; x < xdim; ++x) {
+               deltaHpix_plane(y+2,x+2) = in_plane(y,x);
+               deltaVpix_plane(y+2,x+2) = in_plane(y,x);
+            }
+        }
+
+    for (x = 0; x < xdim+4; ++x) {
+        deltaHpix_plane(0,x) = std::numeric_limits<double>::quiet_NaN();
+        deltaHpix_plane(1,x) = std::numeric_limits<double>::quiet_NaN();
+        deltaHpix_plane(ydim+2,x) = std::numeric_limits<double>::quiet_NaN();
+        deltaHpix_plane(ydim+3,x) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(0,x) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(1,x) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(ydim+2,x) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(ydim+3,x) = std::numeric_limits<double>::quiet_NaN();
+    }
+
+    for (y = 0; y < ydim+4; ++y) {
+        deltaHpix_plane(y,0) = std::numeric_limits<double>::quiet_NaN();
+        deltaHpix_plane(y,1) = std::numeric_limits<double>::quiet_NaN();
+        deltaHpix_plane(y,xdim+2) = std::numeric_limits<double>::quiet_NaN();
+        deltaHpix_plane(y,xdim+3) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(y,0) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(y,1) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(y,xdim+2) = std::numeric_limits<double>::quiet_NaN();
+        deltaVpix_plane(y,xdim+3) = std::numeric_limits<double>::quiet_NaN();
+    }
+
+}
+ else {
+     deltaH.copy(image);
+     deltaV.copy(image);
+}
 
 	pixDataMat matrixH (3,3);
 	matrixH.setZero();
@@ -66,13 +108,18 @@ double directionality(const ImageMatrix &image) {
 
 	//step2
 	ImageMatrix phi;
-	phi.allocate (xdim, ydim);
-	writeablePixels phi_pix_plane = phi.WriteablePixels();
-	Moments2 phi_stats;
+        //MM phi.allocate (xdim, ydim);
+        //MM writeablePixels phi_pix_plane = phi.WriteablePixels();
+        phi.allocate (image.width+4, image.height+4); //MM
+        writeablePixels phi_pix_plane = phi.WriteablePixels();	//MM
+
+        Moments2 phi_stats;
 
 	sum_r = 0;
-	for (y = 0; y < ydim; ++y) {
-		for (x = 0; x < xdim; ++x) {
+        //MM for (y = 0; y < ydim; ++y) {
+        for (y = 0; y < ydim+4; ++y) { //MM
+                //MM for (x = 0; x < xdim; ++x) {
+                for (x = 0; x < xdim+4; ++x) {//MM
 		    if (std::isnan(deltaH_pix_plane(y,x))) {phi_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); continue;} //MM
 			if (deltaH_pix_plane(y,x) >= 0.0001) {
 			    if (std::isnan(deltaV_pix_plane(y,x))) {phi_pix_plane(y,x)=std::numeric_limits<double>::quiet_NaN(); continue;} //MM
@@ -305,6 +352,8 @@ void Tamura3Sigs2D(const ImageMatrix &Im, double *vec) {
 
 	normImg.allocate (Im.width, Im.height);
 	normImg.WriteablePixels() = ((Im.ReadablePixels().array() - min_val) / max_val).unaryExpr (Moments2func(normImg.stats));
+
+        normImg.BoundingBoxFlag= Im.BoundingBoxFlag; //MM
 
 	temp[0] = coarseness(normImg,&(temp[1]),3);
 	temp[4] = directionality(normImg);

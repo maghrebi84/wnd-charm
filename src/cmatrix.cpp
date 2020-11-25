@@ -838,6 +838,7 @@ void ImageMatrix::init() {
     source     = "";
     ColorMode = cmGRAY;
     bits      = 8;
+    BoundingBoxFlag=false; //MM
 }
 
 // This is using the fancy shmancy placement-new operator
@@ -921,6 +922,7 @@ void ImageMatrix::copyFields(const ImageMatrix &copy) {
     source     = copy.source;
     ColorMode = copy.ColorMode;
     bits      = copy.bits;
+    BoundingBoxFlag = copy.BoundingBoxFlag; //MM
 }
 void ImageMatrix::copyData(const ImageMatrix &copy) {
     // WriteablePixels() resets the stats
@@ -1468,6 +1470,7 @@ void ImageMatrix::convolve(const pixDataMat &filter) {
         for( y = 0; y < height; ++y )
         {
             tmp=0.0;
+            int flag=0; //MM
             for( i = -width2; i <= width2; ++i )
             {
                 xx = x + i;
@@ -1482,12 +1485,18 @@ void ImageMatrix::convolve(const pixDataMat &filter) {
                         // if( yy >= 0 && yy < height) {
                         if( yy < height )
                         {
-                            tmp += filter (j+height2, i+width2) * copy_pix_plane(yy,xx);
+                           //MM tmp += filter (j+height2, i+width2) * copy_pix_plane(yy,xx);
+                            double temporary=filter (j+height2, i+width2) * copy_pix_plane(yy,xx);
+                            if (std::isnan(temporary)) continue;
+                            flag=1;
+                            tmp+=temporary;
                         }
                     }
                 }
             }
-            pix_plane (y,x) = stats.add(tmp);
+           //MM pix_plane (y,x) = stats.add(tmp);
+            if (flag=0) pix_plane (y,x) = stats.add(std::numeric_limits<double>::quiet_NaN());
+            else pix_plane (y,x) = stats.add(tmp);
         }
     }
 }
