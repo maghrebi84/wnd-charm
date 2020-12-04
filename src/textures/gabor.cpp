@@ -27,9 +27,9 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
     nc = (na+nb-1)*2;
 
     /* initalize the output matrix */
-    for (int j = 0; j < mc; ++j)     /* For each element in b */
-        for (int i = 0; i < nc; ++i)
-            c[j*nc+i] = 0;
+    //MM   for (int j = 0; j < mc; ++j)     /* For each element in b */
+    //       for (int i = 0; i < nc; ++i)
+    //           c[j*nc+i] = 0;
 
     /* Perform convolution */
     //	r = b;
@@ -50,13 +50,13 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
     //		}
     //	}
 
-    #pragma omp parallel
+#pragma omp parallel
     {
         double* cThread = new double[mc*nc];
 
         for (int aa=0; aa<mc*nc; aa++) cThread[aa]=std::numeric_limits<double>::quiet_NaN();
 
-        #pragma omp for schedule(dynamic)
+#pragma omp for schedule(dynamic)
         for (int j = 0; j < mb; ++j) {    /* For each element in b */
             for (int i = 0; i < nb; ++i) {
                 double *r = b+(j*nb+i)*2;
@@ -90,7 +90,7 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
                 }
             }
         }
-        #pragma omp critical
+#pragma omp critical
         {
             for (int j = 0; j < mc; ++j) {    /* For each element in b */
                 for (int i = 0; i < nc; ++i) {
@@ -221,6 +221,9 @@ double *GaborEnergy(const ImageMatrix &Im, double* out, double f0, double sig2la
     readOnlyPixels pix_plane = Im.ReadablePixels();
 
     c = new double[(Im.width+n-1)*(Im.height+n-1)*2];
+
+    for (int i = 0; i < (Im.width+n-1)*(Im.height+n-1)*2 ; i++) {c[i]=0;} //MM
+
     image = new double[Im.width*Im.height];
     for (y = 0; y < Im.height; y++)
         for (x = 0; x < Im.width; x++)
@@ -255,7 +258,8 @@ double *GaborEnergy(const ImageMatrix &Im, double* out, double f0, double sig2la
 /*
 the output value is in "ratios" which is an array of 7 doubles
 */
-void GaborTextureFilters2D(const ImageMatrix &Im, double *ratios) {
+//MM void GaborTextureFilters2D(const ImageMatrix &Im, double *ratios) {
+void GaborTextureFilters2D(const ImageMatrix &Im0, double *ratios) {
     double GRAYthr;
     /* parameters set up in complience with the paper */
     double gamma = 0.5, sig2lam = 0.56;
@@ -265,6 +269,52 @@ void GaborTextureFilters2D(const ImageMatrix &Im, double *ratios) {
     double theta = 3.14159265/2;
     unsigned int ii;
     unsigned long originalScore = 0;
+
+    readOnlyPixels in_plane = Im0.ReadablePixels();
+    ImageMatrix Im;
+
+    if (Im0.BoundingBoxFlag==true){
+        //MM: Create another Image Matrix with a padding of size n/2 around it. n is assumed to be an even number.
+        Im.allocate (Im0.width+n, Im0.height+n);
+        writeablePixels new_plane = Im.WriteablePixels();
+        //MM: First copy the original pixel values
+        for (uint y = 0; y < Im0.height; ++y) {
+            for (uint x = 0; x < Im0.width; ++x) {
+                new_plane(y+(n/2),x+(n/2)) = in_plane(y,x);
+            }
+        }
+        //MM: Assign NaN to the padding area around the image
+        for (uint x = 0; x < n/2; ++x) {
+            for (uint y = 0; y < Im.height; ++y) {
+                new_plane(y,x) = std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+        for (uint x = Im.width-(n/2); x < Im.width; ++x) {
+            for (uint y = 0; y < Im.height; ++y) {
+                new_plane(y,x) = std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+        for (uint y = 0; y < n/2; ++y) {
+            for (uint x = n/2; x < Im.width-n/2; ++x) {
+                new_plane(y,x) = std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+        for (uint y = Im.height-(n/2); y < Im.height; ++y) {
+            for (uint x = n/2; x < Im.width-n/2; ++x) {
+                new_plane(y,x) = std::numeric_limits<double>::quiet_NaN();
+            }
+        }
+    }
+    else{
+        Im.allocate (Im0.width, Im0.height);
+        writeablePixels new_plane = Im.WriteablePixels();
+
+        for (uint y = 0; y < Im0.height; ++y) {
+            for (uint x = 0; x < Im0.width; ++x) {
+                new_plane(y,x) = in_plane(y,x);
+            }
+        }
+    }
 
     ImageMatrix e2img;
     e2img.allocate(Im.width, Im.height);
