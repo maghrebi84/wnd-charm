@@ -1025,7 +1025,7 @@ int TrainingSet::AddAllSignatures( char * ROIPath) {
         res = 1;
         if (sample->count < 1) {
             //MM res = sample->ReadFromFile(1);
-             res = sample->ReadFromFile(1, ROIPath);
+            res = sample->ReadFromFile(1, ROIPath);
         }
 
         if (res > 0) {
@@ -1337,9 +1337,10 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
 
         // Done processing path as a dataset.
         // Load all the sigs if other processes are calculating them
-       //MM if ( (res  = AddAllSignatures ()) < 0) return (res);
-       //MM if( strcmp(featureset->ROIPath,"") && featureset->uniqueClassesSize>1) return 1;
-        if( strcmp(featureset->ROIPath,"")) return 1; //MM
+        //MM if ( (res  = AddAllSignatures ()) < 0) return (res);
+        //MM if( strcmp(featureset->ROIPath,"") && featureset->uniqueClassesSize>1) return 1;
+        //MM if( strcmp(featureset->ROIPath,"")) return 1; //MM
+        return 1; //MM
         if ( (res  = AddAllSignatures (featureset->ROIPath)) < 0) return (res); //MM
         
     } else { // its a fit file!
@@ -1359,8 +1360,8 @@ int TrainingSet::LoadFromPath(char *path, int save_sigs, featureset_t *featurese
     }
     if (signature_count != featureset->n_features && !featureset->feature_opts.check_sigs_only) {
         if (!strcmp(featureset->ROIPath,"")){ //MM
-        catError ("WARNING: Number of features specified (%d) do not match the number collected from '%s' (%d)\n", featureset->n_features, path, signature_count);
-        catError ("         Either command-line options don't match those stored in the dataset (.fit) file, or the file has been corrupted\n");
+            catError ("WARNING: Number of features specified (%d) do not match the number collected from '%s' (%d)\n", featureset->n_features, path, signature_count);
+            catError ("         Either command-line options don't match those stored in the dataset (.fit) file, or the file has been corrupted\n");
         }
     }
 
@@ -1510,8 +1511,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
     }
 
     // get a feature calculation plan based on our featureset
-   //MM const FeatureComputationPlan *feature_plan;
-/*MM    if (featureset->feature_opts.large_set) {
+    //MM const FeatureComputationPlan *feature_plan;
+    /*MM    if (featureset->feature_opts.large_set) {
         if (featureset->feature_opts.compute_colors) {
             feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
         } else {
@@ -1557,9 +1558,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
         //MM res = ImageSignatures->ReadFromFile(0);
         if (strcmp(featureset->output,"")){
-             res = ImageSignatures->ReadFromFile2(0, featureset->output);
+            res = ImageSignatures->ReadFromFile2(0, featureset->output);
         } else {
-             res = ImageSignatures->ReadFromFile(0);
+            res = ImageSignatures->ReadFromFile(0);
         }
 
 
@@ -1641,8 +1642,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         uniqueClasses.push_back(0);
 
         //Bounding Box Implementation
-     //MM   uint32_t imageWidth, imageLength;  
-     //MM   unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd; 
+        uint32_t imageWidth, imageLength;
+        unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
 
 
         if (strcmp(featureset->ROIPath,"")){
@@ -1687,7 +1688,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             int tileCount=ifd->getTileInfo().tileCount();
 
             uint32_t tileWidth, tileLength, bitsPerSample;
-            uint32_t imageWidth, imageLength;  //Bounding Box Implementation: Comment here
+            //MM uint32_t imageWidth, imageLength;  //Bounding Box Implementation: Comment here
             uint16_t samplesPerPixel;
 
             // Display global and series original metadata
@@ -1770,7 +1771,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         omp_set_num_threads(nProcessors-1);
         std::cout <<"Total Number of Processes in the OpenMP Parallel Region = "<< nProcessors-1 <<std::endl;
 
-        #pragma omp parallel for //MM
+        //#pragma omp parallel for //MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
             ImageMatrix image_matrix; //MM
             // Open the image once for the first sample
@@ -1785,40 +1786,43 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
                     catError ("Error: Could not read image file '%s' to recalculate sigs.\n",filename);
                     res = -1; // make sure its negative for cleanup below
-                  //MM  break;
+                    //MM  break;
                 }
             }
 #if DEBUG
             printf( "Image size=(%d,%d)\n", image_matrix.width, image_matrix.height );
 #endif
+            ImageMatrix ROI_Bounding_Box; //MM
 
-            //Bounding Box Implementation
-/*            ROIHeightBeg= imageLength;
-            ROIHeightEnd=0;
-            ROIWidthBeg= imageWidth;
-            ROIWidthEnd=0;
-            
-            for (unsigned int y = 0; y < imageLength; ++y)
-                for (unsigned int x = 0; x < imageWidth; ++x){
-                    if (LabeledImageMatrix[y][x] !=uniqueClasses[ii]) continue;
-                    if (y < ROIHeightBeg) ROIHeightBeg=y;
-                    if (y > ROIHeightEnd) ROIHeightEnd=y;
-                    if (x < ROIWidthBeg) ROIWidthBeg=x;
-                    if (x > ROIWidthEnd) ROIWidthEnd=x;
-                }
-            
-            ImageMatrix ROI_Bounding_Box;
-            ROI_Bounding_Box.BoundingBoxFlag=true;
-            ROI_Bounding_Box.allocate (ROI_Bounding_Box.ROIWidth+1, ROI_Bounding_Box.ROIHeight+1);
-            writeablePixels pix_plane = ROI_Bounding_Box.WriteablePixels();
-            readOnlyPixels in_plane = image_matrix.ReadablePixels();
-            
-            for (unsigned int y = 0; y < ROIHeightEnd - ROIHeightBeg+1; ++y)
-                for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
-                    pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
-                    
-                }
-*/
+            if (strcmp(featureset->ROIPath,"")){//MM
+                //Bounding Box Implementation
+                ROIHeightBeg= imageLength;
+                ROIHeightEnd=0;
+                ROIWidthBeg= imageWidth;
+                ROIWidthEnd=0;
+
+                for (unsigned int y = 0; y < imageLength; ++y)
+                    for (unsigned int x = 0; x < imageWidth; ++x){
+                        if (LabeledImageMatrix[y][x] !=uniqueClasses[ii]) continue;
+                        if (y < ROIHeightBeg) ROIHeightBeg=y;
+                        if (y > ROIHeightEnd) ROIHeightEnd=y;
+                        if (x < ROIWidthBeg) ROIWidthBeg=x;
+                        if (x > ROIWidthEnd) ROIWidthEnd=x;
+                    }
+
+
+                ROI_Bounding_Box.BoundingBoxFlag=true;
+                //MM ROI_Bounding_Box.allocate (ROI_Bounding_Box.ROIWidth+1, ROI_Bounding_Box.ROIHeight+1);
+                ROI_Bounding_Box.allocate (ROIWidthEnd-ROIWidthBeg+1, ROIHeightEnd-ROIHeightBeg+1);
+
+                writeablePixels pix_plane = ROI_Bounding_Box.WriteablePixels();
+                readOnlyPixels in_plane = image_matrix.ReadablePixels();
+
+                for (unsigned int y = 0; y < ROIHeightEnd - ROIHeightBeg+1; ++y)
+                    for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
+                        pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
+                    }
+            }
 
 
             ImageMatrix *rot_matrix_p=NULL, *tile_matrix_p=NULL; //MM
@@ -1833,9 +1837,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 rot_matrix_indx = rot_index;
                 rot_matrix_p = &rot_matrix;
             } else {
-               //MM Bounding Box:
-               //MM rot_matrix_p = &ROI_Bounding_Box;
-                rot_matrix_p = &image_matrix;
+                //MM Bounding Box:
+                if (strcmp(featureset->ROIPath,"")) rot_matrix_p = &ROI_Bounding_Box; //MM
+                else rot_matrix_p = &image_matrix; //MM
                 rot_matrix_indx = 0;
             }
             if (tiles != 1) {
@@ -1905,16 +1909,16 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             }
             
             //MM
-           // if (sig_index == 0 && ii==0){
-                bool NaNAvailableflag=false;
-                const FeatureComputationPlan *feature_plan;
-                if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
-                else if( featureset->uniqueClassesSize == 1 ){
-                    if (image_matrix.stats.n() != image_matrix.width*image_matrix.height) NaNAvailableflag=true;
-                }
-                
-                // get a feature calculation plan based on our featureset
-    /*            if (featureset->feature_opts.large_set) {
+            // if (sig_index == 0 && ii==0){
+            bool NaNAvailableflag=false;
+            const FeatureComputationPlan *feature_plan;
+            if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
+            else if( featureset->uniqueClassesSize == 1 ){
+                if (image_matrix.stats.n() != image_matrix.width*image_matrix.height) NaNAvailableflag=true;
+            }
+
+            // get a feature calculation plan based on our featureset
+            /*            if (featureset->feature_opts.large_set) {
                     if (featureset->feature_opts.compute_colors) {
                         feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
                     } else {
@@ -1929,29 +1933,29 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                         //MM feature_plan = StdFeatureComputationPlans::getFeatureSet();
                         //MM feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
                         if (strcmp(featureset->ImageTransformationName,"")) feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
-                        else feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);               
+                        else feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
                     }
-                }              
+                }
          //   }
 */
-                //MM:
-                if (featureset->feature_opts.large_set) {
-                    if (featureset->feature_opts.compute_colors) {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
-                    } else {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
-                    }
+            //MM:
+            if (featureset->feature_opts.large_set) {
+                if (featureset->feature_opts.compute_colors) {
+                    feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
+                } else {
+                    feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
                 }
-                else if (strcmp(featureset->ImageTransformationName,"")) {
-                    feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+            }
+            else if (strcmp(featureset->ImageTransformationName,"")) {
+                feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+            }
+            else {
+                if (featureset->feature_opts.compute_colors) {
+                    feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
+                } else {
+                    feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
                 }
-                else {
-                    if (featureset->feature_opts.compute_colors) {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
-                    } else {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
-                    }
-                }
+            }
 
 
             // all hope is lost - compute sigs.
@@ -1962,8 +1966,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             // But we're not releasing the lock yet - we'll release all the locks for the whole image later.
             // This doesn't call close on our file, which would release the lock.
 
-            #pragma omp critical //MM
-            {
+            //   #pragma omp critical //MM
+            //       {
             ImageSignatures->data = ImageSignatures2->data;
             ImageSignatures->count=ImageSignatures2->count;
             ++ImageSignatures->ROIcounts;
@@ -1971,12 +1975,12 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             //MM ImageSignatures->SaveToFile (1);
             if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii]);
             else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts);
-            }
+            //       }
 
             our_sigs[sig_index].saved = true;
             if ( (res=AddSample(ImageSignatures)) < 0) {
                 std::cout << "Error in AddSample(ImageSignatures) occurred"<<std::endl;
-               //MM break;
+                //MM break;
             }
             our_sigs[sig_index].added = true;
             delete ImageSignatures2; //MM
