@@ -1771,7 +1771,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         omp_set_num_threads(nProcessors-1);
         std::cout <<"Total Number of Processes in the OpenMP Parallel Region = "<< nProcessors-1 <<std::endl;
 
-        //#pragma omp parallel for //MM
+        #pragma omp parallel for //MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
             ImageMatrix image_matrix; //MM
             // Open the image once for the first sample
@@ -1966,8 +1966,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             // But we're not releasing the lock yet - we'll release all the locks for the whole image later.
             // This doesn't call close on our file, which would release the lock.
 
-            //   #pragma omp critical //MM
-            //       {
+            #pragma omp critical //MM
+            {
             ImageSignatures->data = ImageSignatures2->data;
             ImageSignatures->count=ImageSignatures2->count;
             ++ImageSignatures->ROIcounts;
@@ -1975,7 +1975,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             //MM ImageSignatures->SaveToFile (1);
             if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii]);
             else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts);
-            //       }
+            }
 
             our_sigs[sig_index].saved = true;
             if ( (res=AddSample(ImageSignatures)) < 0) {
