@@ -1764,6 +1764,11 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         ImageSignatures->ROIcounts=0;
 
         //MM
+        bool ROIFlag;
+        if (strcmp(featureset->ROIPath,"")) ROIFlag=true;
+        else ROIFlag=false;
+
+        //MM
         /**
          * Query about the number of available CPU processors and set it as OpenMP threads
          */
@@ -1974,7 +1979,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
             //MM ImageSignatures->SaveToFile (1);
             if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii]);
-            else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts);
+            else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag);
             }
 
             our_sigs[sig_index].saved = true;

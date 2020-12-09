@@ -97,9 +97,10 @@ class signatures
     void FileClose();
     
     //MM int SaveToFile(int save_feature_names);
-   //MM int SaveToFile(int save_feature_names, int i=0);
-    int SaveToFile(int save_feature_names, int Count, int i=0);    
-    
+    //MM int SaveToFile(int save_feature_names, int i=0);
+    //MM int SaveToFile(int save_feature_names, int Count, int i=0);    
+    int SaveToFile(int save_feature_names, int Count, int i=0, bool ROIFlag=true);
+        
     int LoadFromFile(char *filename);
     //MM void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
 	void LoadFromFilep (FILE *value_file, char * ROIPath=""); // implementation for LoadFromFile using a pre-existing FILE*

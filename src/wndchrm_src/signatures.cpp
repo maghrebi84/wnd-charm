@@ -247,7 +247,7 @@ void signatures::FileClose()
 }
 
 //MM int signatures::SaveToFile (int save_feature_names) {
-int signatures::SaveToFile (int save_feature_names, int Count, int i) {
+int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFlag) {
 	int sig_index;
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 
@@ -289,14 +289,14 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i) {
 
 //    if (ROIcounts==1){
     if (Count==1){
-        fprintf( wf_fp, "%s,", "ROIRegion" );
+        if (ROIFlag) fprintf( wf_fp, "%s,", "ROIRegion" );
         for (sig_index=0; sig_index < count; sig_index++) {
             if (sig_index == count -1) fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
             else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
         }
     }
 
-    fprintf( wf_fp, "%d,", i);
+    if (ROIFlag) fprintf( wf_fp, "%d,", i);
     for (sig_index=0; sig_index < count; sig_index++) {
         if (sig_index == count -1) fprintf( wf_fp, "%.8g\n", data[sig_index] );
         else fprintf( wf_fp, "%.8g,", data[sig_index] );
