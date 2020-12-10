@@ -247,7 +247,7 @@ void signatures::FileClose()
 }
 
 //MM int signatures::SaveToFile (int save_feature_names) {
-int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFlag) {
+int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFlag, std::string MaskFilename) {
 	int sig_index;
 	char buffer[IMAGE_PATH_LENGTH+SAMPLE_NAME_LENGTH+1];
 
@@ -289,14 +289,16 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
 
 //    if (ROIcounts==1){
     if (Count==1){
-        if (ROIFlag) fprintf( wf_fp, "%s,", "ROIRegion" );
+        //MM if (ROIFlag) fprintf( wf_fp, "%s,", "ROIRegion" );
+        if (ROIFlag) fprintf( wf_fp, "%s,%s,", "ROIRegion", "MaskFilename");
         for (sig_index=0; sig_index < count; sig_index++) {
             if (sig_index == count -1) fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
             else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
         }
     }
 
-    if (ROIFlag) fprintf( wf_fp, "%d,", i);
+    //MM if (ROIFlag) fprintf( wf_fp, "%d,", i);
+    if (ROIFlag) fprintf( wf_fp, "%d,%s,", i, MaskFilename.c_str());
     for (sig_index=0; sig_index < count; sig_index++) {
         if (sig_index == count -1) fprintf( wf_fp, "%.8g\n", data[sig_index] );
         else fprintf( wf_fp, "%.8g,", data[sig_index] );

@@ -59,10 +59,7 @@
                     "Edge",                                        
 					"Fourier_1D_ColumnWise-Edge",
                     "Fourier_1D_RowWise-Edge",
-					"Fourier_2D_Mean-Edge",
-                    "Fourier_1D_ColumnWise-Edge",
-					"Fourier_1D_RowWise-Edge",
-                    "Fourier_2D_Mean-Edge",                      
+					"Fourier_2D_Mean-Edge",                   
 					"Wavelet-Edge"					 
 				]
 			},

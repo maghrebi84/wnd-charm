@@ -1644,7 +1644,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         //Bounding Box Implementation
         uint32_t imageWidth, imageLength;
         unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
-
+        string MaskFilename;
 
         if (strcmp(featureset->ROIPath,"")){
             //    if (featureset->ROIPath !=""){
@@ -1652,6 +1652,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
             boost::filesystem::path p(filename);
             const char* ImageFileName=p.filename().c_str();
+            MaskFilename= ImageFileName;
 
             char * LabeledImagePath = (char *) malloc(1 + strlen(featureset->ROIPath)+ strlen(ImageFileName) );
             strcpy(LabeledImagePath, featureset->ROIPath);
@@ -1978,8 +1979,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             ++ImageSignatures->ROIcounts;
 
             //MM ImageSignatures->SaveToFile (1);
-            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii]);
-            else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag);
+            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, MaskFilename);
+            else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag,MaskFilename);
             }
 
             our_sigs[sig_index].saved = true;
