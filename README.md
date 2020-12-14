@@ -99,7 +99,8 @@ In the above command:
 * DataPath: refers to the directory which contains the input tiff intensity image.
 * output:   refers to the directory where the computed features file (in .csv format instead of .sig) is saved.
 * LabeledData: refers to the directory which contains the mask tiff image for ROI computation. This parameter is optional and WND-CHARM computes the features for the entire image if LabeledData is not specified. Please note that the pair of intensity and mask images inside DataPath and LabeledData directories should have the same filename. This is how the code matches the masks and intensity images when multiple of them are present inside the DataPath and LabeledData directories.
-* ImageTransformationName: The (optional) specific image transformation algorithm which is desired for the computation. Please refer to Tasks.cpp to learn more about the names of the available algorithms. 
+* ImageTransformationName: The (optional) specific image transformation algorithm which is desired for the computation. Please refer to Tasks.cpp to learn more about the names of the available algorithms. Please note that the algorithms with the either names Fourier_1D_ColumnWise, Fourier_1D_RowWise, and Fourier_2D are additional algorithms specific to ROI case. 
+
 * FeatureAlgorithmName: The (optional) specific feature extraction algorithm which is desired for the computation over the chosen ImageTransformationName. Please refer to Tasks.cpp to learn more about the names of the available algorithms. 
 
 If ImageTransformationName and FeatureAlgorithmName are not specified, WND-CHARM computes the features for a short list of FeatureAlgorithmName and ImageTransformationName. Also, the long set of features can be alternatively selected using the input argument "--DesiredFeatures LongSet".
