@@ -176,7 +176,8 @@ private:
 public:
 
     bool BoundingBoxFlag; //MM
-
+    int ROIHeightBeg,ROIWidthBeg; //MM
+    
 	// N.B.: Re: ctor, see note in implementation
 	ImageMatrix () : _pix_plane (NULL,0,0), _clr_plane (NULL,0,0), downsampled(0),
         norm_mean(0), norm_stdev(0) { init(); };
@@ -337,7 +338,8 @@ public:
 	void HaralickTexture2D(double distance, double *out) const;
 	void TamuraTexture2D(double *vec) const;
 	void zernike2D(double *zvalues, long *output_size) const;
-
+    void Morphology (double *ratios) const; //MM
+    
 	// disable the copy constructor
 private:
 	ImageMatrix(const ImageMatrix &matrix) : _pix_plane (NULL,0,0), _clr_plane (NULL,0,0) {

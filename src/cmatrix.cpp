@@ -49,6 +49,7 @@
 #include "textures/haralick/haralick.h"
 #include "textures/zernike/zernike.h"
 
+#include "MorphologicalAlgorithms.h" //MM
 #include <iostream>
 #include <string>
 #include <iomanip>
@@ -839,6 +840,8 @@ void ImageMatrix::init() {
     ColorMode = cmGRAY;
     bits      = 8;
     BoundingBoxFlag=false; //MM
+    ROIWidthBeg=0;  //MM
+    ROIHeightBeg=0; //MM
 }
 
 // This is using the fancy shmancy placement-new operator
@@ -923,6 +926,8 @@ void ImageMatrix::copyFields(const ImageMatrix &copy) {
     ColorMode = copy.ColorMode;
     bits      = copy.bits;
     BoundingBoxFlag = copy.BoundingBoxFlag; //MM
+    ROIWidthBeg=copy.ROIWidthBeg;   //MM
+    ROIHeightBeg=copy.ROIHeightBeg; //MM
 }
 void ImageMatrix::copyData(const ImageMatrix &copy) {
     // WriteablePixels() resets the stats
@@ -2787,4 +2792,7 @@ void ImageMatrix::zernike2D(double *zvalues, long *output_size) const {
     mb_zernike2D(*this, 0, 0, zvalues, output_size);
 }
 
-
+//MM:
+void ImageMatrix::Morphology(double *ratios) const {
+    MorphologicalAlgorithms(*this, ratios);
+}

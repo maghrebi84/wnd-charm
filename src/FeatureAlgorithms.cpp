@@ -536,3 +536,24 @@ std::vector<double> ColorHistogram::execute (const ImageMatrix &IN_matrix) const
 
 // Register a static instance of the class using a global bool
 static bool ColorHistogramReg = ComputationTaskInstances::add (new ColorHistogram);
+
+
+//===========================================================================  //MM
+
+Morphological::Morphological() : FeatureAlgorithm ("Morphological", 30) {  //?? Need to fix 30 later
+    //cout << "Instantiating new " << name << " object." << endl;
+}
+
+std::vector<double> Morphological::execute (const ImageMatrix &IN_matrix) const {
+    std::vector<double> coeffs;
+    if (verbosity > 3) std::cout << "calculating " << name << std::endl;
+
+    coeffs.resize (n_features, 0);
+
+    IN_matrix.Morphology(coeffs.data());
+    return coeffs;
+}
+
+
+// Register a static instance of the class using a global bool
+static bool MorphologicalsReg = ComputationTaskInstances::add (new Morphological);

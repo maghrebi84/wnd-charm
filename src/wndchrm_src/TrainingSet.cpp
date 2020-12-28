@@ -1818,6 +1818,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
 
                 ROI_Bounding_Box.BoundingBoxFlag=true;
+
+                ROI_Bounding_Box.ROIHeightBeg=ROIHeightBeg;
+                ROI_Bounding_Box.ROIWidthBeg=ROIWidthBeg;
+
                 //MM ROI_Bounding_Box.allocate (ROI_Bounding_Box.ROIWidth+1, ROI_Bounding_Box.ROIHeight+1);
                 ROI_Bounding_Box.allocate (ROIWidthEnd-ROIWidthBeg+1, ROIHeightEnd-ROIHeightBeg+1);
 

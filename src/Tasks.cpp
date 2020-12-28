@@ -370,6 +370,7 @@ const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetbyName (c
     else if (!strcmp(FeatureAlgorithmName,"Fractal")) FeatureName= "FractalFeatures";
     else if (!strcmp(FeatureAlgorithmName,"PixelStatistics")) FeatureName= "PixelIntensityStatistics";
     else if (!strcmp(FeatureAlgorithmName,"Gini")) FeatureName= "GiniCoefficient";
+    else if (!strcmp(FeatureAlgorithmName,"Morphological")) FeatureName= "Morphological";
     else (std::cout<< "Error: Unrecognized FeatureAlgorithmName");
 
     if      (!strcmp(ImageTransformationName,"Original"))      TransformationName= "()";
@@ -757,6 +758,7 @@ void StdFeatureComputationPlans::addStdFeatures (FeatureComputationPlan *the_pla
             "ZernikeCoefficients(Fourier_2D())",
             "ZernikeCoefficients(Fourier_1D_ColumnWise())",
             "ZernikeCoefficients(Fourier_1D_RowWise())"
+            ,"Morphological()"
         };
         for (size_t i = 0; i < ( sizeof(the_fs) / sizeof(the_fs[0]) ); i++) {
             the_plan->add(the_fs[i]);
@@ -802,6 +804,7 @@ void StdFeatureComputationPlans::addStdFeatures (FeatureComputationPlan *the_pla
             "TamuraTextures(Wavelet(Fourier()))",
             "ZernikeCoefficients()",
             "ZernikeCoefficients(Fourier())"
+            ,"Morphological()"
         };
         for (size_t i = 0; i < ( sizeof(the_fs) / sizeof(the_fs[0]) ); i++) {
             the_plan->add(the_fs[i]);
