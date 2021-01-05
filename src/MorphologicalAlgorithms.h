@@ -9,7 +9,14 @@
 
 void GlobalCentroid2(const ImageMatrix &Im, double *x_centroid, double *y_centroid);
 
+void WeightedGlobalCentroid(const ImageMatrix &Im, double *x_centroid, double *y_centroid);
+
 void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios);
+
+
+long EulerNumber(unsigned char ** pix_plane, int mode,int height, int width);
+
+
 
 #endif
 
