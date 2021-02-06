@@ -54,10 +54,15 @@ Installation of WND-CHARM minimally requires a C++ compiler, LibTIFF and FFTW.
     * For convenience, the required OME libraries can be installed using the following steps. For more information, refer to the dockerfile.
     
     `git clone https://github.com/pbsudharsan/ome-files.git`
+    
     `cd  ome-files`
+    
     `pip3 install -r requirements.txt`
+    
     `git submodule update --init --recursive`
+    
     `cmake -H. -BRelease -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./out`
+    
     `cmake --build Release --target install`
     
       
