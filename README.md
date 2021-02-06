@@ -102,6 +102,7 @@ The number of threads can be set using `export OMP_NUM_THREADS=10`. Overall, the
 Furthermore, the functionality to read tiled-tiff images was added in src/cmatrix.cpp using both the native libtiff library as well as OME-Files library. WND-CHARM can now switch between libtiff and OME-Files libraries to read tiled-tiff images using a variable in src/cmatrix.cpp named useOMELibrary. Following example shows how to configure the WND-CHARM to take into effect the linkage with OME-Files.
 
 ./configure --prefix=/Path/To/WND-CHARM/Binary LIBS='-L/Path/To/Installed/OME-Files/Library -lome-files -lome-xml -lome-xalan-util -lome-common -lome-xerces-util -L/usr/lib/x86_64-linux-gnu/ -lboost_system -lxerces-c-3.2' CXXFLAGS='-g -O2 -fopenmp -I/Path/To/Installed/OME-Files/Include/Files'
+
 Then, run: make install
 
        
