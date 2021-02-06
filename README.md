@@ -50,7 +50,15 @@ Installation of WND-CHARM minimally requires a C++ compiler, LibTIFF and FFTW.
     * Some X11 libraries must be installed prior to compiling/installing PHYLIP (`make install` in the src dir.)
         * CentOS/RedHat: `sudo yum install libX11-devel libXt-devel libXaw-devel`
         * Ubuntu/Debian: `sudo apt-get install libX11-dev libxt-dev libxaw7-dev`
-
+* [OME-Files](https://gitlab.com/codelibre/ome): An alternative to libtiff for reading the (tiled) tiff files 
+    * For convenience, the required OME libraries can be installed using the following steps. For more information, refer to the dockerfile.
+    `git clone https://github.com/pbsudharsan/ome-files.git`
+    `cd  ome-files`
+    `pip3 install -r requirements.txt`
+    `git submodule update --init --recursive`
+    `cmake -H. -BRelease -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./out`
+    `cmake --build Release --target install`
+      
 #### WND-CHARM Python API additional dependencies
 The WND-CHARM Python API additionally requires the Python development package, SWIG, and the common Python 3rd-party packages `numpy` and `scipy`. Optionally, result visualization tools are enabled by installing the package `matplotlib`. To run the provided example scripts, the package `argparse` is required (included with Python 2.7+).
 
