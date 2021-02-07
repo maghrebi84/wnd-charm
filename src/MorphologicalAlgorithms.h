@@ -13,12 +13,9 @@ void WeightedGlobalCentroid(const ImageMatrix &Im, double * x_centroid, double *
 
 void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios);
 
-
-long EulerNumber(unsigned char ** pix_plane, int mode,int height, int width);
-
+long EulerNumber(unsigned char * pix_plane, int mode,int height, int width);
 
 double** readLabeledImage(char * ROIPath, uint32_t * imageWidth, uint32_t * imageLength);
-
 
 void Extrema (const ImageMatrix& Im, double *ratios);
 

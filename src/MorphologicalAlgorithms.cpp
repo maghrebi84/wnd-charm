@@ -1,5 +1,4 @@
-﻿
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+﻿/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 /* Written by:                                                                   */
 /*        Mahdi Maghrebi <mahdi.maghrebi [at] nih [dot] gov>                     */
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -22,8 +21,6 @@
 #include <ome/files/tiff/IFD.h>
 #include <tiffio.h>
 
-#include <fstream>;  //??
-
 using ome::files::dimension_size_type;
 using ome::files::FormatReader;
 using ome::files::MetadataMap;
@@ -31,7 +28,6 @@ using ome::files::VariantPixelBuffer;
 using ome::files::PixelBuffer;
 using namespace std;
 using namespace cv;
-
 
 static void readOriginalMetadata2(const FormatReader& reader, std::ostream& stream, int tileType, uint32_t& tileWidth, uint32_t& tileLength,
                                   uint32_t& imageWidth, uint32_t& imageLength,uint32_t& bitsPerSample,uint16_t& samplesPerPixel)
@@ -66,7 +62,6 @@ static void readOriginalMetadata2(const FormatReader& reader, std::ostream& stre
             tileWidth = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileWidthKey));
             tileLength = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileLengthKey));
         }
-
     }
 }
 
@@ -133,8 +128,7 @@ struct Visitor2
     }
 };
 
-
-long EulerNumber(unsigned char ** pix_plane, int mode, int height, int width) {
+long EulerNumber(unsigned char * arr, int mode, int height, int width) {
     unsigned long x, y;
     size_t i;
     // quad-pixel match patterns
@@ -174,10 +168,11 @@ long EulerNumber(unsigned char ** pix_plane, int mode, int height, int width) {
         for (x = 1; x < width; x++) {
             // Get the quad-pixel at this image location
             Imq = 0;
-            if (pix_plane[y-1][x-1] > 0) Imq |=  (1 << 3);
-            if (pix_plane[y-1][x] > 0) Imq |=  (1 << 2);
-            if (pix_plane[y][x-1] > 0) Imq |=  (1 << 1);
-            if (pix_plane[y][x] > 0) Imq |=  (1 << 0);
+            if (arr[(y-1)*width+x-1] > 0) Imq |=  (1 << 3);
+            if (arr[(y-1)*width+x] > 0) Imq |=  (1 << 2);
+            if (arr[y*width+x-1] > 0) Imq |=  (1 << 1);
+            if (arr[y*width+x] > 0) Imq |=  (1 << 0);
+
             // find the matching pattern
             for (i = 0; i < 10; i++) if (Imq == Px[i]) break;
             // unsigned i always >= 0
@@ -406,22 +401,22 @@ void Extrema (const ImageMatrix& Im, double *ratios){
     float P8y = LeftMost_Top-0.5+Im.ROIHeightBeg;
     float P8x = LeftMostIndex-0.5+Im.ROIWidthBeg;
 
-    ratios[70]=P1x;
-    ratios[71]=P2x;
-    ratios[72]=P3x;
-    ratios[73]=P4x;
-    ratios[74]=P5x;
-    ratios[75]=P6x;
-    ratios[76]=P7x;
-    ratios[77]=P8x;
-    ratios[78]=P1y;
-    ratios[79]=P2y;
-    ratios[80]=P3y;
-    ratios[81]=P4y;
-    ratios[82]=P5y;
-    ratios[83]=P6y;
-    ratios[84]=P7y;
-    ratios[85]=P8y;
+    ratios[17]=P1x;
+    ratios[18]=P2x;
+    ratios[19]=P3x;
+    ratios[20]=P4x;
+    ratios[21]=P5x;
+    ratios[22]=P6x;
+    ratios[23]=P7x;
+    ratios[24]=P8x;
+    ratios[25]=P1y;
+    ratios[26]=P2y;
+    ratios[27]=P3y;
+    ratios[28]=P4y;
+    ratios[29]=P5y;
+    ratios[30]=P6y;
+    ratios[31]=P7y;
+    ratios[32]=P8y;
 
     return;
 }
@@ -431,7 +426,6 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //----------Total Number of ROI Pixels--------------
     int PixelsCount=Im.stats.n();
-
     ratios[0]=(double)PixelsCount;
 
     //---------------Position and size of the smallest box containing the region (Bounding Box)---------
@@ -448,14 +442,14 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     //--------------Spatial Centroids----------------
     double xCentroid,yCentroid;
     GlobalCentroid2(Im,&xCentroid,&yCentroid);
-    ratios[5]=xCentroid;
-    ratios[6]=yCentroid;
+    ratios[6]=xCentroid;
+    ratios[7]=yCentroid;
 
     //Weighted Centroid
     double xWCentroid,yWCentroid;
     WeightedGlobalCentroid(Im,&xWCentroid,&yWCentroid);
-    ratios[50]=xWCentroid;
-    ratios[51]=yWCentroid;
+    ratios[8]=xWCentroid;
+    ratios[9]=yWCentroid;
 
     //--------------Statistics and Moments-----------
     double mean= Im.stats.mean();
@@ -463,7 +457,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double min= Im.stats.min();
     double median=Im.get_median();
 
-    uchar* arr = new uchar[Im.height*Im.width];
+    uchar * arr = new uchar[Im.height*Im.width];
 
     readOnlyPixels in_plane = Im.ReadablePixels();
 
@@ -490,13 +484,13 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double Skewness= (TrpdTmp/Im.stats.n())/pow(STDEV,3);
     double Kurtosis= (QuadTmp/Im.stats.n())/pow(Variance,2) - 3;
 
-    ratios[100]=mean;
-    ratios[101]=min;
-    ratios[102]=max;
-    ratios[103]=median;
-    ratios[104]=STDEV;
-    ratios[105]=Skewness;
-    ratios[106]=Kurtosis;
+    ratios[10]=mean;
+    ratios[11]=min;
+    ratios[12]=max;
+    ratios[13]=median;
+    ratios[14]=STDEV;
+    ratios[15]=Skewness;
+    ratios[16]=Kurtosis;
 
     //--------------Fitting an Ellipse--------------------------------
     //Reference: https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/19028/versions/1/previews/regiondata.m/index.html
@@ -535,12 +529,11 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     }
     if (num == 0 && den == 0) Orientation = 0;
     else Orientation = (180/M_PI) * atan(num/den);
--
+
     //--------------Coordinates of the extreme Pixels--------
     Extrema (Im, ratios);
 
     //--------------convexHull--------------------------------
-
     cv::Mat matrix = cv::Mat(Im.height,Im.width,CV_8UC1,arr);
 
     if( matrix.empty() ) {
@@ -548,7 +541,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         return ;
     }
 
-    vector<vector<Point>> contours;
+    vector<vector<cv::Point>> contours;
     findContours( matrix, contours, RETR_CCOMP, CHAIN_APPROX_TC89_KCOS ); //CHAIN_APPROX_TC89_KCOS had better performance when validated against MATLAB
     vector<vector<Point>> hull(1);
     vector<Point> AllPointsOnContours; // Make One vector from all the Points on the Contours of Various Objects
@@ -558,10 +551,12 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             AllPointsOnContours.push_back(contours[i][j]);
 
     convexHull(AllPointsOnContours, hull[0]);
+
+    //------------------------Euler Number------------------------------------------
+    long Euler= EulerNumber(arr,8,Im.height,Im.width);
     delete [] arr;
 
-    //--------------------------------------
-
+    //------------------------------Some Other Statistics--------
     double extent = (float)PixelsCount/(float)boundingBoxArea;
     double convexHullArea = contourArea(hull[0]);
     double solidity = PixelsCount/convexHullArea;
@@ -576,21 +571,20 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     double Circularity=4*M_PI*PixelsCount/(ROIPerimeter*ROIPerimeter);
 
-    ratios[71]=extent;
-    ratios[71]=convexHullArea;
-    ratios[71]=solidity;
-    ratios[71]=AspectRatio;
-    ratios[71]=EquivalentDiameter;
-    ratios[71]=ROIPerimeter;
-    ratios[71]=Circularity;
-    //---------------------Min/Max Feret Diameter/Angle-----------------------
+    ratios[33]=extent;
+    ratios[34]=convexHullArea;
+    ratios[35]=solidity;
+    ratios[36]=AspectRatio;
+    ratios[37]=EquivalentDiameter;
+    ratios[38]=ROIPerimeter;
+    ratios[39]=Circularity;
 
+    //---------------------Min/Max Feret Diameter/Angle-----------------------
     double * MaxDistanceArray = new double [180];
     int * Point1Index = new int [180];
     int * Point2Index = new int [180];
 
     for (int i=0; i<180; ++i){
-
         float theta=i*M_PI/180;
         double MaxXCoord=-INF;
         double MinXCoord=INF;
@@ -624,31 +618,31 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretIndex=i;}
     }
 
-    ratios[200]=MaxFeretDiameter;
+    ratios[40]=MaxFeretDiameter;
 
-    ratios[202]=hull[0][Point2Index[MaxFeretIndex]].x+0.5+Im.ROIWidthBeg;  //0.5 was added for consistency with MATLAB
-    ratios[203]=hull[0][Point1Index[MaxFeretIndex]].x+0.5+Im.ROIWidthBeg;  //0.5 was added for consistency with MATLAB
-    ratios[204]=hull[0][Point2Index[MaxFeretIndex]].y+0.5+Im.ROIHeightBeg;  //0.5 was added for consistency with MATLAB
-    ratios[205]=hull[0][Point1Index[MaxFeretIndex]].y+0.5+Im.ROIHeightBeg;  //0.5 was added for consistency with MATLAB
+    ratios[42]=hull[0][Point2Index[MaxFeretIndex]].x+0.5+Im.ROIWidthBeg;  //0.5 was added for consistency with MATLAB
+    ratios[43]=hull[0][Point1Index[MaxFeretIndex]].x+0.5+Im.ROIWidthBeg;  //0.5 was added for consistency with MATLAB
+    ratios[44]=hull[0][Point2Index[MaxFeretIndex]].y+0.5+Im.ROIHeightBeg;  //0.5 was added for consistency with MATLAB
+    ratios[45]=hull[0][Point1Index[MaxFeretIndex]].y+0.5+Im.ROIHeightBeg;  //0.5 was added for consistency with MATLAB
 
-    ratios[201]=180/M_PI*atan((ratios[204]-ratios[205])/(ratios[202]-ratios[203]));
-    if (ratios[201] < 0) ratios[201]=180+ratios[201];
+    ratios[41]=180/M_PI*atan((ratios[44]-ratios[45])/(ratios[42]-ratios[43]));
+    if (ratios[41] < 0) ratios[41]=180+ratios[41];
 
 
-    ratios[206]=MinFeretDiameter;
+    ratios[46]=MinFeretDiameter;
 
-    ratios[208]=hull[0][Point2Index[MinFeretIndex]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
-    ratios[209]=hull[0][Point1Index[MinFeretIndex]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
-    ratios[210]=hull[0][Point2Index[MinFeretIndex]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
-    ratios[211]=hull[0][Point1Index[MinFeretIndex]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
+    ratios[48]=hull[0][Point2Index[MinFeretIndex]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
+    ratios[49]=hull[0][Point1Index[MinFeretIndex]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
+    ratios[50]=hull[0][Point2Index[MinFeretIndex]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
+    ratios[51]=hull[0][Point1Index[MinFeretIndex]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
 
-    ratios[207]=180/M_PI*atan((ratios[210]-ratios[211])/(ratios[208]-ratios[209]));
-    if (ratios[207] < 0) ratios[207]=180+ratios[207];
+    ratios[47]=180/M_PI*atan((ratios[50]-ratios[51])/(ratios[48]-ratios[49]));
+    if (ratios[47] < 0) ratios[47]=180+ratios[47];
 
     delete [] MaxDistanceArray, Point1Index, Point2Index;
 
 
-    //----------------------Finding Neighbors for the Current ROI----------------------
+    //----------------------Finding Neighbors for the Current ROI-----------------
     /*
     uint32_t imageWidth, imageLength;
     double**  LabeledImage= readLabeledImage(Im.ROIPath,&imageWidth, &imageLength);
@@ -689,14 +683,14 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
 
     delete [] LabeledImage;
-
+    ratios[52]=NeighborIDs.size();
 */
 
-    //--------------------------------Hexagonality/Polygonality--------------------------------
+    //--------------------------------Hexagonality/Polygonality-------------------
     //This section is a translation from the following Python code
     //https://github.com/LabShare/polus-plugins/blob/master/polus-feature-extraction-plugin/src/main.py
 
-    int neighbors=4; //NeighborIDs.size()
+    int neighbors=4; //NeighborIDs.size()???
     double area=PixelsCount;
     double perimeter = ROIPerimeter;
 
@@ -807,13 +801,13 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_sd=sqrt((area_ratio_sd*area_ratio_sd+perim_ratio_sd*perim_ratio_sd)/2);
         double hex_ave = 10*(hex_area_ratio + hex_size_ratio)/2;
 
-        ratios[1]=poly_size_ratio;
-        ratios[2]=poly_area_ratio;
-        ratios[3]=poly_ave;
-        ratios[4]=hex_size_ratio;
-        ratios[5]=hex_area_ratio;
-        ratios[6]=hex_ave;
-        ratios[7]=hex_sd;
+        ratios[53]=poly_size_ratio;
+        ratios[54]=poly_area_ratio;
+        ratios[55]=poly_ave;
+        ratios[56]=hex_size_ratio;
+        ratios[57]=hex_area_ratio;
+        ratios[58]=hex_ave;
+        ratios[59]=hex_sd;
 
     }
     else if (neighbors <3 ){
@@ -825,57 +819,19 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_ave = std::numeric_limits<double>::quiet_NaN();
         double hex_sd = std::numeric_limits<double>::quiet_NaN();
 
-        ratios[40]=poly_size_ratio;
-        ratios[41]=poly_area_ratio;
-        ratios[42]=poly_ave;
-        ratios[43]=hex_size_ratio;
-        ratios[44]=hex_area_ratio;
-        ratios[45]=hex_ave;
-        ratios[46]=hex_sd;
+        ratios[53]=poly_size_ratio;
+        ratios[54]=poly_area_ratio;
+        ratios[55]=poly_ave;
+        ratios[56]=hex_size_ratio;
+        ratios[57]=hex_area_ratio;
+        ratios[58]=hex_ave;
+        ratios[59]=hex_sd;
     }
 
-    //------------------------------------------------------------------
-
-    //Reconstruct LabelledImage
-
-    unsigned char ** LabeledImageMatrix2 = new unsigned char *[Im.height];
-    for (int i=0; i<Im.height; ++i) LabeledImageMatrix2[i] = new unsigned char [Im.width];
-
-
-    //??  copyFields (matrix_IN);
-    //??  allocate (matrix_IN.width, matrix_IN.height);
-
-    //writeablePixels Labeled_plane = LabeledImageMatrix2.WriteablePixels();
-    //readOnlyPixels in_plane = matrix_IN.ReadablePixels();
-
-    //writeablePixels pix_plane = ROI_Bounding_Box.WriteablePixels();
-    //readOnlyPixels in_plane = image_matrix.ReadablePixels();
-
-    /* classify the pixels by the threshold */
-    /*for (unsigned int a = 0; a < width*height; a++){
-    if (std::isnan(in_plane.array().coeff(a))) {(out_plane.array())(a)=in_plane.array().coeff(a); continue;} //MM
-
-    if (in_plane.array().coeff(a) > OtsuGlobalThreshold) (out_plane.array())(a) = stats.add (1);
-    else (out_plane.array())(a) = stats.add (0);
-}
-
-*/
-    for (int y = 0; y < Im.height; ++y)
-        for (int x = 0; x < Im.width; ++x){
-            //                if (std::isnan(in_plane (y,x))) LabeledImageMatrix2[y][x]=std::numeric_limits<double>::quiet_NaN();
-            if (std::isnan(in_plane (y,x))) LabeledImageMatrix2[y][x]=(unsigned char)0;
-            else LabeledImageMatrix2[y][x]=(unsigned char)1;
-        }
-
-    long Euler= EulerNumber(LabeledImageMatrix2,8,Im.height,Im.width);
-
-    delete [] LabeledImageMatrix2;
-
-    //--------------------Mode and Entropy------------------------------------------
+    //------------------------------Mode and Entropy-----------------------------
     int intMax=(int)max;
     int intMin=(int)min;
     int Size=intMax-intMin+1;
-
     int* histBins =new int [Size];
 
     for (int i=0; i<Size; ++i) histBins[i]=0;
@@ -901,11 +857,12 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     int ModeValue=maxBinIndex+intMin; //mode value
 
+    ratios[60]=entropy;
+    ratios[61]=(double)ModeValue;
+
     cout << "Finished!\n" << endl;
 
-
-
-
+    return;
 }
 
 

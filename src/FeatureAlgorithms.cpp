@@ -537,10 +537,10 @@ std::vector<double> ColorHistogram::execute (const ImageMatrix &IN_matrix) const
 // Register a static instance of the class using a global bool
 static bool ColorHistogramReg = ComputationTaskInstances::add (new ColorHistogram);
 
+//MM:
+//===========================================================================
 
-//===========================================================================  //MM
-
-Morphological::Morphological() : FeatureAlgorithm ("Morphological", 30) {  //?? Need to fix 30 later
+Morphological::Morphological() : FeatureAlgorithm ("Morphological", 62) {
     //cout << "Instantiating new " << name << " object." << endl;
 }
 
