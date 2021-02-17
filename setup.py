@@ -103,7 +103,9 @@ wndchrm_module = Extension('_wndcharm',
 		'src/gsl/specfunc.cpp',
 	],
 	include_dirs=['./','src/', '/usr/local/include'],
-	swig_opts=['-threads', '-c++', '-I./', '-I./src', '-outdir', 'wndcharm'],
+	swig_opts=['-threads', '-c++', '-I./','-I/home/maghrebim2/Work/WND-CHARM/OMELibrary/Installation_ome_all/ome-files/Build/include', '-I./src', '-outdir', 'wndcharm'],
+	extra_compile_args=['-fopenmp','-I/home/maghrebim2/Work/WND-CHARM/OMELibrary/Installation_ome_all/ome-files/Build/include'],
+	extra_link_args=['-L/home/maghrebim2/Work/WND-CHARM/OMELibrary/Installation_ome_all/ome-files/Build/lib','-lgomp','-lome-files','-lome-xml','-lome-xalan-util','-lome-common','-lome-xerces-util'],
 	libraries=['tiff','fftw3'],
 )
 
