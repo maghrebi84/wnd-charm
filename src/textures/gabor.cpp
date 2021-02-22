@@ -52,7 +52,12 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
 
     #pragma omp parallel 
 	{
-		double* cThread = new double[mc*nc];
+        double* cThread = new double[mc*nc];
+
+        for (int j = 0; j < mc; ++j)
+            for (int i = 0; i < nc; ++i)
+                cThread[j*nc+i] = 0;
+
         #pragma omp for schedule(dynamic) 
 		for (int j = 0; j < mb; ++j) {    /* For each element in b */
 			for (int i = 0; i < nb; ++i) {
@@ -79,7 +84,7 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
 				}
 			}					
 		}
-	}	
+        }
 }
 
 
