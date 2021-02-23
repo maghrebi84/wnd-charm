@@ -71,7 +71,7 @@
 #include <tiffio.h>
 //using namespace ome::files::tiff; //Has conflicts with #include <tiffio.h>
 
-// value of 1: using OMELibrary to read tiled tiff formats
+//value of 1: using OMELibrary to read tiled tiff formats
 //Any other value: using libtiff to read tiled tiff formats
 #define useOMELibrary 1
 
@@ -294,7 +294,10 @@ int ImageMatrix::LoadTIFF(char *filename) {
         unsigned short int bits=bitsPerSample;
         spp= samplesPerPixel;
 
-        if ( ! (bits == 8 || bits == 16) ) return (0); // only 8 and 16-bit images supported.
+        if ( ! (bits == 8 || bits == 16) ) {
+            cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
+            return (0);
+        } // only 8 and 16-bit images supported.
         if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
         // regardless of how the image comes in, the stored mode is HSV
         if (spp == 3) {
@@ -480,6 +483,10 @@ int ImageMatrix::LoadTIFF(char *filename) {
             }
 
         }
+
+        // Explicitly close reader
+        reader->close();
+
         return(1);
     }
     //---------------------------------------------------------------------------------------
@@ -511,7 +518,10 @@ int ImageMatrix::LoadTIFF(char *filename) {
             TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
             TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
 
-            if ( ! (bits == 8 || bits == 16) ) return (0); // only 8 and 16-bit images supported.
+            if ( ! (bits == 8 || bits == 16) ) {
+                cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
+                return (0); // only 8 and 16-bit images supported.
+            }
             TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
             if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
             // regardless of how the image comes in, the stored mode is HSV
@@ -537,7 +547,12 @@ int ImageMatrix::LoadTIFF(char *filename) {
             writeablePixels pix_plane = WriteablePixels();
             writeableColors clr_plane = WriteableColors();
 
-            if (tileWidth != 0 && tileLength != 0){
+            if (tileWidth < width && tileLength < height){
+                if (tileWidth != 1024) cout<<" Warning: tileWidth is not 1024 and instead is="<< tileWidth<<endl;
+                if (tileLength != 1024) cout<<" Warning: tileLength is not 1024 and instead is="<< tileLength<<endl;
+
+                cout<<" It is tiled tiff format processed by libtiff library"<<endl;
+
                 buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
                 buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
 
@@ -628,6 +643,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
                 _TIFFfree(buf16tiled);
             }
             else {
+                cout<<" It is non-tiled tiff format processed by libtiff library"<<endl;
                 /* read TIFF header and determine image size */
                 buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif)*spp);
                 buf16 = (unsigned short *)_TIFFmalloc( (tsize_t)sizeof(unsigned short)*TIFFScanlineSize(tif)*spp );
@@ -701,6 +717,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
 
         else return(0);
 
+        cout<<" Finished reading image using libtiff library"<<endl;
         return(1);
     }
 }
