@@ -114,7 +114,7 @@ void getChCoeff1D(double *f,double *out,double *Tj,int N,int width) {
 			for (int a = 0; a < width; a++) tj[a] = tj[a]*Inversewidth;
 		} 
 		else {
-			for (int a = 0; a < width; a++) tj[a] *= 2*Inversewidth;
+                        for (int a = 0; a < width; a++) tj[a] =tj[a]* 2/(double)width;
 		}
 
 		out[jj] = 0;
