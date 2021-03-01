@@ -291,7 +291,7 @@ int ImageMatrix::LoadTIFF(char *filename) {
         Moments2 R_stats, G_stats, B_stats;
         unsigned int width=imageWidth;
         unsigned int height=imageLength;
-        unsigned short int bits=bitsPerSample;
+        bits=bitsPerSample;
         spp= samplesPerPixel;
 
         if ( ! (bits == 8 || bits == 16) ) {

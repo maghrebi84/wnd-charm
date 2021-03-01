@@ -99,10 +99,17 @@ The performance of WND-CHARM was profiled and improved using the following techn
     
 The number of threads can be set using `export OMP_NUM_THREADS=10`. Overall, the performance of WND-CHARM was improved by 45% using the new changes and by running with 10 threads.
 
-Furthermore, the functionality to read tiled-tiff images was added in src/cmatrix.cpp using both the native libtiff library as well as OME-Files library. WND-CHARM can now switch between libtiff and OME-Files libraries to read tiled-tiff images using a variable in src/cmatrix.cpp named useOMELibrary. Following example shows how to configure the WND-CHARM to take into effect the linkage with OME-Files.
+Furthermore, the functionality to read tiled-tiff images was added in src/cmatrix.cpp using both the native libtiff library as well as OME-Files library. WND-CHARM can now switch between libtiff and OME-Files libraries to read tiff (tiled or non-tiled) images using a variable in src/cmatrix.cpp named useOMELibrary. Following example shows how to configure the WND-CHARM to take into effect the linkage with OME-Files.
 
 ./configure --prefix=/Path/To/WND-CHARM/Binary LIBS='-L/Path/To/Installed/OME-Files/Library -lome-files -lome-xml -lome-xalan-util -lome-common -lome-xerces-util -L/usr/lib/x86_64-linux-gnu/ -lboost_system -lxerces-c-3.2' CXXFLAGS='-g -O2 -fopenmp -I/Path/To/Installed/OME-Files/Include/Files'
 
 Then, run: make install
+
+In addition to the above changes, unit tests for the current implementations in WND-CHARM were tested and successfully passed. More importantly, the unit tests for the original WND-CHARM were reviewed and fixed by modifying the reference values for Haralick Textures (components 16 and 17) in the following files. The unit tests are now operational for the original WND-CHARM as well as the current implementations.
+
+/tests/pywndcharm_tests/lymphoma_eosin_channel_MCL_test_img_sj-05-3362-R2_001_E-t6x5_5_4-l.sig
+/tests/pywndcharm_tests/lymphoma_eosin_channel_MCL_test_img_sj-05-3362-R2_001_E_t6x5_REFERENCE_SIGFILES.zip
+/tests/wndchrm_tests/010067_301x300-l_precalculated.sig
+
 
        

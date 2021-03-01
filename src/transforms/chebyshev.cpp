@@ -115,6 +115,7 @@ void getChCoeff1D(double *f,double *out,double *Tj,int N,int width) {
 		} 
 		else {
                         for (int a = 0; a < width; a++) tj[a] =tj[a]* 2/(double)width;
+                        //It is better to have "tj[a] *= 2*Inversewidth;" here, however, this caused an error in unit testing of test_parallel_compute.py
 		}
 
 		out[jj] = 0;
