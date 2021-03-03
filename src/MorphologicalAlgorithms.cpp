@@ -748,7 +748,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
         double sqrdTmp=0;
         for (int i=0; i<area_array.size(); ++i){
-            sqrdTmp= (area_array[i]- area_ratio_ave)*(area_array[i]- area_ratio_ave);
+            sqrdTmp += (area_array[i]- area_ratio_ave)*(area_array[i]- area_ratio_ave);
         }
         double area_ratio_sd=sqrt(sqrdTmp/area_array.size());
 
@@ -792,7 +792,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
         double sqrdTmp2=0;
         for (int i=0; i<perim_array.size(); ++i){
-            sqrdTmp2= (perim_array[i]- perim_ratio_ave)*(perim_array[i]- perim_ratio_ave);
+            sqrdTmp2 += (perim_array[i]- perim_ratio_ave)*(perim_array[i]- perim_ratio_ave);
         }
         double perim_ratio_sd=sqrt(sqrdTmp2/perim_array.size());
 
@@ -801,31 +801,20 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_sd=sqrt((area_ratio_sd*area_ratio_sd+perim_ratio_sd*perim_ratio_sd)/2);
         double hex_ave = 10*(hex_area_ratio + hex_size_ratio)/2;
 
-        ratios[53]=poly_size_ratio;
-        ratios[54]=poly_area_ratio;
-        ratios[55]=poly_ave;
-        ratios[56]=hex_size_ratio;
-        ratios[57]=hex_area_ratio;
-        ratios[58]=hex_ave;
-        ratios[59]=hex_sd;
+        ratios[53]=poly_ave;
+        ratios[54]=hex_ave;
+        ratios[55]=hex_sd;
 
     }
     else if (neighbors <3 ){
-        double poly_size_ratio = std::numeric_limits<double>::quiet_NaN();
-        double poly_area_ratio = std::numeric_limits<double>::quiet_NaN();
+
         double poly_ave = std::numeric_limits<double>::quiet_NaN();
-        double hex_size_ratio = std::numeric_limits<double>::quiet_NaN();
-        double hex_area_ratio = std::numeric_limits<double>::quiet_NaN();
         double hex_ave = std::numeric_limits<double>::quiet_NaN();
         double hex_sd = std::numeric_limits<double>::quiet_NaN();
 
-        ratios[53]=poly_size_ratio;
-        ratios[54]=poly_area_ratio;
-        ratios[55]=poly_ave;
-        ratios[56]=hex_size_ratio;
-        ratios[57]=hex_area_ratio;
-        ratios[58]=hex_ave;
-        ratios[59]=hex_sd;
+        ratios[53]=poly_ave;
+        ratios[54]=hex_ave;
+        ratios[55]=hex_sd;
     }
 
     //------------------------------Mode and Entropy-----------------------------
@@ -857,8 +846,8 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     int ModeValue=maxBinIndex+intMin; //mode value
 
-    ratios[60]=entropy;
-    ratios[61]=(double)ModeValue;
+    ratios[56]=entropy;
+    ratios[57]=(double)ModeValue;
 
     cout << "Finished!\n" << endl;
 
