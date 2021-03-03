@@ -100,13 +100,6 @@ int CombFirst4Moments2D(const ImageMatrix &Im, std::vector<double> &vec) {
 		J1[a] = new double[m];
 	}
 
-//	for (y = 0; y < m; y++) {
-//		for (x = 0; x < n; x++) {
-//			I[x][y] = y+1;
-//			J[x][y] = x+1;
-//		}
-//	}
-
 	for (x = 0; x < n; x++) {
 		for (y = 0; y < m; y++) {
 			I[x][y] = y+1;
@@ -126,13 +119,6 @@ int CombFirst4Moments2D(const ImageMatrix &Im, std::vector<double> &vec) {
 		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index]=z4[a];
 
 		tmpMoments.reset();
-//		for (y = 0; y < m; y++) {
-//			for (x = 0; x < n; x++) {
-//				if (fabs(I[x][y] + ii - J[x][y]) < 1)
-//					tmpMoments.add (pix_plane(y,x));
-//			}
-//		}
-
 		for (x = 0; x < n; x++) {
 			for (y = 0; y < m; y++) {
 				if (fabs(I[x][y] + ii - J[x][y]) < 1)
@@ -148,10 +134,6 @@ int CombFirst4Moments2D(const ImageMatrix &Im, std::vector<double> &vec) {
 
 	/* major diag +45 degrees */
 	/* fliplr J */
-//	for (y = 0; y < m; y++)
-//		for (x = 0; x < n; x++)
-//			J1[x][y] = J[n-1-x][y];
-
 	for (x = 0; x < n; x++)
 		for (y = 0; y < m; y++)
 			J1[x][y] = J[n-1-x][y];
@@ -164,13 +146,6 @@ int CombFirst4Moments2D(const ImageMatrix &Im, std::vector<double> &vec) {
 		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index]=z4[a];
 
 		tmpMoments.reset();
-//		for (y = 0; y < m; y++) {
-//			for (x = 0; x < n; x++) {
-//				if (fabs(I[x][y] + ii - J1[x][y]) < 1)
-//					tmpMoments.add (pix_plane(y,x));
-//			}
-//        }
-
 		for (x = 0; x < n; x++) {      
 			for (y = 0; y < m; y++) {
 				if (fabs(I[x][y] + ii - J1[x][y]) < 1)
@@ -193,13 +168,6 @@ int CombFirst4Moments2D(const ImageMatrix &Im, std::vector<double> &vec) {
 		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index]=z4[a];
 
 		tmpMoments.reset();
-//		for (y = 0; y < m; y++) {
-//			for (x = 0; x < n; x++) {
-//				if (fabs(J[x][y] + ii - n2) < 1)
-//					tmpMoments.add (pix_plane(y,x));
-//			}
-//		}
-
 		for (x = 0; x < n; x++) {
 			for (y = 0; y < m; y++) {
 				if (fabs(J[x][y] + ii - n2) < 1)
@@ -222,13 +190,6 @@ int CombFirst4Moments2D(const ImageMatrix &Im, std::vector<double> &vec) {
 		for (a = 0; a < 4; a++) matr4moments[a][matr4moments_index] = z4[a];
 
 		tmpMoments.reset();
-//		for (y = 0; y < m; y++) {
-//			for (x = 0; x < n; x++) {
-//				if (fabs(I[x][y] + ii - m2) < 1)
-//					tmpMoments.add (pix_plane(y,x));
-//			}
-//       }
-
 		for (x = 0; x < n; x++) {
 			for (y = 0; y < m; y++) {
 				if (fabs(I[x][y] + ii - m2) < 1)

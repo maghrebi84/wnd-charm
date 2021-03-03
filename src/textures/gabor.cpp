@@ -17,12 +17,7 @@
 //    int *flopcnt;	/* flop count */
 
 void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) {
-//	double *p,*q;	/* Pointer to elements in 'a' and 'c' matrices */
-//	double wr,wi;     	/* Imaginary and real weights from matrix b    */
 	int mc,nc;
-//	int k,l,i,j;
-//	double *r;				/* Pointer to elements in 'b' matrix */
-
 	mc = ma+mb-1;
 	nc = (na+nb-1)*2;
 
@@ -30,25 +25,6 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
 	for (int j = 0; j < mc; ++j)     /* For each element in b */
 		for (int i = 0; i < nc; ++i)
 			c[j*nc+i] = 0;
-
-    /* Perform convolution */
-//	r = b;
-//	for (j = 0; j < mb; ++j) {    /* For each element in b */
-//		for (i = 0; i < nb; ++i) {
-//			wr = *(r++);			/* Get weight from b matrix */
-//			wi = *(r++);
-//			p = c + j*nc + i*2;                 /* Start at first row of a in c. */
-//			q = a;
-//			for (l = 0; l < ma; l++) {               /* For each row of a ... */
-//				for (k = 0; k < na; k++) {
-//					*(p++) += *(q) * wr;	        /* multiply by the real weight and add.      */
-//					*(p++) += *(q++) * wi;       /* multiply by the imaginary weight and add. */
-//				}
-//				p += (nb-1)*2;	                /* Jump to next row position of a in c */
-				//		*flopcnt += 2*ma*na;
-//			}
-//		}
-//	}
 
     #pragma omp parallel 
 	{
@@ -72,7 +48,6 @@ void conv2comp(double *c, double *a, double *b, int na, int ma, int nb, int mb) 
 						*(p++) += *(q++) * wi;       /* multiply by the imaginary weight and add. */
 					}
 					p += (nb-1)*2;	                /* Jump to next row position of a in c */
-					//		*flopcnt += 2*ma*na;
 				}
 			}
 		}
