@@ -2604,9 +2604,11 @@ double ImageMatrix::OtsuBinaryMaskTransform (const ImageMatrix &matrix_IN) {
 
     /* classify the pixels by the threshold */
     for (unsigned int a = 0; a < width*height; a++){
-        if (std::isnan(in_plane.array().coeff(a))) {(out_plane.array())(a)=in_plane.array().coeff(a); continue;} //MM
+        // if (std::isnan(in_plane.array().coeff(a))) {(out_plane.array())(a)=in_plane.array().coeff(a); continue;} //MM
+       //MM if (in_plane.array().coeff(a) > OtsuGlobalThreshold) (out_plane.array())(a) = stats.add (1);
 
-        if (in_plane.array().coeff(a) > OtsuGlobalThreshold) (out_plane.array())(a) = stats.add (1);
+        if (std::isnan(in_plane.array().coeff(a))) (out_plane.array())(a)=stats.add (0);
+        else if (in_plane.array().coeff(a) > OtsuGlobalThreshold) (out_plane.array())(a) = stats.add (1);
         else (out_plane.array())(a) = stats.add (0);
     }
     

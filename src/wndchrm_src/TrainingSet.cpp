@@ -1640,6 +1640,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         double** LabeledImageMatrix;
         vector<double> uniqueClasses;
         uniqueClasses.push_back(0);
+        char * LabeledImageFullPath;
 
         //Bounding Box Implementation
         uint32_t imageWidth, imageLength;
@@ -1671,6 +1672,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 return -1;
             }
 
+            LabeledImageFullPath=LabeledImagePath;
             shared_ptr<ome::files::FormatReader> reader(std::make_shared<ome::files::in::TIFFReader>());
 
             // Set reader options before opening a file
@@ -1820,6 +1822,27 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
                 ROI_Bounding_Box.BoundingBoxFlag=true;
 
+
+                ROI_Bounding_Box.ROIWidthBegActual=ROIWidthBeg;
+                ROI_Bounding_Box.ROIHeightBegActual=ROIHeightBeg;
+                ROI_Bounding_Box.ROIWidthActual=ROIWidthEnd-ROIWidthBeg+1;
+                ROI_Bounding_Box.ROIHeightActual=ROIHeightEnd-ROIHeightBeg+1;
+
+                int pixelBuffer=2;  //PixelBuffer is needed in accurate computation of some features such as Euler Number
+
+                if (ROIHeightBeg >= pixelBuffer) ROIHeightBeg -=pixelBuffer;
+                else ROIHeightBeg=0;
+
+                if (ROIHeightEnd+pixelBuffer < imageLength) ROIHeightEnd +=pixelBuffer;
+                else ROIHeightEnd=imageLength;
+
+                if (ROIWidthBeg >= pixelBuffer) ROIWidthBeg -=pixelBuffer;
+                else ROIWidthBeg=0;
+
+                if (ROIWidthEnd+pixelBuffer < imageWidth) ROIWidthEnd +=pixelBuffer;
+                else ROIWidthEnd=imageWidth;
+
+
                 ROI_Bounding_Box.ROIHeightBeg=ROIHeightBeg;
                 ROI_Bounding_Box.ROIWidthBeg=ROIWidthBeg;
 
@@ -1959,6 +1982,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             }
             else if (strcmp(featureset->ImageTransformationName,"")) {
                 feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+
+                if (!strcmp(featureset->FeatureAlgorithmName,"Morphological")) tile_matrix_p->ROIPath=LabeledImageFullPath;
             }
             else {
                 if (featureset->feature_opts.compute_colors) {

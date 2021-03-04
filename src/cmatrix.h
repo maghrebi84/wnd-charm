@@ -177,6 +177,9 @@ public:
 
     bool BoundingBoxFlag; //MM
     int ROIHeightBeg,ROIWidthBeg; //MM
+    int ROIHeightBegActual,ROIWidthBegActual; //MM0203
+    int ROIHeightActual, ROIWidthActual; //MM0203
+    char* ROIPath;  //MM0114
     
 	// N.B.: Re: ctor, see note in implementation
 	ImageMatrix () : _pix_plane (NULL,0,0), _clr_plane (NULL,0,0), downsampled(0),
