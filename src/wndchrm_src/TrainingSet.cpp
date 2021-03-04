@@ -1756,7 +1756,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             sort(uniqueClasses.begin(),uniqueClasses.end());
             uniqueClasses.erase(unique(uniqueClasses.begin(), uniqueClasses.end()),uniqueClasses.end());
 
-            uniqueClasses.erase(std::find(uniqueClasses.begin(),uniqueClasses.end(),0));
+            if (std::find(uniqueClasses.begin(),uniqueClasses.end(),0) != uniqueClasses.end())
+                uniqueClasses.erase(std::find(uniqueClasses.begin(),uniqueClasses.end(),0));
 
             if (uniqueClasses.size()==0) printf(" No class were found in the Labeled Image ");
         }

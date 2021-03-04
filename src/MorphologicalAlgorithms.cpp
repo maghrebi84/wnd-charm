@@ -660,8 +660,8 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             int Px=borderPoint.x+Im.ROIWidthBeg;
             int Py=borderPoint.y+Im.ROIHeightBeg;
 
-            for (int l=Py-PixelDistance; l=Py+PixelDistance; ++l)
-                for (int k=Px-PixelDistance; k=Px+PixelDistance; ++k){
+            for (int l=Py-PixelDistance; l<Py+PixelDistance+1; ++l)
+                for (int k=Px-PixelDistance; k<Px+PixelDistance+1; ++k){
 
                     if (k<0) k=0;
                     if (k>imageWidth) k=imageWidth;
@@ -677,8 +677,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
         sort(NeighborIDs.begin(),NeighborIDs.end());
         NeighborIDs.erase(unique(NeighborIDs.begin(), NeighborIDs.end()),NeighborIDs.end());
-
-        NeighborIDs.erase(std::find(NeighborIDs.begin(),NeighborIDs.end(),0));
+        if (std::find(NeighborIDs.begin(),NeighborIDs.end(),0) != NeighborIDs.end())  NeighborIDs.erase(std::find(NeighborIDs.begin(),NeighborIDs.end(),0));
 
         printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
 
