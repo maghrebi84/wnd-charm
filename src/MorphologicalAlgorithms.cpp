@@ -482,7 +482,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double Variance= SqrdTmp/Im.stats.n();
     double STDEV= sqrt(Variance);
     double Skewness= (TrpdTmp/Im.stats.n())/pow(STDEV,3);
-    double Kurtosis= (QuadTmp/Im.stats.n())/pow(Variance,2) - 3;
+    double Kurtosis= (QuadTmp/Im.stats.n())/pow(Variance,2);
 
     ratios[10]=mean;
     ratios[11]=min;
