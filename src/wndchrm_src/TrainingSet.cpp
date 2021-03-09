@@ -1805,9 +1805,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
             if (strcmp(featureset->ROIPath,"")){//MM
                 //Bounding Box Implementation
-                ROIHeightBeg= imageLength;
+                ROIHeightBeg= imageLength-1;
                 ROIHeightEnd=0;
-                ROIWidthBeg= imageWidth;
+                ROIWidthBeg= imageWidth-1;
                 ROIWidthEnd=0;
 
                 for (unsigned int y = 0; y < imageLength; ++y)
@@ -1834,13 +1834,13 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 else ROIHeightBeg=0;
 
                 if (ROIHeightEnd+pixelBuffer < imageLength) ROIHeightEnd +=pixelBuffer;
-                else ROIHeightEnd=imageLength;
+                else ROIHeightEnd=imageLength-1;
 
                 if (ROIWidthBeg >= pixelBuffer) ROIWidthBeg -=pixelBuffer;
                 else ROIWidthBeg=0;
 
                 if (ROIWidthEnd+pixelBuffer < imageWidth) ROIWidthEnd +=pixelBuffer;
-                else ROIWidthEnd=imageWidth;
+                else ROIWidthEnd=imageWidth-1;
 
 
                 ROI_Bounding_Box.ROIHeightBeg=ROIHeightBeg;

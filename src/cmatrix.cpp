@@ -554,6 +554,14 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
             writeablePixels pix_plane = WriteablePixels();
             writeableColors clr_plane = WriteableColors();
 
+            if (ClassID){
+                for (y = 0; y < height; ++y) {
+                    for (x = 0; x < width; ++x) {
+                        pix_plane (y,x) = stats.add (std::numeric_limits<double>::quiet_NaN());
+                    }
+                }
+            }
+
             if (tileWidth != 0 && tileLength != 0){
                 buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
                 buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
@@ -660,6 +668,12 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                     else TIFFReadScanline(tif, buf16, y);
                     x=0;col=0;
                     while (x<width) {
+
+                        if (ClassID)
+                            if (abs(LabeledImageMatrix[y][x]-ClassID)>1e-6) {
+                                x++; col+=spp; continue;
+                            }
+
                         unsigned char byte_data;
                         unsigned short short_data;
                         double val=0;

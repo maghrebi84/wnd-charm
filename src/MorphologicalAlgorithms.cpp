@@ -643,7 +643,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
 
     //----------------------Finding Neighbors for the Current ROI-----------------
-    /*
+
     uint32_t imageWidth, imageLength;
     double**  LabeledImage= readLabeledImage(Im.ROIPath,&imageWidth, &imageLength);
     int  PixelDistance=3;
@@ -663,10 +663,8 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             for (int l=Py-PixelDistance; l<Py+PixelDistance+1; ++l)
                 for (int k=Px-PixelDistance; k<Px+PixelDistance+1; ++k){
 
-                    if (k<0) k=0;
-                    if (k>imageWidth) k=imageWidth;
-                    if (l<0) l=0;
-                    if (l>imageLength) l=imageLength;
+                    if (k<0 || k>imageWidth-1) continue;
+                    if (l<0 || l>imageLength-1) continue;
 
                     int value= LabeledImage[l][k];
 
@@ -676,20 +674,20 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     }
 
         sort(NeighborIDs.begin(),NeighborIDs.end());
-        NeighborIDs.erase(unique(NeighborIDs.begin(), NeighborIDs.end()),NeighborIDs.end());
+       // NeighborIDs.erase(unique(NeighborIDs.begin(), NeighborIDs.end()),NeighborIDs.end());
         if (std::find(NeighborIDs.begin(),NeighborIDs.end(),0) != NeighborIDs.end())  NeighborIDs.erase(std::find(NeighborIDs.begin(),NeighborIDs.end(),0));
 
         printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
 
     delete [] LabeledImage;
     ratios[52]=NeighborIDs.size();
-*/
+
 
     //--------------------------------Hexagonality/Polygonality-------------------
     //This section is a translation from the following Python code
     //https://github.com/LabShare/polus-plugins/blob/master/polus-feature-extraction-plugin/src/main.py
 
-    int neighbors=4; //NeighborIDs.size()???
+    int neighbors=NeighborIDs.size();
     double area=PixelsCount;
     double perimeter = ROIPerimeter;
 
