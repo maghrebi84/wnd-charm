@@ -429,8 +429,10 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[0]=(double)PixelsCount;
 
     //---------------Position and size of the smallest box containing the region (Bounding Box)---------
-    double BoundingBoxWidthBeg=Im.ROIWidthBegActual+1-0.5;  //0.5 was added to make the results consistent with MATLAB
-    double BoundingBoxHeightBeg=Im.ROIHeightBegActual+1-0.5; //0.5 was added to make the results consistent with MATLAB
+    //For consistency with MATLAB 1 and 0.5 was added below. 1 accounts for pixel index which starts from 1 in MATLAB
+    //and 0.5 accounts for the pixel side rather than its center
+    double BoundingBoxWidthBeg=Im.ROIWidthBegActual+1-0.5;
+    double BoundingBoxHeightBeg=Im.ROIHeightBegActual+1-0.5;
     int boundingBoxArea=Im.ROIWidthActual*Im.ROIHeightActual;
 
     ratios[1]=BoundingBoxWidthBeg;
@@ -603,7 +605,8 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
         if (MaxIndex == -1 || MinIndex == -1) cout<< "Something Went Wrong!"<<endl;
 
-        MaxDistanceArray[i]=  MaxXCoord-MinXCoord+1; //1 for consistency with MATLAB
+        //1 (2x0.5) was added in the below line for consistency with MATLAB as the side of the pixel is 0.5 off from the center.
+        MaxDistanceArray[i]=  MaxXCoord-MinXCoord+1;
         Point1Index[i]= MinIndex;
         Point2Index[i]= MaxIndex;
     }
@@ -618,17 +621,59 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretIndex=i;}
     }
 
+    //----------------Max Feret---------------
     ratios[40]=MaxFeretDiameter;
+    //EndPoint coordinates: x2,x1,y2,y1
+    ratios[42]=hull[0][Point2Index[MaxFeretIndex]].x+Im.ROIWidthBeg;
+    ratios[43]=hull[0][Point1Index[MaxFeretIndex]].x+Im.ROIWidthBeg;
+    ratios[44]=hull[0][Point2Index[MaxFeretIndex]].y+Im.ROIHeightBeg;
+    ratios[45]=hull[0][Point1Index[MaxFeretIndex]].y+Im.ROIHeightBeg;
 
-    ratios[42]=hull[0][Point2Index[MaxFeretIndex]].x+0.5+Im.ROIWidthBeg;  //0.5 was added for consistency with MATLAB
-    ratios[43]=hull[0][Point1Index[MaxFeretIndex]].x+0.5+Im.ROIWidthBeg;  //0.5 was added for consistency with MATLAB
-    ratios[44]=hull[0][Point2Index[MaxFeretIndex]].y+0.5+Im.ROIHeightBeg;  //0.5 was added for consistency with MATLAB
-    ratios[45]=hull[0][Point1Index[MaxFeretIndex]].y+0.5+Im.ROIHeightBeg;  //0.5 was added for consistency with MATLAB
+    //For consistency with MATLAB, the side of the pixel is considered as the EndPoint instead of the center of the pixel
+    if (ratios[42] < ratios[43]) {
+        ratios[42] = ratios[42] +1 - 0.5;
+        ratios[43] = ratios[43] +1 + 0.5;
+    }
+    else if (ratios[42] > ratios[43]) {
+        ratios[43] = ratios[43] +1 - 0.5;
+        ratios[42] = ratios[42] +1 + 0.5;
+    }
+    else {
+        ratios[43] = ratios[43] +1 - 0.5;
+        ratios[42] = ratios[42] +1 - 0.5;
+    }
+
+    if (ratios[44] < ratios[45]) {
+        ratios[44] = ratios[44] +1 - 0.5;
+        ratios[45] = ratios[45] +1 + 0.5;
+    }
+    else if (ratios[44] > ratios[45]) {
+        ratios[45] = ratios[45] +1 - 0.5;
+        ratios[44] = ratios[44] +1 + 0.5;
+    }
+    else {
+        ratios[45] = ratios[45] +1 - 0.5;
+        ratios[44] = ratios[44] +1 - 0.5;
+    }
 
     ratios[41]=180/M_PI*atan((ratios[44]-ratios[45])/(ratios[42]-ratios[43]));
     if (ratios[41] < 0) ratios[41]=180+ratios[41];
 
+    //For Consistency with MATLAB. We need the followings.
+    //Angle is computed from +y (+ImageLength) towards +x (+ImageWidth) direction. Angle is reported between -180 to +180.
+    if (ratios[44]<ratios[45] && ratios[42]<ratios[43] ) {
+        ratios[41]= ratios[41]-180;
 
+        //For consistency with MATLAB, we need to change the order of two points as well.
+        double tmp=ratios[42];
+        ratios[42]=ratios[43];
+        ratios[43]=tmp;
+
+        tmp=ratios[44];
+        ratios[44]=ratios[45];
+        ratios[45]=tmp;
+    }
+   //----------------Min Feret---------------
     ratios[46]=MinFeretDiameter;
 
     ratios[48]=hull[0][Point2Index[MinFeretIndex]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
