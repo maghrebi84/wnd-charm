@@ -22,7 +22,7 @@ COPY . /home/
 WORKDIR /home/
 ENV LDFLAGS="-L/home/fftw/lib -L/usr/lib/x86_64-linux-gnu"
 ENV CPPFLAGS="-I/home/fftw/include"
-RUN ./configure --prefix=/home/ LIBS='-lboost_iostreams  -lboost_system -lboost_filesystem' CXXFLAGS='-g -O2 -fopenmp'
+RUN ./configure --prefix=/home/ CXXFLAGS='-g -O2 -fopenmp'
 RUN make install
 
 RUN mkdir /home/input 
