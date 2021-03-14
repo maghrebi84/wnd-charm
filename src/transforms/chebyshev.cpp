@@ -114,8 +114,9 @@ void getChCoeff1D(double *f,double *out,double *Tj,int N,int width) {
 			for (int a = 0; a < width; a++) tj[a] = tj[a]*Inversewidth;
 		} 
 		else {
-			for (int a = 0; a < width; a++) tj[a] *= 2*Inversewidth;
-		}
+                    for (int a = 0; a < width; a++) tj[a] =tj[a]* 2/(double)width;
+                     //It is better to have "tj[a] *= 2*Inversewidth;" here, however, this caused an error in unit testing of test_parallel_compute.py for the Original WND-CHARM
+                }
 
 		out[jj] = 0;
 		//MM for (int a = 0; a < width; a++) out[jj] += f[a]*tj[a]*0.5;
