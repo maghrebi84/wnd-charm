@@ -11,122 +11,12 @@
 #include <iostream>
 #include <vector>
 #include <math.h>
-#include <boost/filesystem.hpp>
-#include "cmatrix.h"
 #include <memory>
 #include <vector>
-#include <ome/files/in/OMETIFFReader.h>
-#include <ome/files/FormatReader.h>
-#include <ome/files/in/TIFFReader.h>
-#include <ome/files/tiff/IFD.h>
 #include <tiffio.h>
 
-using ome::files::dimension_size_type;
-using ome::files::FormatReader;
-using ome::files::MetadataMap;
-using ome::files::VariantPixelBuffer;
-using ome::files::PixelBuffer;
 using namespace std;
 using namespace cv;
-
-static void readOriginalMetadata2(const FormatReader& reader, std::ostream& stream, int tileType, uint32_t& tileWidth, uint32_t& tileLength,
-                                  uint32_t& imageWidth, uint32_t& imageLength,uint32_t& bitsPerSample,uint16_t& samplesPerPixel)
-{
-    // Get total number of images (series)
-    dimension_size_type ic = reader.getSeriesCount();
-
-    // Get global metadata
-    const MetadataMap& global = reader.getGlobalMetadata();
-
-    // Loop over images
-    for (dimension_size_type i = 0 ; i < ic; ++i)
-    {
-        // Change the current series to this index
-        reader.setSeries(i);
-
-        // Print series metadata
-        const MetadataMap& series = reader.getSeriesMetadata();
-        const MetadataMap::key_type imageWidthKey ="ImageWidth";
-        const MetadataMap::key_type imageLengthKey ="ImageLength";
-        const MetadataMap::key_type bitsPerSampleKey ="BitsPerSample";
-        const MetadataMap::key_type samplesPerPixelKey ="SamplesPerPixel";
-
-        imageWidth = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(imageWidthKey));
-        imageLength = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(imageLengthKey));
-        bitsPerSample = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(bitsPerSampleKey));
-        samplesPerPixel= ome::compat::get<uint16_t>(reader.getSeriesMetadataValue(samplesPerPixelKey));
-
-        if (tileType==1){
-            const MetadataMap::key_type tileWidthKey ="TileWidth";
-            const MetadataMap::key_type tileLengthKey ="TileLength";
-            tileWidth = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileWidthKey));
-            tileLength = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileLengthKey));
-        }
-    }
-}
-
-struct Visitor2
-{
-    //    double is used since it can contain the value for any pixel type
-    typedef std::vector<double> result_type;
-    result_type myvec;
-
-    // Get min and max for any non-complex pixel type
-    template<typename T>
-    result_type operator() (const T& v)
-    {
-        typedef typename T::element_type::value_type value_type;
-
-        for (auto i=0; i<v->num_elements();i++){
-            value_type tmp = v->data()[i];
-            myvec.push_back(static_cast<double>(tmp));
-        }
-        return myvec;
-    }
-    //----------------------------------------------------------------------------------------------
-    //The rest was kept from the OME online example as it is necessary for compilation
-    //However, functionality to read complex pixel values are not implemented and is left for future
-    //----------------------------------------------------------------------------------------------
-    // Less than comparison for real part of complex numbers
-    template <typename T>
-    static bool
-    complex_real_less(const T& lhs, const T& rhs)
-    {
-        return std::real(lhs) < std::real(rhs);
-    }
-
-    // Greater than comparison for real part of complex numbers
-    template <typename T>
-    static bool
-    complex_real_greater(const T& lhs, const T& rhs)
-    {
-        return std::real(lhs) > std::real(rhs);
-    }
-
-    // This is the same as for simple pixel types, except for the
-    // addition of custom comparison functions and conversion of the
-    // result to the real part.
-    template <typename T>
-    typename boost::enable_if_c<
-    boost::is_complex<T>::value, result_type
-    >::type
-    operator() (const std::shared_ptr<PixelBuffer<T>>& v)
-    {
-        typedef T value_type;
-
-        value_type *min = std::min_element(v->data(),
-                                           v->data() + v->num_elements(),
-                                           complex_real_less<T>);
-        value_type *max = std::max_element(v->data(),
-                                           v->data() + v->num_elements(),
-                                           complex_real_greater<T>);
-
-        myvec.push_back(static_cast<double>(std::real(*min)));
-        myvec.push_back(static_cast<double>(std::real(*max)));
-
-        return myvec;
-    }
-};
 
 long EulerNumber(unsigned char * arr, int mode, int height, int width) {
     unsigned long x, y;
@@ -229,89 +119,101 @@ void WeightedGlobalCentroid(const ImageMatrix &Im, double * x_centroid, double *
     } else *x_centroid=*y_centroid=0;
 }
 
-
 double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imageLength0) {
 
-    shared_ptr<ome::files::FormatReader> reader(std::make_shared<ome::files::in::TIFFReader>());
-
-    // Set reader options before opening a file
-    reader->setMetadataFiltered(false);
-    reader->setGroupFiles(true);
-
-    // Open the file
-    reader->setId(ROIPath);
-
-    // Display series core metadata
-    //readMetadata2(*reader, std::cout);
-
-    std::shared_ptr<ome::files::tiff::TIFF> myTiff = ome::files::tiff::TIFF::open(ROIPath, "r");
-    std::shared_ptr<ome::files::tiff::IFD> ifd (myTiff->getDirectoryByIndex(0));
-    int tileType=ifd->getTileInfo().tileType();
-    int tileCount=ifd->getTileInfo().tileCount();
-
-    uint32_t tileWidth, tileLength, bitsPerSample;
-    uint32_t imageWidth, imageLength;
-    uint16_t samplesPerPixel;
-
-    // Display global and series original metadata
-    readOriginalMetadata2(*reader, std::cout, tileType, tileWidth, tileLength, imageWidth, imageLength, bitsPerSample,samplesPerPixel);
-
-    *imageWidth0=imageWidth;
-    *imageLength0=imageLength;
-
-    // Get total number of images (series)
-    dimension_size_type ic = reader->getSeriesCount();
-
-    reader->setSeries(0);
-    VariantPixelBuffer buf;
-
-    double ** LabeledImage;
-    LabeledImage = new double*[imageLength];  //Convert double to int ????
-    for (int i = 0; i < imageLength; ++i) { LabeledImage[i] = new double[imageWidth]; }
-
     unsigned int h,w,x=0,y=0;
-    unsigned short int spp=0,bps=0;
-    unsigned int width=imageWidth;
-    unsigned int height=imageLength;
-    unsigned short int bits=bitsPerSample;
-    spp= samplesPerPixel;
+    unsigned int tileWidth, tileLength,width,height;
+    unsigned short int spp=0,bps=0,bits;
+    TIFF *tif = NULL;
+    unsigned char *buf8, *buf8tiled;
+    unsigned short *buf16, *buf16tiled;
+    double ** LabeledImage;
 
-    //if ( ! (bits == 8 || bits == 16) ) return (0); // only 8 and 16-bit images supported.  //??error message here
-    if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
-    //if (spp >1) {  printf(" spp is bigger than 1 ");return -1;}
 
-    if (tileType==1){
-        for (y = 0; y < height; y += tileLength) {
-            for (x = 0; x < width; x += tileWidth) {
-                reader->openBytes(0, buf,x,y,tileWidth,tileLength);
+    TIFFSetWarningHandler(NULL);
+    if( (tif = TIFFOpen(ROIPath, "r")) ) {
+        //source = filename;
 
-                Visitor2 visitor;
-                Visitor2::result_type result = ome::compat::visit(visitor, buf.vbuffer());
+        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
+        width = w;
+        *imageWidth0=w;
 
-                int rowMax = std::min(y + tileLength, height);
-                int colMax = std::min(x + tileWidth, width);
 
-                for (unsigned int rowtile = 0; rowtile < rowMax - y; ++rowtile) {
-                    int col,count=0;
-                    unsigned int coltile=0;
+        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+        height = h;
+        *imageLength0=h;
 
-                    while (coltile<colMax - x) {
-                        double val = result[rowtile*tileWidth+coltile];
-                        LabeledImage[y+rowtile][x+coltile] = val;
-                        coltile++;
+        TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
+        bits=bps;
+
+        uint16 resunit=0;
+        TIFFGetField(tif, TIFFTAG_RESOLUTIONUNIT, &resunit);
+
+        float xres=0,yres=0;
+        TIFFGetField(tif, TIFFTAG_XRESOLUTION, &xres);
+        TIFFGetField(tif, TIFFTAG_YRESOLUTION, &yres);
+
+        TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
+        TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
+
+        if ( ! (bits == 8 || bits == 16) ) {
+            cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
+            return (0); // only 8 and 16-bit images supported.
+        }
+        TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
+        if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
+
+        if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
+
+
+        LabeledImage = new double*[height];  //Convert double to int ????
+        for (int i = 0; i < height; ++i) { LabeledImage[i] = new double[width]; }
+
+        if (tileWidth != 0 && tileLength != 0){
+            buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
+            buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
+
+            for (y = 0; y < height; y += tileLength) {
+                for (x = 0; x < width; x += tileWidth) {
+                    if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
+                    else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
+
+                    //colMin=x , rowMin=y
+                    int rowMax = std::min(y + tileLength, height);
+                    int colMax = std::min(x + tileWidth, width);
+                    //int width = colMax - x;
+
+                    for (unsigned int rowtile = 0; rowtile < rowMax - y; ++rowtile) {
+                        int col;
+                        unsigned int coltile;
+                        coltile=0;col=0;
+                        while (coltile<colMax - x) {
+                            unsigned char byte_data;
+                            unsigned short short_data;
+                            double val=0;
+                            int sample_index;
+
+                            byte_data=buf8tiled[rowtile*tileWidth+col+sample_index];
+                            short_data=buf16tiled[rowtile*tileWidth+col+sample_index];
+                            if (bits==8) val=(double)byte_data;
+                            else val=(double)(short_data);
+
+                            LabeledImage[y+rowtile][x+coltile] = val;
+
+                            coltile++;
+                            col+=spp;
+                        }
                     }
                 }
             }
-        }
-        // Explicitly close reader
-        reader->close();
-    }
-    else {
-        printf(" The format of Labeled Image is not tiled-tiff ");
-    }
-    return LabeledImage;
-}
 
+            _TIFFfree(buf8tiled);
+            _TIFFfree(buf16tiled);
+        }
+        TIFFClose(tif);
+    }
+       return LabeledImage;
+}
 
 void Extrema (const ImageMatrix& Im, double *ratios){
 

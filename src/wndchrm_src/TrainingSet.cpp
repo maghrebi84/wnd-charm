@@ -46,7 +46,7 @@
 #include "wndchrm_error.h"
 #include "WORMfile.h"
 
-//#include <iostream> // Debug
+#include <iostream> // Debug
 //#include <limits>
 
 
@@ -76,16 +76,8 @@
 #include "cmatrix.h"
 #include <memory>
 #include <vector>
-#include <ome/files/in/OMETIFFReader.h>
-#include <ome/files/FormatReader.h>
-#include <ome/files/in/TIFFReader.h>
-#include <ome/files/tiff/IFD.h>
 #include <tiffio.h>
-using ome::files::dimension_size_type;
-using ome::files::FormatReader;
-using ome::files::MetadataMap;
-using ome::files::VariantPixelBuffer;
-using ome::files::PixelBuffer;
+
 using namespace std;
 
 
@@ -93,166 +85,6 @@ using namespace std;
 
 #define DEBUG_CREATE_INDIV_DISTANCE_FILES 0
 #define DEBUG 0
-
-
-//MM:
-void readMetadata2(const FormatReader& reader, std::ostream& stream)
-{
-    // Get total number of images (series)
-    dimension_size_type ic = reader.getSeriesCount();
-    stream << "Image count: " << ic << '\n';
-
-    // Loop over images
-    for (dimension_size_type i = 0 ; i < ic; ++i)
-    {
-        // Change the current series to this index
-        reader.setSeries(i);
-
-        // Print image dimensions (for this image index)
-        stream << "Dimensions for Image " << i << ':'
-               << "\n\tX = " << reader.getSizeX()
-               << "\n\tY = " << reader.getSizeY()
-               << "\n\tZ = " << reader.getSizeZ()
-               << "\n\tT = " << reader.getSizeT()
-               << "\n\tC = " << reader.getSizeC()
-               << "\n\tEffectiveC = " << reader.getEffectiveSizeC();
-
-        for (dimension_size_type channel = 0;
-             channel < reader.getEffectiveSizeC();
-             ++channel)
-        {
-            stream << "\n\tChannel " << channel << ':'
-                   << "\n\t\tRGB = " << (reader.isRGB(channel) ? "true" : "false")
-                   << "\n\t\tRGBC = " << reader.getRGBChannelCount(channel);
-        }
-        stream << '\n';
-
-        // Get total number of planes (for this image index)
-        dimension_size_type pc = reader.getImageCount();
-        stream << "\tPlane count: " << pc << '\n';
-
-        // Loop over planes (for this image index)
-        for (dimension_size_type p = 0 ; p < pc; ++p)
-        {
-            // Print plane position (for this image index and plane index)
-            std::array<dimension_size_type, 3> coords =
-                    reader.getZCTCoords(p);
-            stream << "\tPosition of Plane " << p << ':'
-                   << "\n\t\tTheZ = " << coords[0]
-                   << "\n\t\tTheT = " << coords[2]
-                   << "\n\t\tTheC = " << coords[1]
-                   << '\n';
-        }
-    }
-}
-
-void readOriginalMetadata2(const FormatReader& reader, std::ostream& stream, int tileType, uint32_t& tileWidth, uint32_t& tileLength,
-                           uint32_t& imageWidth, uint32_t& imageLength,uint32_t& bitsPerSample,uint16_t& samplesPerPixel)
-{
-    // Get total number of images (series)
-    dimension_size_type ic = reader.getSeriesCount();
-    stream << "Image count: " << ic << '\n';
-
-    // Get global metadata
-    const MetadataMap& global = reader.getGlobalMetadata();
-
-    // Print global metadata
-    stream << "Global metadata:\n" << global << '\n'; //Nothing printed
-
-    // Loop over images
-    for (dimension_size_type i = 0 ; i < ic; ++i)
-    {
-        // Change the current series to this index
-        reader.setSeries(i);
-
-        // Print series metadata
-        const MetadataMap& series = reader.getSeriesMetadata();
-        const MetadataMap::key_type imageWidthKey ="ImageWidth";
-        const MetadataMap::key_type imageLengthKey ="ImageLength";
-        const MetadataMap::key_type bitsPerSampleKey ="BitsPerSample";
-        const MetadataMap::key_type samplesPerPixelKey ="SamplesPerPixel";
-
-        imageWidth = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(imageWidthKey));
-        imageLength = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(imageLengthKey));
-        bitsPerSample = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(bitsPerSampleKey));
-        samplesPerPixel= ome::compat::get<uint16_t>(reader.getSeriesMetadataValue(samplesPerPixelKey));
-
-        if (tileType==1){
-            const MetadataMap::key_type tileWidthKey ="TileWidth";
-            const MetadataMap::key_type tileLengthKey ="TileLength";
-            tileWidth = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileWidthKey));
-            tileLength = ome::compat::get<uint32_t>(reader.getSeriesMetadataValue(tileLengthKey));
-        }
-
-        // Print image dimensions (for this image index)
-        stream << "Metadata for Image " << i << ":\n"
-               << series
-               << '\n';
-    }
-}
-
-struct Visitor2
-{
-    //    double is used since it can contain the value for any pixel type
-    typedef std::vector<double> result_type;
-    result_type myvec;
-
-    // Get min and max for any non-complex pixel type
-    template<typename T>
-    result_type operator() (const T& v)
-    {
-        typedef typename T::element_type::value_type value_type;
-
-        for (auto i=0; i<v->num_elements();i++){
-            value_type tmp = v->data()[i];
-            myvec.push_back(static_cast<double>(tmp));
-        }
-        return myvec;
-    }
-    //----------------------------------------------------------------------------------------------
-    //The rest was kept from the OME online example as it is necessary for compilation
-    //However, functionality to read complex pixel values are not implemented and is left for future
-    //----------------------------------------------------------------------------------------------
-    // Less than comparison for real part of complex numbers
-    template <typename T>
-    static bool
-    complex_real_less(const T& lhs, const T& rhs)
-    {
-        return std::real(lhs) < std::real(rhs);
-    }
-
-    // Greater than comparison for real part of complex numbers
-    template <typename T>
-    static bool
-    complex_real_greater(const T& lhs, const T& rhs)
-    {
-        return std::real(lhs) > std::real(rhs);
-    }
-
-    // This is the same as for simple pixel types, except for the
-    // addition of custom comparison functions and conversion of the
-    // result to the real part.
-    template <typename T>
-    typename boost::enable_if_c<
-    boost::is_complex<T>::value, result_type
-    >::type
-    operator() (const std::shared_ptr<PixelBuffer<T>>& v)
-    {
-        typedef T value_type;
-
-        value_type *min = std::min_element(v->data(),
-                                           v->data() + v->num_elements(),
-                                           complex_real_less<T>);
-        value_type *max = std::max_element(v->data(),
-                                           v->data() + v->num_elements(),
-                                           complex_real_greater<T>);
-
-        myvec.push_back(static_cast<double>(std::real(*min)));
-        myvec.push_back(static_cast<double>(std::real(*max)));
-
-        return myvec;
-    }
-};
 
 
 /* global variable */
@@ -1673,81 +1505,73 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             }
 
             LabeledImageFullPath=LabeledImagePath;
-            shared_ptr<ome::files::FormatReader> reader(std::make_shared<ome::files::in::TIFFReader>());
 
-            // Set reader options before opening a file
-            reader->setMetadataFiltered(false);
-            reader->setGroupFiles(true);
+            unsigned int height,width,x=0,y=0;
+            unsigned int tileWidth, tileLength;
+            unsigned short int spp=0,bits=0;
+            TIFF *tif = NULL;
+            unsigned char *buf8, *buf8tiled;
+            unsigned short *buf16, *buf16tiled;
 
-            // Open the file
-            reader->setId(LabeledImagePath);
+            TIFFSetWarningHandler(NULL);
+            if( (tif = TIFFOpen(LabeledImagePath, "r")) ) {
 
-            // Display series core metadata
-            readMetadata2(*reader, std::cout);
+                TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
+                TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
+                TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bits);
+                TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
+                TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
+                TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
+                imageLength=height;
+                imageWidth=width;
 
-            std::shared_ptr<ome::files::tiff::TIFF> myTiff = ome::files::tiff::TIFF::open(LabeledImagePath, "r");
-            std::shared_ptr<ome::files::tiff::IFD> ifd (myTiff->getDirectoryByIndex(0));
-            int tileType=ifd->getTileInfo().tileType();
-            int tileCount=ifd->getTileInfo().tileCount();
+                if ( ! (bits == 8 || bits == 16) ) {
+                    std::cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
+                    return (0); // only 8 and 16-bit images supported.
+                }
 
-            uint32_t tileWidth, tileLength, bitsPerSample;
-            //MM uint32_t imageWidth, imageLength;  //Bounding Box Implementation: Comment here
-            uint16_t samplesPerPixel;
+                if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
 
-            // Display global and series original metadata
-            readOriginalMetadata2(*reader, std::cout, tileType, tileWidth, tileLength, imageWidth, imageLength, bitsPerSample,samplesPerPixel);
+                buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
+                buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
 
-            // Get total number of images (series)
-            dimension_size_type ic = reader->getSeriesCount();
-            std::cout << "Image count: " << ic << '\n';
+                LabeledImageMatrix = new double*[height];
+                for (int i = 0; i < height; ++i) { LabeledImageMatrix[i] = new double[width]; }
 
-            reader->setSeries(0);
-            VariantPixelBuffer buf;
-
-
-            LabeledImageMatrix = new double*[imageLength];
-            for (int i = 0; i < imageLength; ++i) { LabeledImageMatrix[i] = new double[imageWidth]; }
-
-            unsigned int h,w,x=0,y=0;
-            unsigned short int spp=0,bps=0;
-            unsigned int width=imageWidth;
-            unsigned int height=imageLength;
-            unsigned short int bits=bitsPerSample;
-            spp= samplesPerPixel;
-
-            if ( ! (bits == 8 || bits == 16) ) return (0); // only 8 and 16-bit images supported.
-            if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
-            if (spp >1) {  printf(" spp is bigger than 1 ");return -1;}
-
-            if (tileType==1){
                 for (y = 0; y < height; y += tileLength) {
                     for (x = 0; x < width; x += tileWidth) {
-                        reader->openBytes(0, buf,x,y,tileWidth,tileLength);
+                        if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
+                        else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
 
-                        Visitor2 visitor;
-                        Visitor2::result_type result = ome::compat::visit(visitor, buf.vbuffer());
-
+                        //colMin=x , rowMin=y
                         int rowMax = std::min(y + tileLength, height);
                         int colMax = std::min(x + tileWidth, width);
+                        //int width = colMax - x;
 
                         for (unsigned int rowtile = 0; rowtile < rowMax - y; ++rowtile) {
-                            int col,count=0;
-                            unsigned int coltile=0;
-
+                            int col;
+                            unsigned int coltile;
+                            coltile=0;col=0;
                             while (coltile<colMax - x) {
-                                double val = result[rowtile*tileWidth+coltile];
+                                unsigned char byte_data;
+                                unsigned short short_data;
+                                double val=0;
+                                byte_data=buf8tiled[rowtile*tileWidth+col];
+                                short_data=buf16tiled[rowtile*tileWidth+col];
+                                if (bits==8) val=(double)byte_data;
+                                else val=(double)(short_data);
                                 LabeledImageMatrix[y+rowtile][x+coltile] = val;
                                 coltile++;
                             }
                         }
                     }
                 }
-                // Explicitly close reader
-                reader->close();
+
+                _TIFFfree(buf8tiled);
+                _TIFFfree(buf16tiled);
             }
-            else {
-                printf(" The format of Labeled Image is not tiled-tiff ");
-            }
+            else cout<<" The format of Labeled Image is not tiled-tiff"<<endl;
+
 
             for (int i = 0; i < imageLength; ++i) {
                 for (int j = 0; j < imageWidth; ++j) {
@@ -1819,9 +1643,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                         if (x > ROIWidthEnd) ROIWidthEnd=x;
                     }
 
-
                 ROI_Bounding_Box.BoundingBoxFlag=true;
-
 
                 ROI_Bounding_Box.ROIWidthBegActual=ROIWidthBeg;
                 ROI_Bounding_Box.ROIHeightBegActual=ROIHeightBeg;
@@ -1841,7 +1663,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
                 if (ROIWidthEnd+pixelBuffer < imageWidth) ROIWidthEnd +=pixelBuffer;
                 else ROIWidthEnd=imageWidth-1;
-
 
                 ROI_Bounding_Box.ROIHeightBeg=ROIHeightBeg;
                 ROI_Bounding_Box.ROIWidthBeg=ROIWidthBeg;
