@@ -72,9 +72,9 @@ extern int verbosity;
 
 /* LoadTIFF
    filename -char *- full path to the image file
+   The input data is processed using libtiff library
 */
 int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int ClassID) {
-        cout<<" The input data is processed using libtiff library"<<endl;
         unsigned int h,w,x=0,y=0;
         unsigned int tileWidth, tileLength;
         unsigned short int spp=0,bps=0;

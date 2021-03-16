@@ -166,7 +166,7 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
         if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
 
 
-        LabeledImage = new double*[height];  //Convert double to int ????
+        LabeledImage = new double*[height];
         for (int i = 0; i < height; ++i) { LabeledImage[i] = new double[width]; }
 
         if (tileWidth != 0 && tileLength != 0){
