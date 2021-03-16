@@ -1562,6 +1562,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                                 else val=(double)(short_data);
                                 LabeledImageMatrix[y+rowtile][x+coltile] = val;
                                 coltile++;
+                                col++;
                             }
                         }
                     }
