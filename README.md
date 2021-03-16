@@ -73,7 +73,7 @@ Please also visit the [IICBU Biological Image Repository](https://ome.irp.nia.ni
 
 ## What is new?
 
-The performance of WND-CHARM was profiled and improved using the following techniques.
+The performance of WND-CHARM was profiled and improved using the following techniques. Also, the functionality to read tiled-tiff images was added in src/cmatrix.cpp using libtiff library.
 
 * Multi-threading capability (OpenMP directives) was added for the performance bottlenecks which were in the following codes. 
     * /src/statistics/FeatureStatistics.cpp
@@ -84,10 +84,9 @@ The performance of WND-CHARM was profiled and improved using the following techn
     
 The number of threads can be set using `export OMP_NUM_THREADS=10`. Overall, the performance of WND-CHARM was improved by 45% using the new changes and by running with 10 threads.
 
-Furthermore, the functionality to read tiled-tiff images was added in src/cmatrix.cpp using both the native libtiff library as well as OME-Files library. WND-CHARM can now switch between libtiff and OME-Files libraries to read tiled-tiff images using a variable in src/cmatrix.cpp named useOMELibrary. Following example shows how to configure the WND-CHARM to take into effect the linkage with OME-Files.
+In addition to the above changes, unit tests for the current implementations in WND-CHARM were tested and successfully passed. More importantly, the unit tests for the original WND-CHARM were reviewed and fixed by modifying the reference values for Haralick Textures (components 16 and 17) in the following files. The unit tests are now operational for the original WND-CHARM as well as the current implementations.
 
-./configure --prefix=/Path/To/WND-CHARM/Binary LIBS='-L/Path/To/Installed/OME-Files/Library -lome-files -lome-xml -lome-xalan-util -lome-common -lome-xerces-util -L/usr/lib/x86_64-linux-gnu/ -lboost_iostreams  -lboost_system -lboost_filesystem -lxerces-c-3.2' CXXFLAGS='-g -O2 -fopenmp -I/Path/To/Installed/OME-Files/Include/Files'
-Then, run: make install
+/tests/pywndcharm_tests/lymphoma_eosin_channel_MCL_test_img_sj-05-3362-R2_001_E-t6x5_5_4-l.sig /tests/pywndcharm_tests/lymphoma_eosin_channel_MCL_test_img_sj-05-3362-R2_001_E_t6x5_REFERENCE_SIGFILES.zip /tests/wndchrm_tests/010067_301x300-l_precalculated.sig
 
 In addition to the above changes, the state of the art functionality "Region Of Interest (ROI)" was implemented in WND-CHARM. If Mask (Labeled) Image is provided as an input argument, WND-CHARM automatically computes the features for ROIs (non-zeor labels) instead of the entire image. The ROI performance was significantly improved by confining the feature computations to a rectangular bounding box around ROI.
 Furthermore, the performance of ROI implementation was improved by multi-threading at the ROI level where each thread picks one ROI and computes the entire features for it. The input parameters to WND-CHARM were modified according to the requirements of a WIPP plugin. The outputs were also formatted according to the desired formats for WIPP plugins. WND-CHARM can now be executive using the following command and sets of input arguments.
@@ -104,7 +103,56 @@ In the above command:
 * FeatureAlgorithmName: The (optional) specific feature extraction algorithm which is desired for the computation over the chosen ImageTransformationName. Please refer to Tasks.cpp to learn more about the names of the available algorithms. 
 
 If ImageTransformationName and FeatureAlgorithmName are not specified, WND-CHARM computes the features for a short list of FeatureAlgorithmName and ImageTransformationName. Also, the long set of features can be alternatively selected using the input argument "--DesiredFeatures LongSet".
- 
- 
- 
-  
+
+In addition to the above changes, a comprehensive list of Morphological algorithms was implemented in WND-CHARM at src/MorphologicalAlgorithms.cpp and can be invoked as an input argument using "--FeatureAlgorithmName Morphological". Morphological Features output the computed values for a total of 50 parameters in the order listed below. 
+0-Total number of ROI pixels
+1-x coordinate where the rectangular bounding box encompassing the ROI begins
+2-y coordinate where the rectangular bounding box encompassing the ROI begins
+3-width of the rectangular bounding box encompassing the ROI
+4-height of the rectangular bounding box encompassing the ROI
+5-area of the rectangular bounding box encompassing the ROI
+6-x coordinate of the ROI's centroid
+7-y coordinate of the ROI's centroid
+8-x coordinate of the ROI's weighted centroid
+9-y coordinate of the ROI's weighted centroid 
+10-mean of the ROI pixels
+11-min of the ROI pixels
+12-max of the ROI pixels
+13-median of the ROI pixels
+14-standard deviation of the ROI pixels 
+15-skewness of the ROI pixels
+16-Kurtosis of the ROI pixels
+17-x coordinate of the Extrema point at top-left
+18-x coordinate of the Extrema point at top-right
+19-x coordinate of the Extrema point at right-top
+20-x coordinate of the Extrema point at right-bottom
+21-x coordinate of the Extrema point at bottom-right
+22-x coordinate of the Extrema point at bottom-left
+23-x coordinate of the Extrema point at left-bottom
+24-x coordinate of the Extrema point at left-top
+25-y coordinate of the Extrema point at top-left
+26-y coordinate of the Extrema point at top-right
+27-y coordinate of the Extrema point at right-top
+28-y coordinate of the Extrema point at right-bottom
+29-y coordinate of the Extrema point at bottom-right
+30-y coordinate of the Extrema point at bottom-left
+31-y coordinate of the Extrema point at left-bottom
+32-y coordinate of the Extrema point at left-top
+33-Euler number: Euler characteristic of the ROI
+34-Extent:the ratio of the pixels in the ROI to the pixels in the bounding box encompassing the ROI 
+35-Area of the convex hull
+36-Solidity:the ratio of the pixels in the ROI to the pixels in the convex hull
+37-Aspect Ratio: the ratio of width to height for bounding box encompassing the ROI
+38-Equivalent Diameter: The diameter of a circle with the same area as the ROI
+39-Perimeter of the ROI
+40-Circularity: Roundness of ROI which is computed as (4*Area*pi)/(Perimeter2). For a perfect circle, the circularity value is 1.
+41-Max Feret Diamater
+42-Max Feret Angle
+43-Min Feret Diamater
+44-Min Feret Angle
+45-Neighbors: The number of neighbors touching the ROI
+46-Polygonality score: The score ranges from -infinity to 10. Score 10 indicates the object shape is polygon and score -infinity indicates the object shape is not polygon.
+47-Hexagonality score: The score ranges from -infinity to 10. Score 10 indicates the object shape is hexagon and score -infinity indicates the object shape is not hexagon.
+48-Hexagonality standard deviation: Dispersion of hexagonality score relative to its mean.
+49-Entropy: Entropy is a measure of randomness. It is the amount of information in the region.
+50-Mode of the ROI pixels

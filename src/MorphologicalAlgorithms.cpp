@@ -458,6 +458,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //------------------------Euler Number------------------------------------------
     long Euler= EulerNumber(arr,8,Im.height,Im.width);
+    ratios[33]=Euler;
     delete [] arr;
 
     //------------------------------Some Other Statistics--------
@@ -475,13 +476,13 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     double Circularity=4*M_PI*PixelsCount/(ROIPerimeter*ROIPerimeter);
 
-    ratios[33]=extent;
-    ratios[34]=convexHullArea;
-    ratios[35]=solidity;
-    ratios[36]=AspectRatio;
-    ratios[37]=EquivalentDiameter;
-    ratios[38]=ROIPerimeter;
-    ratios[39]=Circularity;
+    ratios[34]=extent;
+    ratios[35]=convexHullArea;
+    ratios[36]=solidity;
+    ratios[37]=AspectRatio;
+    ratios[38]=EquivalentDiameter;
+    ratios[39]=ROIPerimeter;
+    ratios[40]=Circularity;
 
     //---------------------Min/Max Feret Diameter/Angle-----------------------
     double * MaxDistanceArray = new double [180];
@@ -516,17 +517,18 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double MaxFeretDiameter=0;
     double MinFeretDiameter=INF;
     int MaxFeretIndex=-1;
-    int MinFeretIndex=-1;
+    int MinFeretAngle=-1;
 
     for (int i=0; i<180; ++i){
-        if (MaxDistanceArray[i] > MaxFeretDiameter) {MaxFeretDiameter = MaxDistanceArray[i]; MaxFeretIndex=i;}
-        if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretIndex=i;}
+        if (MaxDistanceArray[i] > MaxFeretDiameter) {MaxFeretDiameter = MaxDistanceArray[i]; MinFeretAngle=i;}
+        if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretAngle=i;}
     }
 
     //----------------Max Feret---------------
-    ratios[40]=MaxFeretDiameter;
+    ratios[41]=MaxFeretDiameter;
+    ratios[42]=MinFeretAngle; //FIX ME??
     //EndPoint coordinates: x2,x1,y2,y1
-    ratios[42]=hull[0][Point2Index[MaxFeretIndex]].x+Im.ROIWidthBeg;
+/*    ratios[42]=hull[0][Point2Index[MaxFeretIndex]].x+Im.ROIWidthBeg;
     ratios[43]=hull[0][Point1Index[MaxFeretIndex]].x+Im.ROIWidthBeg;
     ratios[44]=hull[0][Point2Index[MaxFeretIndex]].y+Im.ROIHeightBeg;
     ratios[45]=hull[0][Point1Index[MaxFeretIndex]].y+Im.ROIHeightBeg;
@@ -576,16 +578,17 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         ratios[45]=tmp;
     }
    //----------------Min Feret---------------
-    ratios[46]=MinFeretDiameter;
+*/    ratios[43]=MinFeretDiameter;
+      ratios[44]=MinFeretAngle; //FIX ME??
 
-    ratios[48]=hull[0][Point2Index[MinFeretIndex]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
-    ratios[49]=hull[0][Point1Index[MinFeretIndex]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
-    ratios[50]=hull[0][Point2Index[MinFeretIndex]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
-    ratios[51]=hull[0][Point1Index[MinFeretIndex]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
+/*    ratios[48]=hull[0][Point2Index[MinFeretAngle]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
+    ratios[49]=hull[0][Point1Index[MinFeretAngle]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
+    ratios[50]=hull[0][Point2Index[MinFeretAngle]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
+    ratios[51]=hull[0][Point1Index[MinFeretAngle]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
 
     ratios[47]=180/M_PI*atan((ratios[50]-ratios[51])/(ratios[48]-ratios[49]));
     if (ratios[47] < 0) ratios[47]=180+ratios[47];
-
+*/
     delete [] MaxDistanceArray, Point1Index, Point2Index;
 
 
@@ -624,10 +627,10 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
        // NeighborIDs.erase(unique(NeighborIDs.begin(), NeighborIDs.end()),NeighborIDs.end());
         if (std::find(NeighborIDs.begin(),NeighborIDs.end(),0) != NeighborIDs.end())  NeighborIDs.erase(std::find(NeighborIDs.begin(),NeighborIDs.end(),0));
 
-        printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
+     //   printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
 
     delete [] LabeledImage;
-    ratios[52]=NeighborIDs.size();
+    ratios[45]=NeighborIDs.size();
 
 
     //--------------------------------Hexagonality/Polygonality-------------------
@@ -745,9 +748,9 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_sd=sqrt((area_ratio_sd*area_ratio_sd+perim_ratio_sd*perim_ratio_sd)/2);
         double hex_ave = 10*(hex_area_ratio + hex_size_ratio)/2;
 
-        ratios[53]=poly_ave;
-        ratios[54]=hex_ave;
-        ratios[55]=hex_sd;
+        ratios[46]=poly_ave;
+        ratios[47]=hex_ave;
+        ratios[48]=hex_sd;
 
     }
     else if (neighbors <3 ){
@@ -756,9 +759,9 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_ave = std::numeric_limits<double>::quiet_NaN();
         double hex_sd = std::numeric_limits<double>::quiet_NaN();
 
-        ratios[53]=poly_ave;
-        ratios[54]=hex_ave;
-        ratios[55]=hex_sd;
+        ratios[46]=poly_ave;
+        ratios[47]=hex_ave;
+        ratios[48]=hex_sd;
     }
 
     //------------------------------Mode and Entropy-----------------------------
@@ -790,8 +793,10 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     int ModeValue=maxBinIndex+intMin; //mode value
 
-    ratios[56]=entropy;
-    ratios[57]=(double)ModeValue;
+    ratios[49]=entropy;
+    ratios[50]=(double)ModeValue;
+
+    delete [] histBins;
 
     cout << "Finished!\n" << endl;
 
