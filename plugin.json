@@ -78,6 +78,7 @@
 			"options": {
 				"values": [
 					"PixelStatistics",
+					"Morphological",
                     "Edge",
   					"Otsu",
                     "Inverse-Otsu",

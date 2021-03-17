@@ -129,15 +129,12 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
     unsigned short *buf16, *buf16tiled;
     double ** LabeledImage;
 
-
     TIFFSetWarningHandler(NULL);
     if( (tif = TIFFOpen(ROIPath, "r")) ) {
-        //source = filename;
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
         width = w;
-        *imageWidth0=w;
-
+        *imagesourceWidth0=w;
 
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
         height = h;
@@ -164,7 +161,6 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
         if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
 
         if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
-
 
         LabeledImage = new double*[height];
         for (int i = 0; i < height; ++i) { LabeledImage[i] = new double[width]; }
@@ -212,7 +208,7 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
         }
         TIFFClose(tif);
     }
-       return LabeledImage;
+    return LabeledImage;
 }
 
 void Extrema (const ImageMatrix& Im, double *ratios){
@@ -434,7 +430,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     if (num == 0 && den == 0) Orientation = 0;
     else Orientation = (180/M_PI) * atan(num/den);
 
-    //--------------Coordinates of the extreme Pixels--------
+    //--------------Coordinates of the Extrema Pixels--------
     Extrema (Im, ratios);
 
     //--------------convexHull--------------------------------
@@ -472,7 +468,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double ROIPerimeter=0;
 
     for( size_t i = 0; i < contours.size(); i++ )
-            ROIPerimeter += arcLength(contours[i],true);
+        ROIPerimeter += arcLength(contours[i],true);
 
     double Circularity=4*M_PI*PixelsCount/(ROIPerimeter*ROIPerimeter);
 
@@ -497,10 +493,6 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         int MinIndex=-1;
 
         for (int j = 0; j < hull[0].size(); j++) {
-            // Point coordinate_i_ofcontour = hull[0][j];
-            //outPoint.x = std::cos(angRad)*inPoint.x - std::sin(angRad)*inPoint.y;
-            //outPoint.y = std::sin(angRad)*inPoint.x + std::cos(angRad)*inPoint.y;
-
             float rotatedX = std::cos(theta)*(hull[0][j].x) - std::sin(theta)*(hull[0][j].y);
             if (rotatedX > MaxXCoord) {MaxXCoord = rotatedX; MaxIndex=j;}
             if (rotatedX < MinXCoord) {MinXCoord = rotatedX; MinIndex=j;}
@@ -524,83 +516,21 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretAngle=i;}
     }
 
-    //----------------Max Feret---------------
     ratios[41]=MaxFeretDiameter;
-    ratios[42]=MinFeretAngle; //FIX ME??
-    //EndPoint coordinates: x2,x1,y2,y1
-/*    ratios[42]=hull[0][Point2Index[MaxFeretIndex]].x+Im.ROIWidthBeg;
-    ratios[43]=hull[0][Point1Index[MaxFeretIndex]].x+Im.ROIWidthBeg;
-    ratios[44]=hull[0][Point2Index[MaxFeretIndex]].y+Im.ROIHeightBeg;
-    ratios[45]=hull[0][Point1Index[MaxFeretIndex]].y+Im.ROIHeightBeg;
+    ratios[42]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
-    //For consistency with MATLAB, the side of the pixel is considered as the EndPoint instead of the center of the pixel
-    if (ratios[42] < ratios[43]) {
-        ratios[42] = ratios[42] +1 - 0.5;
-        ratios[43] = ratios[43] +1 + 0.5;
-    }
-    else if (ratios[42] > ratios[43]) {
-        ratios[43] = ratios[43] +1 - 0.5;
-        ratios[42] = ratios[42] +1 + 0.5;
-    }
-    else {
-        ratios[43] = ratios[43] +1 - 0.5;
-        ratios[42] = ratios[42] +1 - 0.5;
-    }
+    ratios[43]=MinFeretDiameter;
+    ratios[44]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
-    if (ratios[44] < ratios[45]) {
-        ratios[44] = ratios[44] +1 - 0.5;
-        ratios[45] = ratios[45] +1 + 0.5;
-    }
-    else if (ratios[44] > ratios[45]) {
-        ratios[45] = ratios[45] +1 - 0.5;
-        ratios[44] = ratios[44] +1 + 0.5;
-    }
-    else {
-        ratios[45] = ratios[45] +1 - 0.5;
-        ratios[44] = ratios[44] +1 - 0.5;
-    }
-
-    ratios[41]=180/M_PI*atan((ratios[44]-ratios[45])/(ratios[42]-ratios[43]));
-    if (ratios[41] < 0) ratios[41]=180+ratios[41];
-
-    //For Consistency with MATLAB. We need the followings.
-    //Angle is computed from +y (+ImageLength) towards +x (+ImageWidth) direction. Angle is reported between -180 to +180.
-    if (ratios[44]<ratios[45] && ratios[42]<ratios[43] ) {
-        ratios[41]= ratios[41]-180;
-
-        //For consistency with MATLAB, we need to change the order of two points as well.
-        double tmp=ratios[42];
-        ratios[42]=ratios[43];
-        ratios[43]=tmp;
-
-        tmp=ratios[44];
-        ratios[44]=ratios[45];
-        ratios[45]=tmp;
-    }
-   //----------------Min Feret---------------
-*/    ratios[43]=MinFeretDiameter;
-      ratios[44]=MinFeretAngle; //FIX ME??
-
-/*    ratios[48]=hull[0][Point2Index[MinFeretAngle]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
-    ratios[49]=hull[0][Point1Index[MinFeretAngle]].x+0.5+Im.ROIWidthBeg;   //0.5 was added for consistency with MATLAB
-    ratios[50]=hull[0][Point2Index[MinFeretAngle]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
-    ratios[51]=hull[0][Point1Index[MinFeretAngle]].y+0.5+Im.ROIHeightBeg;   //0.5 was added for consistency with MATLAB
-
-    ratios[47]=180/M_PI*atan((ratios[50]-ratios[51])/(ratios[48]-ratios[49]));
-    if (ratios[47] < 0) ratios[47]=180+ratios[47];
-*/
     delete [] MaxDistanceArray, Point1Index, Point2Index;
 
-
     //----------------------Finding Neighbors for the Current ROI-----------------
-
     uint32_t imageWidth, imageLength;
     double**  LabeledImage= readLabeledImage(Im.ROIPath,&imageWidth, &imageLength);
     int  PixelDistance=3;
 
     vector<int> NeighborIDs;
 
-    //The coordinates of convexHull Points
     for (int i = 0; i < contours.size(); i++) {
         Point sampleBorderPoint = contours[i][0];
         int ROILabel =LabeledImage[sampleBorderPoint.y+Im.ROIHeightBeg][sampleBorderPoint.x+Im.ROIWidthBeg];
@@ -623,15 +553,15 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         }
     }
 
-        sort(NeighborIDs.begin(),NeighborIDs.end());
-       // NeighborIDs.erase(unique(NeighborIDs.begin(), NeighborIDs.end()),NeighborIDs.end());
-        if (std::find(NeighborIDs.begin(),NeighborIDs.end(),0) != NeighborIDs.end())  NeighborIDs.erase(std::find(NeighborIDs.begin(),NeighborIDs.end(),0));
+    sort(NeighborIDs.begin(),NeighborIDs.end());
 
-     //   printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
+    if (std::find(NeighborIDs.begin(),NeighborIDs.end(),0) != NeighborIDs.end())
+        NeighborIDs.erase(std::find(NeighborIDs.begin(),NeighborIDs.end(),0));
+
+    //   printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
 
     delete [] LabeledImage;
     ratios[45]=NeighborIDs.size();
-
 
     //--------------------------------Hexagonality/Polygonality-------------------
     //This section is a translation from the following Python code
@@ -640,7 +570,6 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     int neighbors=NeighborIDs.size();
     double area=PixelsCount;
     double perimeter = ROIPerimeter;
-
     double area_hull=convexHullArea;
     double perim_hull=6*sqrt(area_hull/(1.5*sqrt(3)));
     double perimeter_neighbors;
@@ -706,7 +635,6 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         //Two extra apothems are now useful
         double apoth4 = sqrt(3) * perim_hull / 12;
         double apoth5 = sqrt(4 * area_hull / (4.5 * sqrt(3)));
-
         double perim1 = sqrt(24 * area / sqrt(3));
         double perim2 = sqrt(24 * area_hull / sqrt(3));
         double perim3 = perimeter;
@@ -754,7 +682,6 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     }
     else if (neighbors <3 ){
-
         double poly_ave = std::numeric_limits<double>::quiet_NaN();
         double hex_ave = std::numeric_limits<double>::quiet_NaN();
         double hex_sd = std::numeric_limits<double>::quiet_NaN();
@@ -791,14 +718,14 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         }
     }
 
-    int ModeValue=maxBinIndex+intMin; //mode value
+    int ModeValue=maxBinIndex+intMin; //Mode value of the ROI pixels
 
     ratios[49]=entropy;
     ratios[50]=(double)ModeValue;
 
     delete [] histBins;
 
-    cout << "Finished!\n" << endl;
+    cout << "Finished Morphological Computations!\n" << endl;
 
     return;
 }

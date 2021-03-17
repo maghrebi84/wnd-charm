@@ -104,23 +104,24 @@ In the above command:
 
 If ImageTransformationName and FeatureAlgorithmName are not specified, WND-CHARM computes the features for a short list of FeatureAlgorithmName and ImageTransformationName. Also, the long set of features can be alternatively selected using the input argument "--DesiredFeatures LongSet".
 
-In addition to the above changes, a comprehensive list of Morphological algorithms was implemented in WND-CHARM at src/MorphologicalAlgorithms.cpp and can be invoked as an input argument using "--FeatureAlgorithmName Morphological". Morphological Features output the computed values for a total of 50 parameters in the order listed below. 
-0-Total number of ROI pixels
+In addition to the above changes, a comprehensive list of Morphological algorithms was implemented in WND-CHARM at src/MorphologicalAlgorithms.cpp and can be invoked as an input argument using "--FeatureAlgorithmName Morphological". Morphological Features output the computed values for a total of 50 parameters which are described in the order below. It should be noted that for the common parameters with MATLAB's regionprops module, the computed values were converted to produce the same results as MATLAB.
+
+0-Total number of the ROI (Region of Interest) pixels
 1-x coordinate where the rectangular bounding box encompassing the ROI begins
 2-y coordinate where the rectangular bounding box encompassing the ROI begins
-3-width of the rectangular bounding box encompassing the ROI
-4-height of the rectangular bounding box encompassing the ROI
-5-area of the rectangular bounding box encompassing the ROI
+3-Width of the rectangular bounding box encompassing the ROI
+4-Height of the rectangular bounding box encompassing the ROI
+5-Area of the rectangular bounding box encompassing the ROI
 6-x coordinate of the ROI's centroid
 7-y coordinate of the ROI's centroid
 8-x coordinate of the ROI's weighted centroid
 9-y coordinate of the ROI's weighted centroid 
-10-mean of the ROI pixels
-11-min of the ROI pixels
-12-max of the ROI pixels
-13-median of the ROI pixels
-14-standard deviation of the ROI pixels 
-15-skewness of the ROI pixels
+10-Mean of the ROI pixels
+11-Min of the ROI pixels
+12-Max of the ROI pixels
+13-Median of the ROI pixels
+14-Standard deviation of the ROI pixels 
+15-Skewness of the ROI pixels
 16-Kurtosis of the ROI pixels
 17-x coordinate of the Extrema point at top-left
 18-x coordinate of the Extrema point at top-right
@@ -139,20 +140,20 @@ In addition to the above changes, a comprehensive list of Morphological algorith
 31-y coordinate of the Extrema point at left-bottom
 32-y coordinate of the Extrema point at left-top
 33-Euler number: Euler characteristic of the ROI
-34-Extent:the ratio of the pixels in the ROI to the pixels in the bounding box encompassing the ROI 
+34-Extent: the ratio of the pixel counts in the ROI to the pixel counts in the bounding box encompassing the ROI 
 35-Area of the convex hull
-36-Solidity:the ratio of the pixels in the ROI to the pixels in the convex hull
-37-Aspect Ratio: the ratio of width to height for bounding box encompassing the ROI
-38-Equivalent Diameter: The diameter of a circle with the same area as the ROI
-39-Perimeter of the ROI
-40-Circularity: Roundness of ROI which is computed as (4*Area*pi)/(Perimeter2). For a perfect circle, the circularity value is 1.
-41-Max Feret Diamater
-42-Max Feret Angle
-43-Min Feret Diamater
-44-Min Feret Angle
-45-Neighbors: The number of neighbors touching the ROI
-46-Polygonality score: The score ranges from -infinity to 10. Score 10 indicates the object shape is polygon and score -infinity indicates the object shape is not polygon.
-47-Hexagonality score: The score ranges from -infinity to 10. Score 10 indicates the object shape is hexagon and score -infinity indicates the object shape is not hexagon.
-48-Hexagonality standard deviation: Dispersion of hexagonality score relative to its mean.
-49-Entropy: Entropy is a measure of randomness. It is the amount of information in the region.
+36-Solidity: the ratio of the pixel counts in the ROI to the pixel counts in the convex hull
+37-Aspect ratio: the ratio of width to height for bounding box encompassing the ROI
+38-Equivalent diameter: The diameter of a circle with the same area as the ROI
+39-Perimeter length of the ROI
+40-Circularity: roundness of the ROI which is computed as (4*Area*pi)/(Perimeter2). For a perfect circle, the circularity value is 1.
+41-Max Feret diamater
+42-Max Feret angle
+43-Min Feret diamater
+44-Min Feret angle
+45-Neighbors: the number of neighbors touching the ROI
+46-Polygonality score: the score ranges from -infinity to 10. Score 10 indicates the object shape is polygon and score -infinity indicates the object shape is not polygon.
+47-Hexagonality score: the score ranges from -infinity to 10. Score 10 indicates the object shape is hexagon and score -infinity indicates the object shape is not hexagon.
+48-Hexagonality standard deviation: dispersion of hexagonality score relative to its mean.
+49-Entropy: a measure of randomness. It is the amount of information in the ROI.
 50-Mode of the ROI pixels
