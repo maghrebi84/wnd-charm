@@ -84,10 +84,9 @@ The performance of WND-CHARM was profiled and improved using the following techn
     
 The number of threads can be set using `export OMP_NUM_THREADS=10`. Overall, the performance of WND-CHARM was improved by 45% using the new changes and by running with 10 threads.
 
-Furthermore, the functionality to read tiled-tiff images was added in src/cmatrix.cpp using both the native libtiff library as well as OME-Files library. WND-CHARM can now switch between libtiff and OME-Files libraries to read tiled-tiff images using a variable in src/cmatrix.cpp named useOMELibrary. Following example shows how to configure the WND-CHARM to take into effect the linkage with OME-Files.
+In addition to the above changes, unit tests for the current implementations in WND-CHARM were tested and successfully passed. More importantly, the unit tests for the original WND-CHARM were reviewed and fixed by modifying the reference values for Haralick Textures (components 16 and 17) in the following files. The unit tests are now operational for the original WND-CHARM as well as the current implementations.
 
-./configure --prefix=/Path/To/WND-CHARM/Binary LIBS='-L/Path/To/Installed/OME-Files/Library -lome-files -lome-xml -lome-xalan-util -lome-common -lome-xerces-util -L/usr/lib/x86_64-linux-gnu/ -lboost_iostreams  -lboost_system -lboost_filesystem -lxerces-c-3.2' CXXFLAGS='-g -O2 -fopenmp -I/Path/To/Installed/OME-Files/Include/Files'
-Then, run: make install
+/tests/pywndcharm_tests/lymphoma_eosin_channel_MCL_test_img_sj-05-3362-R2_001_E-t6x5_5_4-l.sig /tests/pywndcharm_tests/lymphoma_eosin_channel_MCL_test_img_sj-05-3362-R2_001_E_t6x5_REFERENCE_SIGFILES.zip /tests/wndchrm_tests/010067_301x300-l_precalculated.sig
 
 In addition to the above changes, the state of the art functionality "Region Of Interest (ROI)" was implemented in WND-CHARM. If Mask (Labeled) Image is provided as an input argument, WND-CHARM automatically computes the features for ROIs (non-zeor labels) instead of the entire image. The ROI performance was significantly improved by confining the feature computations to a rectangular bounding box around ROI.
 Furthermore, the performance of ROI implementation was improved by multi-threading at the ROI level where each thread picks one ROI and computes the entire features for it. The input parameters to WND-CHARM were modified according to the requirements of a WIPP plugin. The outputs were also formatted according to the desired formats for WIPP plugins. WND-CHARM can now be executive using the following command and sets of input arguments.

@@ -77,31 +77,6 @@ void TNx(double *x, double *out, int N, int height) {
 	delete [] temp;
 }
 
-/*void getChCoeff1D(double *f,double *out,double *Tj,int N,int width) {
-	double *tj;
-	int jj,a;
-
-	tj = new double[width];
-	for (jj = 0; jj < N; jj++) {
-		int jx;
-		jx = jj;
-		for (a = 0; a < width; a++)
-			tj[a] = Tj[a*N+jj];
-		if (!jx) {
-			for (a = 0; a < width; a++)
-				tj[a] = tj[a]/(double)width;
-		} else {
-			for (a = 0; a < width; a++)
-			tj[a] = tj[a]*2/(double)width;
-		}
-		out[jj] = 0;
-		for (a = 0; a < width; a++)
-			out[jj] += f[a]*tj[a]/2;
-	}
-	delete [] tj;
-}
-*/
-
 void getChCoeff1D(double *f,double *out,double *Tj,int N,int width) {
 	double Inversewidth=1.0/(double)width;   
 
@@ -114,7 +89,8 @@ void getChCoeff1D(double *f,double *out,double *Tj,int N,int width) {
 			for (int a = 0; a < width; a++) tj[a] = tj[a]*Inversewidth;
 		} 
 		else {
-			for (int a = 0; a < width; a++) tj[a] *= 2*Inversewidth;
+                    for (int a = 0; a < width; a++) tj[a] =tj[a]* 2/(double)width;
+                     //It is better to have "tj[a] *= 2*Inversewidth;" here, however, this caused an error in unit testing of test_parallel_compute.py
 		}
 
 		out[jj] = 0;
