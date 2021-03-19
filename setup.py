@@ -101,14 +101,14 @@ wndchrm_module = Extension('_wndcharm',
 		'src/Tasks.cpp',
 		'src/FeatureNames.cpp',
 		'src/gsl/specfunc.cpp',
+		'src/MorphologicalAlgorithms.cpp',
 	],
 	include_dirs=['./','src/', '/usr/local/include'],
-	swig_opts=['-threads', '-c++', '-I./', '-I./src', '-outdir', 'wndcharm'],
-	extra_compile_args=['-fopenmp'],
-	extra_link_args=['-lgomp'],	
+	swig_opts=['-threads', '-c++', '-I./', '-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/highgui/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/imgproc/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/core/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/build','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/imgcodecs/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/videoio/include','-I./src', '-outdir', 'wndcharm'],
+	extra_compile_args=['-fopenmp','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/highgui/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/imgproc/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/core/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/build','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/imgcodecs/include','-I/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/opencv-master/modules/videoio/include'],
+	extra_link_args=['-L/home/maghrebim2/Work/WND-CHARM/ROI/Morphology-OpenCV/OpenCV-Install/build/lib','-lgomp','-lopencv_imgproc','-lopencv_highgui','-lopencv_core','-L/usr/lib/x86_64-linux-gnu','-lboost_iostreams','-lboost_system','-lboost_filesystem'],	
 	libraries=['tiff','fftw3'],
 )
-
 setup (
 	cmdclass={'build': CustomBuild, 'install': CustomInstall},
 	name = 'wndcharm',

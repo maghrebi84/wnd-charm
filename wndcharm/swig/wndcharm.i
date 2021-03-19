@@ -27,6 +27,7 @@
 #include "FeatureNames.h"
 #include "FeatureAlgorithms.h"
 #include "ImageTransforms.h"
+#include "MorphologicalAlgorithms.h"
 %}
 
 %module wndcharm
@@ -38,3 +39,4 @@
 %include "FeatureNames.i"
 %include "FeatureAlgorithms.i"
 %include "ImageTransforms.i"
+%include "MorphologicalAlgorithms.i"
