@@ -12,7 +12,6 @@
 #include <vector>
 #include <math.h>
 #include <memory>
-#include <vector>
 #include <tiffio.h>
 
 using namespace std;
@@ -134,7 +133,7 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
         width = w;
-        *imagesourceWidth0=w;
+        *imageWidth0=w;
 
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
         height = h;
