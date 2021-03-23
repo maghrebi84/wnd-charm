@@ -136,7 +136,7 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                 }
             }
 
-            if (tileWidth <= width && tileLength <= height && tileWidth!=0 && tileLength !=0){
+            if ((tileWidth <= width && tileLength <= height && tileWidth!=0 && tileLength !=0) || (tileWidth == 1024 && tileLength == 1024) ){
                 buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
                 buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
 
