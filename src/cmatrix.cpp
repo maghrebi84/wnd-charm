@@ -136,7 +136,10 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                 }
             }
 
-            if (tileWidth <= width && tileLength <= height && tileWidth!=0 && tileLength !=0){
+            //tileWidth <= width and tileLength <= height rule out the conditions where tileWidth and tileLength are randomly assigned a large number for non-tiled tiff images
+            //tileWidth == 1024 && tileLength == 1024 is for the ondition where the tiled-tiff image has lower dimensions than tile's
+            if ((tileWidth <= width && tileLength <= height && tileWidth!=0 && tileLength !=0) || (tileWidth == 1024 && tileLength == 1024) ){
+
                 buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
                 buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
 
