@@ -8,106 +8,71 @@ import wndcharm
 from wndcharm.FeatureVector import FeatureVector, GenerateFeatureComputationPlan, \
         IncompleteFeatureSetError
 from wndcharm.utils import compare
-
 from os.path import dirname, sep, realpath, join, abspath, splitext, basename
-
 sys.path.insert(1, '/home/maghrebim2/Work/WND-CHARM/ROI/PR2_Review/wnd-charm/wndcharm')
-'''
-import os.path
-fullpath='/home/maghrebim2/Work/WND-CHARM/ROI/PR2_Review/wnd-charm/wndcharm/PyImageMatrix.py'
-filename='PyImageMatrix.py'
-path, filename = os.path.split(fullpath)
-filename, ext = os.path.splitext(filename)
-sys.path.append(path)
-module = __import__(filename)
-reload(module) # Might be out of date
-del sys.path[-1]
-#return module
-'''
-
 
 pychrm_test_dir = dirname( realpath( __file__ ) )
 wndchrm_test_dir = join( dirname( pychrm_test_dir ), 'wndchrm_tests' )
-test_dir = wndchrm_test_dir
-
 img_filename = "Intensity.tif"
-orig_img_filepath = pychrm_test_dir + sep + img_filename
+label_filename = "Label.tif"
+Sig_reference_filename = "Reference.sig"
+img_filepath = pychrm_test_dir + sep + img_filename
+label_filepath = pychrm_test_dir + sep + label_filename
+Sig_reference_filepath = pychrm_test_dir + sep + Sig_reference_filename
 
-#input_image_path = sourcedir + sep + img_filename
-class TestFeatureCalculation( unittest.TestCase ):
+class TestFeatureCalculation(unittest.TestCase):
 
     def test_ProfileLargeFeatureSet( self ):
-        kwargs = {}
-        kwargs[ 'name' ] = img_filename
-        kwargs[ 'source_filepath' ] = orig_img_filepath
-        #kwargs[ 'feature_names' ] = fw.feature_names
-        #kwargs[ 'feature_computation_plan' ] = comp_plan
-        kwargs[ 'long' ] = True
-        kwargs[ 'x' ] = 0
-        kwargs[ 'y' ] = 0
 
-        ROI_width = 231
-        ROI_height = 20
-        kwargs[ 'w' ] = ROI_width
-        kwargs[ 'h' ] = ROI_height
-
-        kwargs[ 'sample_group_id' ] = 0
-       # top_left_tile_feats = FeatureVector( **kwargs ).GenerateFeatures( quiet=False, write_to_disk=False)
-
-        Sig_reference_filename = "Reference.sig"
-        Sig_reference_filepath = pychrm_test_dir + sep + Sig_reference_filename
         with open( Sig_reference_filepath ) as infile:
-            #firstline = infile.readline()
-            #m = re.match( r'^(\S+)\s*(\S+)?$', firstline           
-            #class_id, input_fs_version = m.group( 1, 2 )
-            #input_fs_major_ver, input_fs_minor_ver = input_fs_version.split('.')                
-            #orig_source_tiff_path = infile.readline()
-          
-          #  vec_len = 5
-          # values = np.zeros( vec_len )
-           # names = [None] * vec_len
             for i, line in enumerate( infile ):
                 if i is 0: 
                     name = line.rstrip("\n").split(",")
                 if i is 1:
                     values = line.rstrip("\n").split(",")
-              #  values[i] = float( val )
-
-        comp_plan = wndcharm.StdFeatureComputationPlans.getFeatureSet(True)
-
-        from PyImageMatrix import PyImageMatrix
-        original_px_plane = PyImageMatrix()
-        reference_sigs_Intensity = '/home/maghrebim2/Work/WND-CHARM/ROI/PR2_Review/wnd-charm/tests/pywndcharm_tests/Intensity.tif'
-        reference_sigs_Label = '/home/maghrebim2/Work/WND-CHARM/ROI/PR2_Review/wnd-charm/tests/pywndcharm_tests/Label.tif'
-
+        
+        # Read Label Image and convert it to double *  
         from PIL import Image
-        im = Image.open(reference_sigs_Label) 
+        im = Image.open(label_filepath) 
         imarray = np.array(im) 
         height=imarray.shape[0]
         width=imarray.shape[1]
         flattenimarray=imarray.flatten()
-        classID=255
+        uniqueClasses=np.unique(flattenimarray)
+        del_arr = np.delete(uniqueClasses, np.where(uniqueClasses == [0]), axis=0) #delete Label 0
+        classID=del_arr.tolist()[0]
+
         labeledMatrix = wndcharm.doubleArray(width*height)
         i=0
         for element in np.nditer(flattenimarray): 
             labeledMatrix[i] = float(element)
             i=i+1
-            #for i in range(16):
-             #   labledMatrix[i]=i
 
-        #kwargs[ 'long' ] = True
-        original_px_plane.BoundingBoxFlag=True
-        retval = original_px_plane.OpenImage2(reference_sigs_Intensity,width, height, labeledMatrix ,classID)
+        del imarray, flattenimarray, uniqueClasses, del_arr
+
+        #Create a ImageMatrix Object and fill it with ROI pixels 
+        from PyImageMatrix import PyImageMatrix
+        original_px_plane = PyImageMatrix()
+        original_px_plane.BoundingBoxFlag=True #Otherwise, Tamura directionality will give an error
+        retval = original_px_plane.OpenImage2(label_filepath,width, height, labeledMatrix ,classID)
 
         if 1 != retval:
             errmsg = 'Could not build a wndchrm.PyImageMatrix from {0}, check the path.'
-            raise ValueError( errmsg.format( self.source_filepath ) )     
+            raise ValueError( errmsg.format( self.label_filepath ) )     
+
+        #comp_plan = wndcharm.StdFeatureComputationPlans.getFeatureSet(True)
+        #comp_plan = wndcharm.StdFeatureComputationPlans.getFeatureSetLong(True)
+
+        ImageTransformationName='Original'
+        FeatureAlgorithmName='PixelStatistics'
+        comp_plan = wndcharm.StdFeatureComputationPlans.getFeatureSetbyName(ImageTransformationName,FeatureAlgorithmName)
+        #wndcharm.FeatureComputationPlan( name )
 
         # pre-allocate space where the features will be stored (C++ std::vector<double>)
         tmp_vec = wndcharm.DoubleVector( comp_plan.n_features )
 
         # Get an executor for this plan and run it
-        plan_exec = wndcharm.FeatureComputationPlanExecutor( comp_plan )
+        plan_exec = wndcharm.FeatureComputationPlanExecutor(comp_plan)
         plan_exec.run( original_px_plane, tmp_vec, 0 )
 
         # get the feature names from the plan
@@ -121,7 +86,7 @@ class TestFeatureCalculation( unittest.TestCase ):
 
         with open( path, "w" ) as out: 
             for element in np.nditer(comp_names):            
-                #out.write( "{0:0.8g}\t{1}\n".format( element,element ) )
+                #out.write("{0:0.8g}\t{1}\n".format( element,element ) )
                 alaki=2
 
         alaki=255
