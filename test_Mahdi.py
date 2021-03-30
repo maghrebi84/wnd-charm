@@ -95,13 +95,36 @@ class TestFeatureCalculation( unittest.TestCase ):
             #for i in range(16):
              #   labledMatrix[i]=i
 
+        #kwargs[ 'long' ] = True
+        original_px_plane.BoundingBoxFlag=True
         retval = original_px_plane.OpenImage2(reference_sigs_Intensity,width, height, labeledMatrix ,classID)
 
         if 1 != retval:
             errmsg = 'Could not build a wndchrm.PyImageMatrix from {0}, check the path.'
             raise ValueError( errmsg.format( self.source_filepath ) )     
 
+        # pre-allocate space where the features will be stored (C++ std::vector<double>)
+        tmp_vec = wndcharm.DoubleVector( comp_plan.n_features )
 
-        
+        # Get an executor for this plan and run it
+        plan_exec = wndcharm.FeatureComputationPlanExecutor( comp_plan )
+        plan_exec.run( original_px_plane, tmp_vec, 0 )
+
+        # get the feature names from the plan
+        comp_names = [ comp_plan.getFeatureNameByIndex(i) for i in xrange( comp_plan.n_features ) ]
+
+        # convert std::vector<double> to native python list of floats
+        comp_vals = np.array( list( tmp_vec ) )
+        np.savetxt('test1.txt', comp_vals, fmt='%g')
+
+        path = '/home/maghrebim2/Work/WND-CHARM/ROI/PR2_Review/wnd-charm/tests/pywndcharm_tests/alaki.sig'
+
+        with open( path, "w" ) as out: 
+            for element in np.nditer(comp_names):            
+                #out.write( "{0:0.8g}\t{1}\n".format( element,element ) )
+                alaki=2
+
+        alaki=255
+
 if __name__ == '__main__':
     unittest.main()
