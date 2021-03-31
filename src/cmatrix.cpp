@@ -128,7 +128,9 @@ int ImageMatrix::LoadTIFF(char *filename) {
         writeablePixels pix_plane = WriteablePixels();
         writeableColors clr_plane = WriteableColors();
 
-        if (tileWidth <= width && tileLength <= height && tileWidth!=0 && tileLength !=0){
+        //tileWidth <= width and tileLength <= height rule out the conditions where tileWidth and tileLength are randomly assigned a large number for non-tiled tiff images
+        //tileWidth == 1024 && tileLength == 1024 is for the condition where the tiled-tiff image has lower dimensions than tile's
+        if ((tileWidth <= width && tileLength <= height && tileWidth!=0 && tileLength !=0) || (tileWidth == 1024 && tileLength == 1024) ){
             if (tileWidth != 1024) cout<<" Warning: tileWidth is not 1024 and instead is="<< tileWidth<<endl;
             if (tileLength != 1024) cout<<" Warning: tileLength is not 1024 and instead is="<< tileLength<<endl;
 
