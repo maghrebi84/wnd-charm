@@ -1843,8 +1843,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         }
 
         //MM Deallocating 2D Pointer
-        for (int i = 0; i < imageLength; ++i) { delete [] LabeledImageMatrix[i]; }
-        delete[] LabeledImageMatrix;
+        if (strcmp(featureset->ROIPath,"")){
+            for (int i = 0; i < imageLength; ++i) { delete [] LabeledImageMatrix[i]; }
+            delete[] LabeledImageMatrix;
+        }
     }
     
     // don't release any locks until we're done with this image
