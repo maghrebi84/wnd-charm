@@ -1500,7 +1500,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 return -1;
             }
 
-            char *LabeledImageFullPath = new char[LabeledImagePath.size()+1];
+            LabeledImageFullPath = new char[LabeledImagePath.size()+1];
             std::strcpy(LabeledImageFullPath, LabeledImagePath.c_str());
 
             unsigned int height,width,x=0,y=0;
