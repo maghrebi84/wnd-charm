@@ -1477,20 +1477,16 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         //Bounding Box Implementation
         uint32_t imageWidth, imageLength;
         unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
-        string MaskFilename;
+        string ImageFileName;
 
         if (strcmp(featureset->ROIPath,"")){
-            //    if (featureset->ROIPath !=""){
             uniqueClasses.pop_back();
 
             boost::filesystem::path p(filename);
-            const char* ImageFileName=p.filename().c_str();
-            MaskFilename= ImageFileName;
+            ImageFileName=p.filename().string();
 
-            char * LabeledImagePath = (char *) malloc(1 + strlen(featureset->ROIPath)+ strlen(ImageFileName) );
-            strcpy(LabeledImagePath, featureset->ROIPath);
-            strcat(LabeledImagePath, "/");
-            strcat(LabeledImagePath, ImageFileName);
+            string ROIPath=featureset->ROIPath;
+            string LabeledImagePath = ROIPath + "/" +  ImageFileName;
 
             if(!boost::filesystem::exists(LabeledImagePath))
             {
@@ -1504,7 +1500,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 return -1;
             }
 
-            LabeledImageFullPath=LabeledImagePath;
+            char *LabeledImageFullPath = new char[LabeledImagePath.size()+1];
+            std::strcpy(LabeledImageFullPath, LabeledImagePath.c_str());
 
             unsigned int height,width,x=0,y=0;
             unsigned int tileWidth, tileLength;
@@ -1514,7 +1511,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             unsigned short *buf16, *buf16tiled;
 
             TIFFSetWarningHandler(NULL);
-            if( (tif = TIFFOpen(LabeledImagePath, "r")) ) {
+            if( (tif = TIFFOpen(LabeledImagePath.c_str(), "r")) ) {
 
                 TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width);
                 TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height);
@@ -1829,8 +1826,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             ++ImageSignatures->ROIcounts;
 
             //MM ImageSignatures->SaveToFile (1);
-            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, MaskFilename);
-            else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag,MaskFilename);
+            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, ImageFileName);
+            else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag,ImageFileName);
             }
 
             our_sigs[sig_index].saved = true;
