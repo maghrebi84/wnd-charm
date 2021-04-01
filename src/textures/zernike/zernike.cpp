@@ -208,8 +208,8 @@ void mb_zernike2D (const ImageMatrix &Im, double order, double rad, double *zval
 	int L, N, D;
 
 // N is the smaller of Im.width and Im.height
-        //MM  N = Im.width < Im.height ? Im.width : Im.height;
-        N = Im.width > Im.height ? Im.width : Im.height; //MM: This change is needed for bounding box implementations to ensure disk is covering the entire area of the Image
+        N = Im.width < Im.height ? Im.width : Im.height;
+        //MM  N = Im.width > Im.height ? Im.width : Im.height; //MM: This change is needed for bounding box implementations to ensure disk is covering the entire area of the Image
 
 	if (order > 0) L = (int)order;
 	else L = 15;
