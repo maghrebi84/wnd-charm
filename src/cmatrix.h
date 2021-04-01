@@ -251,7 +251,7 @@ public:
 	}
 	// load from TIFF file
 	//MM int LoadTIFF(char *filename);
-    int LoadTIFF(char *filename,double ** LabeledImageMatrix, int ClassID);
+    int LoadTIFF(char *filename,double ** LabeledImageMatrix=NULL, int ClassID=0);
 
 	// FIXME: Currently saves this->_pix_plane to grayscale TIF, color info not included!
 	int SaveTiff(char *filename);
