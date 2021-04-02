@@ -81,6 +81,7 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
         TIFF *tif = NULL;
         unsigned char *buf8, *buf8tiled;
         unsigned short *buf16, *buf16tiled;
+        uint32_t *buf32, *buf32tiled;
         RGBcolor rgb = {0,0,0};
         ImageMatrix R_matrix, G_matrix, B_matrix;
         Moments2 R_stats, G_stats, B_stats;
@@ -99,7 +100,7 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
             TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
             TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
 
-            if ( ! (bits == 8 || bits == 16) ) {
+            if ( ! (bits == 8 || bits == 16 || bits == 32) ) {
                 cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
                 return (0); // only 8 and 16-bit images supported.
             }
@@ -142,10 +143,12 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
 
                 buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
                 buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
+                buf32tiled=(uint32_t *)_TIFFmalloc((tsize_t)sizeof(uint32_t)*TIFFTileSize(tif)*spp);
 
                 for (y = 0; y < height; y += tileLength) {
                     for (x = 0; x < width; x += tileWidth) {
                         if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
+                        else if (bits==32)  TIFFReadTile(tif, buf32tiled, x, y, 0,0);
                         else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
 
                         //colMin=x , rowMin=y
@@ -166,12 +169,15 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
 
                                 unsigned char byte_data;
                                 unsigned short short_data;
+                                uint32_t normal_data;
                                 double val=0;
                                 int sample_index;
                                 for (sample_index=0;sample_index<spp;sample_index++) {
                                     byte_data=buf8tiled[rowtile*tileWidth+col+sample_index];
                                     short_data=buf16tiled[rowtile*tileWidth+col+sample_index];
+                                    normal_data=buf32tiled[rowtile*tileWidth+col+sample_index];
                                     if (bits==8) val=(double)byte_data;
+                                    else if (bits==32) val=(double)normal_data;
                                     else val=(double)(short_data);
                                     if (spp==3 && bits > 8) {  /* RGB image */
                                         if (sample_index==0) R_matrix.WriteablePixels()(y+rowtile,x+coltile) = R_stats.add (val);
@@ -234,14 +240,18 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
 
                 _TIFFfree(buf8tiled);
                 _TIFFfree(buf16tiled);
+                _TIFFfree(buf32tiled);
             }
             else {
                 /* read TIFF header and determine image size */
                 buf8 = (unsigned char *)_TIFFmalloc(TIFFScanlineSize(tif)*spp);
                 buf16 = (unsigned short *)_TIFFmalloc( (tsize_t)sizeof(unsigned short)*TIFFScanlineSize(tif)*spp );
+                buf32 = (uint32_t *)_TIFFmalloc( (tsize_t)sizeof(uint32_t)*TIFFScanlineSize(tif)*spp );
+
                 for (y = 0; y < height; y++) {
                     int col;
                     if (bits==8) TIFFReadScanline(tif, buf8, y);
+                    else if (bits==32) TIFFReadScanline(tif, buf32, y);
                     else TIFFReadScanline(tif, buf16, y);
                     x=0;col=0;
                     while (x<width) {
@@ -251,12 +261,15 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                         }
                         unsigned char byte_data;
                         unsigned short short_data;
+                        uint32_t normal_data;
                         double val=0;
                         int sample_index;
                         for (sample_index=0;sample_index<spp;sample_index++) {
                             byte_data=buf8[col+sample_index];
                             short_data=buf16[col+sample_index];
+                            normal_data=buf32[col+sample_index];
                             if (bits==8) val=(double)byte_data;
+                            else if (bits==32) val=(double)normal_data;
                             else val=(double)(short_data);
 
                             if (spp==3 && bits > 8) {  /* RGB image */
@@ -308,6 +321,7 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                 }
                 _TIFFfree(buf8);
                 _TIFFfree(buf16);
+                _TIFFfree(buf32);
             }
             TIFFClose(tif);
         }
