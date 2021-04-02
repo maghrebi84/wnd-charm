@@ -1158,8 +1158,10 @@ int main(int argc, char *argv[])
     std::string cmd1= "cd " +tmp ;
     std::string cmd2= "for f in *.sig; do mv -- \"$f\" \"${f%.sig}.csv\"; done ;";
     std::string cmd3= cmd1 + " ; "+ cmd2;
-    system(cmd3.c_str());
+    std::string cmdNew= cmd1 + " ; " + "for file in *.ome.csv; do mv \"$file\" \"${file%.ome.csv}.csv\"; done;";   //Make sure the .ome is cut from the filename
 
+    system(cmd3.c_str());
+    system(cmdNew.c_str());
     return(0);
     //MM: WIPP Plugin fails with non-zero return
     //MM return(1);
