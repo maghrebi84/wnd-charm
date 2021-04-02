@@ -124,8 +124,9 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
     unsigned int tileWidth, tileLength,width,height;
     unsigned short int spp=0,bps=0,bits;
     TIFF *tif = NULL;
-    unsigned char *buf8, *buf8tiled;
-    unsigned short *buf16, *buf16tiled;
+    unsigned char *buf8tiled;
+    unsigned short *buf16tiled;
+    uint32 *buf32tiled;
     double ** LabeledImage;
 
     TIFFSetWarningHandler(NULL);
@@ -152,7 +153,7 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
         TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
         TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
 
-        if ( ! (bits == 8 || bits == 16) ) {
+        if ( ! (bits == 8 || bits == 16 || bits == 32) ) {
             cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
             return (0); // only 8 and 16-bit images supported.
         }
@@ -167,10 +168,12 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
         if (tileWidth != 0 && tileLength != 0){
             buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
             buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
+            buf32tiled=(uint32_t*)_TIFFmalloc((tsize_t)sizeof(uint32_t)*TIFFTileSize(tif)*spp);
 
             for (y = 0; y < height; y += tileLength) {
                 for (x = 0; x < width; x += tileWidth) {
                     if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
+                    else if (bits==32)  TIFFReadTile(tif, buf32tiled, x, y, 0,0);
                     else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
 
                     //colMin=x , rowMin=y
@@ -185,12 +188,15 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
                         while (coltile<colMax - x) {
                             unsigned char byte_data;
                             unsigned short short_data;
+                            uint32_t normal_data;
                             double val=0;
-                            int sample_index;
 
-                            byte_data=buf8tiled[rowtile*tileWidth+col+sample_index];
-                            short_data=buf16tiled[rowtile*tileWidth+col+sample_index];
+                            byte_data=buf8tiled[rowtile*tileWidth+col];
+                            short_data=buf16tiled[rowtile*tileWidth+col];
+                            normal_data=buf32tiled[rowtile*tileWidth+col];
+
                             if (bits==8) val=(double)byte_data;
+                            else if (bits==32) val=(double)normal_data;
                             else val=(double)(short_data);
 
                             LabeledImage[y+rowtile][x+coltile] = val;
@@ -204,6 +210,7 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
 
             _TIFFfree(buf8tiled);
             _TIFFfree(buf16tiled);
+            _TIFFfree(buf32tiled);
         }
         TIFFClose(tif);
     }
