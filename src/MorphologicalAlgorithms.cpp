@@ -514,16 +514,16 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     double MaxFeretDiameter=0;
     double MinFeretDiameter=INF;
-    int MaxFeretIndex=-1;
+    int MaxFeretAngle=-1;
     int MinFeretAngle=-1;
 
     for (int i=0; i<180; ++i){
-        if (MaxDistanceArray[i] > MaxFeretDiameter) {MaxFeretDiameter = MaxDistanceArray[i]; MinFeretAngle=i;}
+        if (MaxDistanceArray[i] > MaxFeretDiameter) {MaxFeretDiameter = MaxDistanceArray[i]; MaxFeretAngle=i;}
         if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretAngle=i;}
     }
 
     ratios[41]=MaxFeretDiameter;
-    ratios[42]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
+    ratios[42]=MaxFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
     ratios[43]=MinFeretDiameter;
     ratios[44]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
@@ -776,7 +776,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         tmp.push_back(min);
         tmp.push_back(max);
         tmp.push_back(MaxFeretDiameter);
-        tmp.push_back(MinFeretAngle);  //No MaxFeret Coordinates
+        tmp.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
         tmp.push_back(MinFeretDiameter);
         tmp.push_back(MinFeretAngle);  //No MinFeret Coordinates
         tmp.push_back(NeighborIDs.size());  //Jayapriya's specific Features comes After MATLAB's
