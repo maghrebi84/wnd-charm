@@ -1476,7 +1476,6 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
         //Bounding Box Implementation
         uint32_t imageWidth, imageLength;
-        unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
         string ImageFileName;
 
         if (strcmp(featureset->ROIPath,"")){
@@ -1631,7 +1630,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             printf( "Image size=(%d,%d)\n", image_matrix.width, image_matrix.height );
 #endif
             ImageMatrix ROI_Bounding_Box; //MM
-
+            unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
             if (strcmp(featureset->ROIPath,"")){//MM
                 //Bounding Box Implementation
                 ROIHeightBeg= imageLength-1;
