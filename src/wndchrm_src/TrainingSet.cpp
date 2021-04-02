@@ -1507,8 +1507,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             unsigned int tileWidth, tileLength;
             unsigned short int spp=0,bits=0;
             TIFF *tif = NULL;
-            unsigned char *buf8, *buf8tiled;
-            unsigned short *buf16, *buf16tiled;
+            unsigned char *buf8tiled;
+            unsigned short *buf16tiled;
+            uint32_t * buf32tiled;
 
             TIFFSetWarningHandler(NULL);
             if( (tif = TIFFOpen(LabeledImagePath.c_str(), "r")) ) {
@@ -1522,7 +1523,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 imageLength=height;
                 imageWidth=width;
 
-                if ( ! (bits == 8 || bits == 16) ) {
+                if ( ! (bits == 8 || bits == 16 || bits == 32) ) {
                     std::cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
                     return (0); // only 8 and 16-bit images supported.
                 }
@@ -1531,6 +1532,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
                 buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
                 buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
+                buf32tiled=(uint32_t *)_TIFFmalloc((tsize_t)sizeof(uint32_t)*TIFFTileSize(tif)*spp);
 
                 LabeledImageMatrix = new double*[height];
                 for (int i = 0; i < height; ++i) { LabeledImageMatrix[i] = new double[width]; }
@@ -1538,6 +1540,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 for (y = 0; y < height; y += tileLength) {
                     for (x = 0; x < width; x += tileWidth) {
                         if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
+                        else if (bits==32) TIFFReadTile(tif, buf32tiled, x, y, 0,0);
                         else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
 
                         //colMin=x , rowMin=y
@@ -1552,10 +1555,13 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                             while (coltile<colMax - x) {
                                 unsigned char byte_data;
                                 unsigned short short_data;
+                                uint32_t normal_data;
                                 double val=0;
                                 byte_data=buf8tiled[rowtile*tileWidth+col];
                                 short_data=buf16tiled[rowtile*tileWidth+col];
+                                normal_data=buf32tiled[rowtile*tileWidth+col];
                                 if (bits==8) val=(double)byte_data;
+                                else if (bits==32) val=(double)normal_data;
                                 else val=(double)(short_data);
                                 LabeledImageMatrix[y+rowtile][x+coltile] = val;
                                 coltile++;
@@ -1567,6 +1573,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
                 _TIFFfree(buf8tiled);
                 _TIFFfree(buf16tiled);
+                _TIFFfree(buf32tiled);
             }
             else cout<<" The format of Labeled Image is not tiled-tiff"<<endl;
 
