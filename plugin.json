@@ -1,11 +1,11 @@
 {
-    "name": "WNDCHARM-ROI",
-    "version": "0.2.4",
+    "name": "WNDCHARM-ROI-Alpha",
+    "version": "0.1.0-alpha2",
     "title": "Multi-threaded WND-CHARM with ROI Capability",
     "description": "Multi-threaded WND-CHARM with support for Region of Interest (ROI)",
     "author": "Mahdi Maghrebi",
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
-    "containerId": "labshare/polus-wnd-charm-plugin:0.2.4",
+    "containerId": "labshare/polus-wnd-charm-plugin:0.1.0-alpha2",
     "inputs": [    
         {
             "name": "DataPath",
@@ -77,6 +77,7 @@
             "type": "enum",
 			"options": {
 				"values": [
+    				"Morphological",
 					"PixelStatistics",
 					"Morphological",
                     "Edge",
@@ -126,13 +127,13 @@
             "key": "inputs.ImageTransformationName",
             "title": "Desried image transformation algorithm",      
             "description": "Select the desired Image Transformation algorithm",
-            "condition": "model.inputs.DesiredFeatures==['SpecificAlgorithm']"        
+            "condition": "model.inputs.DesiredFeatures==SpecificAlgorithm"        
         },
         {
             "key": "inputs.FeatureAlgorithmName",
             "title": "Desired feature extraction algorithm ",  
             "description": "Select the desired feature extraction algorithm",
-            "condition": "model.inputs.DesiredFeatures==['SpecificAlgorithm']"           
+            "condition": "model.inputs.DesiredFeatures==SpecificAlgorithm"           
         }
     ]
 }
