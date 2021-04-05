@@ -1610,7 +1610,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         #pragma omp parallel for //MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
             ImageMatrix image_matrix; //MM
-            cout<<" Working on ROI = "<<ii<<"  out of "<< uniqueClasses.size() <<" ROIs "<<endl;
+
+            if (strcmp(featureset->ROIPath,""))  cout<<" Working on ROI = "<<ii<<"  out of "<< uniqueClasses.size() <<" ROIs "<<endl;
+            else cout<<" Working on Features Computation for the entire Image (w/o ROI selection) "<<endl;
+
             // Open the image once for the first sample
             if (sig_index == 0) {
                 // any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
