@@ -125,13 +125,13 @@
             "key": "inputs.ImageTransformationName",
             "title": "Desried image transformation algorithm",      
             "description": "Select the desired Image Transformation algorithm",
-            "condition": "model.inputs.DesiredFeatures==['SpecificAlgorithm']"        
+            "condition": "model.inputs.DesiredFeatures==SpecificAlgorithm"        
         },
         {
             "key": "inputs.FeatureAlgorithmName",
             "title": "Desired feature extraction algorithm ",  
             "description": "Select the desired feature extraction algorithm",
-            "condition": "model.inputs.DesiredFeatures==['SpecificAlgorithm']"           
+            "condition": "model.inputs.DesiredFeatures==SpecificAlgorithm"           
         }
     ]
 }
