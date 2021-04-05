@@ -118,8 +118,23 @@ void WeightedGlobalCentroid(const ImageMatrix &Im, double * x_centroid, double *
     } else *x_centroid=*y_centroid=0;
 }
 
-double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imageLength0) {
+void assignImageDimensions(char* ROIPath, uint32_t * imageWidth0, uint32_t * imageLength0) {
+    unsigned int h,w;
+    TIFF *tif = NULL;
 
+    TIFFSetWarningHandler(NULL);
+    if( (tif = TIFFOpen(ROIPath, "r")) ) {
+
+        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
+        *imageWidth0=w;
+
+        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+        *imageLength0=h;
+    }
+    TIFFClose(tif);
+}
+
+void readLabeledImage(char* ROIPath, double ** LabeledImage) {
     unsigned int h,w,x=0,y=0;
     unsigned int tileWidth, tileLength,width,height;
     unsigned short int spp=0,bps=0,bits;
@@ -127,18 +142,15 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
     unsigned char *buf8tiled;
     unsigned short *buf16tiled;
     uint32 *buf32tiled;
-    double ** LabeledImage;
 
     TIFFSetWarningHandler(NULL);
     if( (tif = TIFFOpen(ROIPath, "r")) ) {
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
         width = w;
-        *imageWidth0=w;
 
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
         height = h;
-        *imageLength0=h;
 
         TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
         bits=bps;
@@ -155,15 +167,12 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
 
         if ( ! (bits == 8 || bits == 16 || bits == 32) ) {
             cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
-            return (0); // only 8 and 16-bit images supported.
+            return; // only 8 and 16-bit images supported.
         }
         TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
         if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
 
-        if ( TIFFNumberOfDirectories(tif) > 1) return(0);   /* get the number of slices (Zs) */
-
-        LabeledImage = new double*[height];
-        for (int i = 0; i < height; ++i) { LabeledImage[i] = new double[width]; }
+        if ( TIFFNumberOfDirectories(tif) > 1) return;   /* get the number of slices (Zs) */
 
         if (tileWidth != 0 && tileLength != 0){
             buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
@@ -214,8 +223,8 @@ double** readLabeledImage(char* ROIPath, uint32_t * imageWidth0, uint32_t * imag
         }
         TIFFClose(tif);
     }
-    return LabeledImage;
 }
+
 
 void Extrema (const ImageMatrix& Im, double *ratios){
 
@@ -532,7 +541,12 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //----------------------Finding Neighbors for the Current ROI-----------------
     uint32_t imageWidth, imageLength;
-    double**  LabeledImage= readLabeledImage(Im.ROIPath,&imageWidth, &imageLength);
+    assignImageDimensions(Im.ROIPath,&imageWidth, &imageLength);
+
+    double**  LabeledImage = new double*[imageLength];
+    for (int i = 0; i < imageLength; ++i) { LabeledImage[i] = new double[imageWidth]; }
+
+    readLabeledImage(Im.ROIPath,LabeledImage);
     int  PixelDistance=3;
 
     vector<int> NeighborIDs;
@@ -561,19 +575,20 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     sort(NeighborIDs.begin(),NeighborIDs.end());
 
-    if (std::find(NeighborIDs.begin(),NeighborIDs.end(),0) != NeighborIDs.end())
-        NeighborIDs.erase(std::find(NeighborIDs.begin(),NeighborIDs.end(),0));
+    // Remove duplicates (v1)
+    std::vector<int> NeighborUniqueIDs;
+    std::unique_copy(NeighborIDs.begin(), NeighborIDs.end(), std::back_inserter(NeighborUniqueIDs));
 
-    //   printf("Number of Neighboring ROIs is %d\n",NeighborIDs.size());
-
+    for (int i = 0; i < imageLength; ++i) { delete [] LabeledImage [i]; }
     delete [] LabeledImage;
-    ratios[45]=NeighborIDs.size();
+
+    ratios[45]=NeighborUniqueIDs.size();
 
     //--------------------------------Hexagonality/Polygonality-------------------
     //This section is a translation from the following Python code
     //https://github.com/LabShare/polus-plugins/blob/master/polus-feature-extraction-plugin/src/main.py
 
-    int neighbors=NeighborIDs.size();
+    int neighbors=NeighborUniqueIDs.size();
     double area=PixelsCount;
     double perimeter = ROIPerimeter;
     double area_hull=convexHullArea;
@@ -779,7 +794,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         tmp.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
         tmp.push_back(MinFeretDiameter);
         tmp.push_back(MinFeretAngle);  //No MinFeret Coordinates
-        tmp.push_back(NeighborIDs.size());  //Jayapriya's specific Features comes After MATLAB's
+        tmp.push_back(NeighborUniqueIDs.size());  //Jayapriya's specific Features comes After MATLAB's
         tmp.push_back(ratios[46]); //poly_ave
         tmp.push_back(ratios[47]); //hex_ave
         tmp.push_back(ratios[48]); //hex_sd
