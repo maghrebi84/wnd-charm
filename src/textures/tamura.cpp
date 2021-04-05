@@ -116,6 +116,8 @@ double directionality(const ImageMatrix &image) {
     Moments2 phi_stats;
 
     sum_r = 0;
+
+    if (image.BoundingBoxFlag==true){
     //MM for (y = 0; y < ydim; ++y) {
     for (y = 0; y < ydim+4; ++y) { //MM
         //MM for (x = 0; x < xdim; ++x) {
@@ -129,6 +131,18 @@ double directionality(const ImageMatrix &image) {
             } else phi_pix_plane(y,x) = phi_stats.add (0.0);
         }
     }
+     } else{
+         for (y = 0; y < ydim; ++y) {
+             for (x = 0; x < xdim; ++x) {
+                     if (deltaH_pix_plane(y,x) >= 0.0001) {
+                     val = atan(deltaV_pix_plane(y,x) / deltaH_pix_plane(y,x))+(M_PI/2.0+0.001); //+0.001 because otherwise sometimes getting -6.12574e-17
+                     phi_pix_plane(y,x) = phi_stats.add (val);
+                     sum_r += pow(deltaH_pix_plane(y,x),2)+pow(deltaV_pix_plane(y,x),2)+pow(val,2);
+                 } else phi_pix_plane(y,x) = phi_stats.add (0.0);
+             }
+         }
+     }
+
     phi.stats = phi_stats;
     phi.finish();
     phi.histogram(Hd,NBINS,0);
