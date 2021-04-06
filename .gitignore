@@ -61,7 +61,6 @@ _autosave*
 # Stuff generated during configure/build
 *.0
 /Makefile
-/Makefile.in
 autom4te.cache/
 pychrm/pychrm.py
 pychrm/swig/pychrm_wrap.cpp
