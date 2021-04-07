@@ -1838,7 +1838,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             ++ImageSignatures->ROIcounts;
 
             //MM ImageSignatures->SaveToFile (1);
-            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, ImageFileName);
+           // if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, ImageFileName);
+            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, ImageFileName, featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
             else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag,ImageFileName);
             }
 

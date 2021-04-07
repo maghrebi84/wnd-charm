@@ -748,7 +748,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     //  cout << "Finished Morphological Computations!\n" << endl;
 
     //Now Lets Change the Order of the outputs accroding to MATLAB and then Jayapriya's Python Code
-        vector<double> tmp;
+ /*       vector<double> tmp;
         //Lets Start with the MATLAB Features (regionpropos). The order of the following features matches MATLAB's order
         tmp.push_back((double)PixelsCount); //Area
         tmp.push_back(xCentroid);
@@ -808,6 +808,70 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         for (int i=0; i<tmp.size(); ++i){
             ratios[i] = tmp[i];
         }
+*/
+
+
+        //Now Lets Rearrange outputs to match Jayapriya's Python Code
+            vector<double> tmp2;
+            //Lets Start with the MATLAB Features (regionpropos). The order of the following features matches MATLAB's order
+            tmp2.push_back((double)PixelsCount); //Area
+            tmp2.push_back(yCentroid);
+            tmp2.push_back(xCentroid);
+            tmp2.push_back(BoundingBoxHeightBeg);
+            tmp2.push_back(BoundingBoxWidthBeg);
+            tmp2.push_back(Im.ROIHeightActual);
+            tmp2.push_back(Im.ROIWidthActual);  
+            tmp2.push_back(MajorAxisLength);
+            tmp2.push_back(MinorAxisLength);
+            tmp2.push_back(Eccentricity);
+            tmp2.push_back(Orientation);
+            tmp2.push_back(convexHullArea);
+            tmp2.push_back(Euler);
+            tmp2.push_back(EquivalentDiameter);
+            tmp2.push_back(solidity);
+            tmp2.push_back(ROIPerimeter);
+            tmp2.push_back(MaxFeretDiameter);
+            tmp2.push_back(MinFeretDiameter);
+            tmp2.push_back(NeighborUniqueIDs.size());  //Jayapriya's specific Features comes After MATLAB's
+            tmp2.push_back(ratios[46]); //poly_ave
+            tmp2.push_back(ratios[47]); //hex_ave
+            tmp2.push_back(ratios[48]); //hex_sd
+            tmp2.push_back(Kurtosis);
+            tmp2.push_back(max);
+            tmp2.push_back(mean);
+            tmp2.push_back(median);
+            tmp2.push_back(min);
+            tmp2.push_back((double)ModeValue);
+            tmp2.push_back(STDEV);
+            tmp2.push_back(Skewness);
+
+            tmp2.push_back(Circularity);  //MATLAB Features start here
+            tmp2.push_back(ratios[17]); //Extrema begins here
+            tmp2.push_back(ratios[18]);
+            tmp2.push_back(ratios[19]);
+            tmp2.push_back(ratios[20]);
+            tmp2.push_back(ratios[21]);
+            tmp2.push_back(ratios[22]);
+            tmp2.push_back(ratios[23]);
+            tmp2.push_back(ratios[24]);
+            tmp2.push_back(ratios[25]);
+            tmp2.push_back(ratios[26]);
+            tmp2.push_back(ratios[27]);
+            tmp2.push_back(ratios[28]);
+            tmp2.push_back(ratios[29]);
+            tmp2.push_back(ratios[30]);
+            tmp2.push_back(ratios[31]);
+            tmp2.push_back(ratios[32]); //Extrema ends here
+            tmp2.push_back(extent);
+            tmp2.push_back(xWCentroid);
+            tmp2.push_back(yWCentroid);
+            tmp2.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
+            tmp2.push_back(MinFeretAngle);  //No MinFeret Coordinates
+            tmp2.push_back(entropy);
+
+            for (int i=0; i<tmp2.size(); ++i){
+                ratios[i] = tmp2[i];
+            }
 
     return;
 }
