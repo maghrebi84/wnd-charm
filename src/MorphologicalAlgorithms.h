@@ -15,10 +15,6 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios);
 
 long EulerNumber(unsigned char * pix_plane, int mode,int height, int width);
 
-void assignImageDimensions(char* ROIPath, uint32_t * imageWidth0, uint32_t * imageLength0);
-
-void readLabeledImage(char* ROIPath, double ** LabeledImage);
-
 void Extrema (const ImageMatrix& Im, double *ratios);
 
 #endif

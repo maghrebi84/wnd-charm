@@ -1634,6 +1634,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             printf( "Image size=(%d,%d)\n", image_matrix.width, image_matrix.height );
 #endif
             ImageMatrix ROI_Bounding_Box; //MM
+            ROI_Bounding_Box.LabelID =uniqueClasses[ii];
             unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
             if (strcmp(featureset->ROIPath,"")){//MM
                 //Bounding Box Implementation
@@ -1675,6 +1676,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 ROI_Bounding_Box.ROIHeightBeg=ROIHeightBeg;
                 ROI_Bounding_Box.ROIWidthBeg=ROIWidthBeg;
 
+                ROI_Bounding_Box.ROIHeightEnd=ROIHeightEnd;
+                ROI_Bounding_Box.ROIWidthEnd=ROIWidthEnd;
+
                 //MM ROI_Bounding_Box.allocate (ROI_Bounding_Box.ROIWidth+1, ROI_Bounding_Box.ROIHeight+1);
                 ROI_Bounding_Box.allocate (ROIWidthEnd-ROIWidthBeg+1, ROIHeightEnd-ROIHeightBeg+1);
 
@@ -1685,8 +1689,44 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                     for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
                         pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
                     }
-            }
 
+                if (!strcmp(featureset->FeatureAlgorithmName,"Morphological")) {
+
+                int ROIExtraBufferLabel=8;
+                ROI_Bounding_Box.ROIExtraBufferLabel=ROIExtraBufferLabel; //This should be bigger than PixelDistance in MorphologicalAlgorithms.cpp
+
+                int ROIHeightBegLabel= ROI_Bounding_Box.ROIHeightBeg;
+                int ROIWidthBegLabel= ROI_Bounding_Box.ROIWidthBeg;
+                int ROIHeightEndLabel= ROI_Bounding_Box.ROIHeightEnd;
+                int ROIWidthEndLabel= ROI_Bounding_Box.ROIWidthEnd;
+
+                if (ROIHeightBegLabel >= ROIExtraBufferLabel) ROIHeightBegLabel -=ROIExtraBufferLabel;
+                else ROIHeightBegLabel=0;
+
+                if (ROIHeightEndLabel+ROIExtraBufferLabel < imageLength) ROIHeightEndLabel +=ROIExtraBufferLabel;
+                else ROIHeightEndLabel=imageLength-1;
+
+                if (ROIWidthBegLabel >= ROIExtraBufferLabel) ROIWidthBegLabel -=ROIExtraBufferLabel;
+                else ROIWidthBegLabel=0;
+
+                if (ROIWidthEndLabel+ROIExtraBufferLabel < imageWidth) ROIWidthEndLabel +=ROIExtraBufferLabel;
+                else ROIWidthEndLabel=imageWidth-1;
+
+                ROI_Bounding_Box.ROIHeightBegLabel=ROIHeightBegLabel;
+                ROI_Bounding_Box.ROIWidthBegLabel=ROIWidthBegLabel;
+                ROI_Bounding_Box.ROIHeightEndLabel=ROIHeightEndLabel;
+                ROI_Bounding_Box.ROIWidthEndLabel=ROIWidthEndLabel;
+
+                ROI_Bounding_Box.ROI_Bounding_Box_Labels = new double*[ROIHeightEndLabel-ROIHeightBegLabel+1];
+                for (int i = 0; i < ROIHeightEndLabel-ROIHeightBegLabel+1; ++i) { ROI_Bounding_Box.ROI_Bounding_Box_Labels[i] = new double[ROIWidthEndLabel-ROIWidthBegLabel+1]; }
+
+                for (unsigned int y = 0; y < ROIHeightEndLabel-ROIHeightBegLabel+1; ++y)
+                    for (unsigned int x = 0; x < ROIWidthEndLabel-ROIWidthBegLabel+1; ++x){
+                       ROI_Bounding_Box.ROI_Bounding_Box_Labels[y][x] = LabeledImageMatrix[ROIHeightBegLabel+y][ROIWidthBegLabel+x];
+                    }
+                }
+
+            }
 
             ImageMatrix *rot_matrix_p=NULL, *tile_matrix_p=NULL; //MM
             ImageMatrix rot_matrix, tile_matrix; //MM
@@ -1827,6 +1867,13 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             if (!res) {
                 ImageSignatures2->compute_plan (*tile_matrix_p, feature_plan);
             }
+
+            //MM Deallocating 2D Pointer
+            if (strcmp(featureset->ROIPath,"") && !strcmp(featureset->FeatureAlgorithmName,"Morphological")){
+                for (int i = 0; i < ROI_Bounding_Box.ROIHeightEndLabel-ROI_Bounding_Box.ROIHeightBegLabel+1; ++i) { delete [] ROI_Bounding_Box.ROI_Bounding_Box_Labels[i]; }
+                delete[] ROI_Bounding_Box.ROI_Bounding_Box_Labels;
+            }
+
             // we're saving sigs always now...
             // But we're not releasing the lock yet - we'll release all the locks for the whole image later.
             // This doesn't call close on our file, which would release the lock.

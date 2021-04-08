@@ -180,6 +180,16 @@ public:
     int ROIHeightBegActual,ROIWidthBegActual; //MM0203
     int ROIHeightActual, ROIWidthActual; //MM0203
     char* ROIPath;  //MM0114
+ 
+    int ROIHeightEnd; //0408
+    int ROIWidthEnd;
+    double ** ROI_Bounding_Box_Labels;
+    int ROIHeightBegLabel;
+    int ROIWidthBegLabel;
+    int ROIHeightEndLabel;
+    int ROIWidthEndLabel;
+    int ROIExtraBufferLabel;
+    int LabelID; 
     
 	// N.B.: Re: ctor, see note in implementation
 	ImageMatrix () : _pix_plane (NULL,0,0), _clr_plane (NULL,0,0), downsampled(0),

@@ -118,114 +118,6 @@ void WeightedGlobalCentroid(const ImageMatrix &Im, double * x_centroid, double *
     } else *x_centroid=*y_centroid=0;
 }
 
-void assignImageDimensions(char* ROIPath, uint32_t * imageWidth0, uint32_t * imageLength0) {
-    unsigned int h,w;
-    TIFF *tif = NULL;
-
-    TIFFSetWarningHandler(NULL);
-    if( (tif = TIFFOpen(ROIPath, "r")) ) {
-
-        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
-        *imageWidth0=w;
-
-        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
-        *imageLength0=h;
-    }
-    TIFFClose(tif);
-}
-
-void readLabeledImage(char* ROIPath, double ** LabeledImage) {
-    unsigned int h,w,x=0,y=0;
-    unsigned int tileWidth, tileLength,width,height;
-    unsigned short int spp=0,bps=0,bits;
-    TIFF *tif = NULL;
-    unsigned char *buf8tiled;
-    unsigned short *buf16tiled;
-    uint32 *buf32tiled;
-
-    TIFFSetWarningHandler(NULL);
-    if( (tif = TIFFOpen(ROIPath, "r")) ) {
-
-        TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
-        width = w;
-
-        TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
-        height = h;
-
-        TIFFGetField(tif, TIFFTAG_BITSPERSAMPLE, &bps);
-        bits=bps;
-
-        uint16 resunit=0;
-        TIFFGetField(tif, TIFFTAG_RESOLUTIONUNIT, &resunit);
-
-        float xres=0,yres=0;
-        TIFFGetField(tif, TIFFTAG_XRESOLUTION, &xres);
-        TIFFGetField(tif, TIFFTAG_YRESOLUTION, &yres);
-
-        TIFFGetField(tif, TIFFTAG_TILEWIDTH, &tileWidth);
-        TIFFGetField(tif, TIFFTAG_TILELENGTH, &tileLength);
-
-        if ( ! (bits == 8 || bits == 16 || bits == 32) ) {
-            cout<<"Only bit values equal to 8 and 16 are supported"<<endl;
-            return; // only 8 and 16-bit images supported.
-        }
-        TIFFGetField(tif, TIFFTAG_SAMPLESPERPIXEL, &spp);
-        if (!spp) spp=1;  /* assume one sample per pixel if nothing is specified */
-
-        if ( TIFFNumberOfDirectories(tif) > 1) return;   /* get the number of slices (Zs) */
-
-        if (tileWidth != 0 && tileLength != 0){
-            buf8tiled = (unsigned char *)_TIFFmalloc(TIFFTileSize(tif)*spp);
-            buf16tiled=(unsigned short *)_TIFFmalloc((tsize_t)sizeof(unsigned short)*TIFFTileSize(tif)*spp);
-            buf32tiled=(uint32_t*)_TIFFmalloc((tsize_t)sizeof(uint32_t)*TIFFTileSize(tif)*spp);
-
-            for (y = 0; y < height; y += tileLength) {
-                for (x = 0; x < width; x += tileWidth) {
-                    if (bits==8)  TIFFReadTile(tif, buf8tiled, x, y, 0,0);
-                    else if (bits==32)  TIFFReadTile(tif, buf32tiled, x, y, 0,0);
-                    else TIFFReadTile(tif, buf16tiled, x, y, 0,0);
-
-                    //colMin=x , rowMin=y
-                    int rowMax = std::min(y + tileLength, height);
-                    int colMax = std::min(x + tileWidth, width);
-                    //int width = colMax - x;
-
-                    for (unsigned int rowtile = 0; rowtile < rowMax - y; ++rowtile) {
-                        int col;
-                        unsigned int coltile;
-                        coltile=0;col=0;
-                        while (coltile<colMax - x) {
-                            unsigned char byte_data;
-                            unsigned short short_data;
-                            uint32_t normal_data;
-                            double val=0;
-
-                            byte_data=buf8tiled[rowtile*tileWidth+col];
-                            short_data=buf16tiled[rowtile*tileWidth+col];
-                            normal_data=buf32tiled[rowtile*tileWidth+col];
-
-                            if (bits==8) val=(double)byte_data;
-                            else if (bits==32) val=(double)normal_data;
-                            else val=(double)(short_data);
-
-                            LabeledImage[y+rowtile][x+coltile] = val;
-
-                            coltile++;
-                            col+=spp;
-                        }
-                    }
-                }
-            }
-
-            _TIFFfree(buf8tiled);
-            _TIFFfree(buf16tiled);
-            _TIFFfree(buf32tiled);
-        }
-        TIFFClose(tif);
-    }
-}
-
-
 void Extrema (const ImageMatrix& Im, double *ratios){
 
     int TopMostIndex=Im.height;
@@ -541,46 +433,41 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //----------------------Finding Neighbors for the Current ROI-----------------
     uint32_t imageWidth, imageLength;
-    assignImageDimensions(Im.ROIPath,&imageWidth, &imageLength);
+    imageWidth=Im.ROIWidthEndLabel-Im.ROIWidthBegLabel+1;
+    imageLength=Im.ROIHeightEndLabel-Im.ROIHeightBegLabel+1;
 
-    double**  LabeledImage = new double*[imageLength];
-    for (int i = 0; i < imageLength; ++i) { LabeledImage[i] = new double[imageWidth]; }
+    int  PixelDistance=5;  //Search Distance from each side
 
-    readLabeledImage(Im.ROIPath,LabeledImage);
-    int  PixelDistance=3;
-
+    int bufferx=Im.ROIHeightBeg-Im.ROIHeightBegLabel;
+    int buffery=Im.ROIWidthBeg-Im.ROIWidthBegLabel;
     vector<int> NeighborIDs;
 
     for (int i = 0; i < contours.size(); i++) {
         Point sampleBorderPoint = contours[i][0];
-        int ROILabel =LabeledImage[sampleBorderPoint.y+Im.ROIHeightBeg][sampleBorderPoint.x+Im.ROIWidthBeg];
 
         for (int j = 0; j < contours[i].size(); j++) {
             Point borderPoint = contours[i][j];
-            int Px=borderPoint.x+Im.ROIWidthBeg;
-            int Py=borderPoint.y+Im.ROIHeightBeg;
+            int Px=borderPoint.x+bufferx;  //Translate coordinates from IntensityImage BoundingBox to Labeled Image BoundingBox
+            int Py=borderPoint.y+buffery;  //Translate coordinates from IntensityImage BoundingBox to Labeled Image BoundingBox
 
-            for (int l=Py-PixelDistance; l<Py+PixelDistance+1; ++l)
-                for (int k=Px-PixelDistance; k<Px+PixelDistance+1; ++k){
+           for (int l=Py-PixelDistance; l<Py+PixelDistance+1; ++l)
+               for (int k=Px-PixelDistance; k<Px+PixelDistance+1; ++k){
 
-                    if (k<0 || k>imageWidth-1) continue;
-                    if (l<0 || l>imageLength-1) continue;
+                   if (k<0 || k>imageWidth-1) continue;
+                   if (l<0 || l>imageLength-1) continue;
 
-                    int value= LabeledImage[l][k];
+                   int value= Im.ROI_Bounding_Box_Labels[l][k];
 
-                    if (value!=0 && value!=ROILabel)  NeighborIDs.push_back(value);
-                }
-        }
-    }
+                   if (value!=0 && value!=Im.LabelID)  NeighborIDs.push_back(value);
+               }
+       }
+   }
 
     sort(NeighborIDs.begin(),NeighborIDs.end());
 
     // Remove duplicates (v1)
     std::vector<int> NeighborUniqueIDs;
     std::unique_copy(NeighborIDs.begin(), NeighborIDs.end(), std::back_inserter(NeighborUniqueIDs));
-
-    for (int i = 0; i < imageLength; ++i) { delete [] LabeledImage [i]; }
-    delete [] LabeledImage;
 
     ratios[45]=NeighborUniqueIDs.size();
 
