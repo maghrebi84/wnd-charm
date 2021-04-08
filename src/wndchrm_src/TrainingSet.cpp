@@ -1608,12 +1608,17 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         omp_set_num_threads(nProcessors-1);
         std::cout <<"Total Number of Processes in the OpenMP Parallel Region = "<< nProcessors-1 <<std::endl;
 
-        #pragma omp parallel for //MM
+        int cnt=0;
+
+        #pragma omp parallel for private (cnt)//MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
             ImageMatrix image_matrix; //MM
 
-            if (strcmp(featureset->ROIPath,""))  cout<<" Working on ROI = "<<ii<<"  out of "<< uniqueClasses.size() <<" ROIs "<<endl;
-            else cout<<" Working on Features Computation for the entire Image (w/o ROI selection) "<<endl;
+            // endl is much more expensive than \n
+  //          if (strcmp(featureset->ROIPath,""))  cout<<" Working on ROI = "<<ii<<"  out of "<< uniqueClasses.size() <<" ROIs "<<endl;
+   //         else cout<<" Working on Features Computation for the entire Image (w/o ROI selection) "<<endl;
+
+            if (cnt%20==0) printf(" cnt per processor == %d  \n", cnt);
 
             // Open the image once for the first sample
             if (sig_index == 0) {
