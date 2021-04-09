@@ -1608,39 +1608,41 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         omp_set_num_threads(nProcessors-1);
         std::cout <<"Total Number of Processes in the OpenMP Parallel Region = "<< nProcessors-1 <<std::endl;
 
+        ImageMatrix image_matrix; //MM
+        // Open the image once for the first sample
+        if (sig_index == 0) {
+            // any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
+            // One of these could be reachable if the image is not in the same directory as the sigs.
+            // There is no support for this now though - its an error for the image not to exist together with the sigs
+            // if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
+
+            //MM if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
+            if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
+
+                catError ("Error: Could not read image file '%s' to recalculate sigs.\n",filename);
+                res = -1; // make sure its negative for cleanup below
+                //MM  break;
+            }
+        }
+
         int cnt=0;
 
         #pragma omp parallel for private (cnt)//MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
-            ImageMatrix image_matrix; //MM
 
+        int ROI_ID= uniqueClasses[ii];
             // endl is much more expensive than \n
   //          if (strcmp(featureset->ROIPath,""))  cout<<" Working on ROI = "<<ii<<"  out of "<< uniqueClasses.size() <<" ROIs "<<endl;
    //         else cout<<" Working on Features Computation for the entire Image (w/o ROI selection) "<<endl;
 
-            if (cnt%20==0) printf(" cnt per processor == %d  \n", cnt);
+            if (cnt%500==0) printf(" cnt per processor == %d  \n", cnt);
             cnt++;
 
-            // Open the image once for the first sample
-            if (sig_index == 0) {
-                // any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
-                // One of these could be reachable if the image is not in the same directory as the sigs.
-                // There is no support for this now though - its an error for the image not to exist together with the sigs
-                // if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
-
-                //MM if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
-                if ( (res = image_matrix.OpenImage(filename, LabeledImageMatrix,uniqueClasses[ii],preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
-
-                    catError ("Error: Could not read image file '%s' to recalculate sigs.\n",filename);
-                    res = -1; // make sure its negative for cleanup below
-                    //MM  break;
-                }
-            }
 #if DEBUG
             printf( "Image size=(%d,%d)\n", image_matrix.width, image_matrix.height );
 #endif
             ImageMatrix ROI_Bounding_Box; //MM
-            ROI_Bounding_Box.LabelID =uniqueClasses[ii];
+            ROI_Bounding_Box.LabelID =ROI_ID;
             unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
             if (strcmp(featureset->ROIPath,"")){//MM
                 //Bounding Box Implementation
@@ -1651,7 +1653,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
                 for (unsigned int y = 0; y < imageLength; ++y)
                     for (unsigned int x = 0; x < imageWidth; ++x){
-                        if (LabeledImageMatrix[y][x] !=uniqueClasses[ii]) continue;
+                        if (LabeledImageMatrix[y][x] !=ROI_ID) continue;
                         if (y < ROIHeightBeg) ROIHeightBeg=y;
                         if (y > ROIHeightEnd) ROIHeightEnd=y;
                         if (x < ROIWidthBeg) ROIWidthBeg=x;
@@ -1693,7 +1695,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
                 for (unsigned int y = 0; y < ROIHeightEnd - ROIHeightBeg+1; ++y)
                     for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
-                        pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
+                      //  pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
+                        if (abs(LabeledImageMatrix[ROIHeightBeg+y][ROIWidthBeg+x]-ROI_ID)>1e-6) pix_plane (y,x) = ROI_Bounding_Box.stats.add (std::numeric_limits<double>::quiet_NaN());
+                        else pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
                     }
 
                 if (!strcmp(featureset->FeatureAlgorithmName,"Morphological")) {
@@ -1892,7 +1896,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
             //MM ImageSignatures->SaveToFile (1);
            // if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, ImageFileName);
-            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, uniqueClasses[ii],ROIFlag, ImageFileName, featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+            if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, ROI_ID, ROIFlag, ImageFileName, featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
             else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag,ImageFileName);
             }
 

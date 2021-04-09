@@ -74,7 +74,7 @@ extern int verbosity;
    filename -char *- full path to the image file
    The input data is processed using libtiff library
 */
-int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int ClassID) {
+int ImageMatrix::LoadTIFF(char *filename) {
         unsigned int h,w,x=0,y=0;
         unsigned int tileWidth, tileLength;
         unsigned short int spp=0,bps=0;
@@ -129,14 +129,6 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
             writeablePixels pix_plane = WriteablePixels();
             writeableColors clr_plane = WriteableColors();
 
-            if (ClassID){
-                for (y = 0; y < height; ++y) {
-                    for (x = 0; x < width; ++x) {
-                        pix_plane (y,x) = stats.add (std::numeric_limits<double>::quiet_NaN());
-                    }
-                }
-            }
-
             //tileWidth <= width and tileLength <= height rule out the conditions where tileWidth and tileLength are randomly assigned a large number for non-tiled tiff images
             //tileWidth == 1024 && tileLength == 1024 is for the ondition where the tiled-tiff image has lower dimensions than tile's
             if ((tileWidth <= width && tileLength <= height && tileWidth!=0 && tileLength !=0) || (tileWidth == 1024 && tileLength == 1024) ){
@@ -161,12 +153,6 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                             unsigned int coltile;
                             coltile=0;col=0;
                             while (coltile<colMax - x) {
-
-                                if (ClassID)
-                                    if (abs(LabeledImageMatrix[y+rowtile][x+coltile]-ClassID)>1e-6) {
-                                        coltile++; col+=spp; continue;
-                                }
-
                                 unsigned char byte_data;
                                 unsigned short short_data;
                                 uint32_t normal_data;
@@ -255,10 +241,6 @@ int ImageMatrix::LoadTIFF(char *filename,double ** LabeledImageMatrix, int Class
                     else TIFFReadScanline(tif, buf16, y);
                     x=0;col=0;
                     while (x<width) {
-                        if (ClassID)
-                            if (abs(LabeledImageMatrix[y][x]-ClassID)>1e-6) {
-                                x++; col+=spp; continue;
-                        }
                         unsigned char byte_data;
                         unsigned short short_data;
                         uint32_t normal_data;
@@ -384,10 +366,7 @@ int ImageMatrix::SaveTiff(char *filename) {
     return(1);
 }
 
-//MM int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *bounding_rect, double mean, double stdev )
-int ImageMatrix::OpenImage( char *image_file_name, double ** LabeledImageMatrix, int ClassID , int downsample, rect *bounding_rect,
-                            double mean, double stdev)
-{
+int ImageMatrix::OpenImage( char *image_file_name, int downsample, rect *bounding_rect, double mean, double stdev ) {
     int res=0;
 
     if( !strstr(image_file_name,".tif") && ! strstr(image_file_name,".TIF") )
@@ -397,15 +376,13 @@ int ImageMatrix::OpenImage( char *image_file_name, double ** LabeledImageMatrix,
         // submatrix allocates memory on top of *this, so *this can't both be the source
         // and destination of the crop, use a buffer:
         ImageMatrix copy_matrix;
-       //MM res = copy_matrix.LoadTIFF(image_file_name);
-        res = copy_matrix.LoadTIFF(image_file_name,LabeledImageMatrix, ClassID);
+        res = copy_matrix.LoadTIFF(image_file_name);
         submatrix( copy_matrix, (unsigned int)bounding_rect->x, (unsigned int)bounding_rect->y,
                    (unsigned int)bounding_rect->x+bounding_rect->w-1, (unsigned int)bounding_rect->y+bounding_rect->h-1
                    );
     }
     else {
-       //MM res=LoadTIFF(image_file_name);
-        res=LoadTIFF(image_file_name, LabeledImageMatrix, ClassID);
+        res=LoadTIFF(image_file_name);
     }
     // add the image only if it was loaded properly
     if( res )
