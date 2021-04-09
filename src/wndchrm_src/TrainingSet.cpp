@@ -1619,6 +1619,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
    //         else cout<<" Working on Features Computation for the entire Image (w/o ROI selection) "<<endl;
 
             if (cnt%20==0) printf(" cnt per processor == %d  \n", cnt);
+            cnt++;
 
             // Open the image once for the first sample
             if (sig_index == 0) {
