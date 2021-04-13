@@ -1600,13 +1600,23 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         if (strcmp(featureset->ROIPath,"")) ROIFlag=true;
         else ROIFlag=false;
 
-        //MM
-        /**
-         * Query about the number of available CPU processors and set it as OpenMP threads
-         */
-        int nProcessors = omp_get_num_procs();
-        omp_set_num_threads(nProcessors-1);
-        std::cout <<"Total Number of Processes in the OpenMP Parallel Region = "<< nProcessors-1 <<std::endl;
+
+        //Lets record i and j index of each ROI Label in a separate vector for fast retrieval later in the loop
+        std::vector<int> *iIndexROIs,*jIndexROIs;
+
+        if (strcmp(featureset->ROIPath,"")){
+            int LargestROI=uniqueClasses[(int)uniqueClasses.size()];
+            iIndexROIs = new std::vector<int>[LargestROI+1];
+            jIndexROIs = new std::vector<int>[LargestROI+1];
+
+            for (int i = 0; i < imageLength; ++i) {
+                for (int j = 0; j < imageWidth; ++j) {
+                    int tmp=(int)LabeledImageMatrix[i][j];
+                    iIndexROIs[tmp].push_back(i);
+                    jIndexROIs[tmp].push_back(j);
+                }
+            }
+        }
 
         ImageMatrix image_matrix; //MM
         // Open the image once for the first sample
@@ -1624,6 +1634,44 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 //MM  break;
             }
         }
+
+
+        //MM
+        // if (sig_index == 0 && ii==0){
+        bool NaNAvailableflag=false;
+        const FeatureComputationPlan *feature_plan;
+        if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
+        else if( featureset->uniqueClassesSize == 1 ){
+            if (image_matrix.stats.n() != image_matrix.width*image_matrix.height) NaNAvailableflag=true;
+        }
+
+        // get a feature calculation plan based on our featureset
+        //MM:
+        if (featureset->feature_opts.large_set) {
+            if (featureset->feature_opts.compute_colors) {
+                feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
+            } else {
+                feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
+            }
+        }
+        else if (strcmp(featureset->ImageTransformationName,"")) {
+            feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
+        }
+        else {
+            if (featureset->feature_opts.compute_colors) {
+                feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
+            } else {
+                feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
+            }
+        }
+
+        //MM
+        /**
+         * Query about the number of available CPU processors and set it as OpenMP threads
+         */
+        int nProcessors = omp_get_num_procs();
+        omp_set_num_threads(nProcessors-1);
+        std::cout <<"Total Number of Processes in the OpenMP Parallel Region = "<< nProcessors-1 <<std::endl;
 
         int cnt=0;
 
@@ -1646,19 +1694,11 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             unsigned int ROIHeightBeg, ROIHeightEnd, ROIWidthBeg, ROIWidthEnd;
             if (strcmp(featureset->ROIPath,"")){//MM
                 //Bounding Box Implementation
-                ROIHeightBeg= imageLength-1;
-                ROIHeightEnd=0;
-                ROIWidthBeg= imageWidth-1;
-                ROIWidthEnd=0;
+                ROIHeightEnd = *max_element(iIndexROIs[ROI_ID].begin(), iIndexROIs[ROI_ID].end());
+                ROIHeightBeg = *min_element(iIndexROIs[ROI_ID].begin(), iIndexROIs[ROI_ID].end());
 
-                for (unsigned int y = 0; y < imageLength; ++y)
-                    for (unsigned int x = 0; x < imageWidth; ++x){
-                        if (LabeledImageMatrix[y][x] !=ROI_ID) continue;
-                        if (y < ROIHeightBeg) ROIHeightBeg=y;
-                        if (y > ROIHeightEnd) ROIHeightEnd=y;
-                        if (x < ROIWidthBeg) ROIWidthBeg=x;
-                        if (x > ROIWidthEnd) ROIWidthEnd=x;
-                    }
+                ROIWidthEnd = *max_element(jIndexROIs[ROI_ID].begin(), jIndexROIs[ROI_ID].end());
+                ROIWidthBeg = *min_element(jIndexROIs[ROI_ID].begin(), jIndexROIs[ROI_ID].end());
 
                 ROI_Bounding_Box.BoundingBoxFlag=true;
 
@@ -1821,57 +1861,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 }
             }
             
-            //MM
-            // if (sig_index == 0 && ii==0){
-            bool NaNAvailableflag=false;
-            const FeatureComputationPlan *feature_plan;
-            if( featureset->uniqueClassesSize >1 ) NaNAvailableflag=true;
-            else if( featureset->uniqueClassesSize == 1 ){
-                if (image_matrix.stats.n() != image_matrix.width*image_matrix.height) NaNAvailableflag=true;
-            }
-
-            // get a feature calculation plan based on our featureset
-            /*            if (featureset->feature_opts.large_set) {
-                    if (featureset->feature_opts.compute_colors) {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
-                    } else {
-                      //MM feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
-                      if (strcmp(featureset->ImageTransformationName,"")) feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
-                      else feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
-                    }
-                } else {
-                    if (featureset->feature_opts.compute_colors) {
-                        feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
-                    } else {
-                        //MM feature_plan = StdFeatureComputationPlans::getFeatureSet();
-                        //MM feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
-                        if (strcmp(featureset->ImageTransformationName,"")) feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
-                        else feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
-                    }
-                }
-         //   }
-*/
-            //MM:
-            if (featureset->feature_opts.large_set) {
-                if (featureset->feature_opts.compute_colors) {
-                    feature_plan = StdFeatureComputationPlans::getFeatureSetLongColor();
-                } else {
-                    feature_plan = StdFeatureComputationPlans::getFeatureSetLong(NaNAvailableflag);
-                }
-            }
-            else if (strcmp(featureset->ImageTransformationName,"")) {
-                feature_plan = StdFeatureComputationPlans::getFeatureSetbyName(featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
-
+            if (strcmp(featureset->ImageTransformationName,""))
                 if (!strcmp(featureset->FeatureAlgorithmName,"Morphological")) tile_matrix_p->ROIPath=LabeledImageFullPath;
-            }
-            else {
-                if (featureset->feature_opts.compute_colors) {
-                    feature_plan = StdFeatureComputationPlans::getFeatureSetColor();
-                } else {
-                    feature_plan = StdFeatureComputationPlans::getFeatureSet(NaNAvailableflag);
-                }
-            }
-
 
             // all hope is lost - compute sigs.
             if (!res) {
@@ -1911,6 +1902,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
         //MM Deallocating 2D Pointer
         if (strcmp(featureset->ROIPath,"")){
+            delete[] iIndexROIs, jIndexROIs;
             for (int i = 0; i < imageLength; ++i) { delete [] LabeledImageMatrix[i]; }
             delete[] LabeledImageMatrix;
         }
