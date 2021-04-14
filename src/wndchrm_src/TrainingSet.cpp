@@ -1675,7 +1675,9 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
         int cnt=0;
 
-        #pragma omp parallel for private (cnt)//MM
+        std::vector<double> *tmpOutputData = new std::vector<double>[uniqueClasses.size()];
+
+        #pragma omp parallel for //private (cnt)//MM
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
 
         int ROI_ID= uniqueClasses[ii];
@@ -1878,8 +1880,16 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             // we're saving sigs always now...
             // But we're not releasing the lock yet - we'll release all the locks for the whole image later.
             // This doesn't call close on our file, which would release the lock.
+            ImageSignatures->count=ImageSignatures2->count;
 
-            #pragma omp critical //MM
+            if (strcmp(featureset->ROIPath,"")){
+                tmpOutputData[ii]=ImageSignatures2->data;
+            }
+            else{
+                ImageSignatures->data = ImageSignatures2->data;
+            }
+
+/*            #pragma omp critical //MM
             {
             ImageSignatures->data = ImageSignatures2->data;
             ImageSignatures->count=ImageSignatures2->count;
@@ -1890,19 +1900,32 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts, ROI_ID, ROIFlag, ImageFileName, featureset->ImageTransformationName, featureset->FeatureAlgorithmName);
             else ImageSignatures->SaveToFile (1, ImageSignatures->ROIcounts,0,ROIFlag,ImageFileName);
             }
-
-            our_sigs[sig_index].saved = true;
+*/
+/*            our_sigs[sig_index].saved = true;
             if ( (res=AddSample(ImageSignatures)) < 0) {
                 std::cout << "Error in AddSample(ImageSignatures) occurred"<<std::endl;
                 //MM break;
             }
-            our_sigs[sig_index].added = true;
+           our_sigs[sig_index].added = true;
+*/
             delete ImageSignatures2; //MM
         }
 
+        if (strcmp(featureset->ROIPath,"")) ImageSignatures->SaveToFile2 (tmpOutputData, uniqueClasses, ROIFlag, ImageFileName, featureset->ImageTransformationName, featureset->FeatureAlgorithmName); //0409
+        //else ImageSignatures->SaveToFile2 (tmpOutputData, ROIFlag,ImageFileName);
+        else ImageSignatures->SaveToFile (1, 1,0,ROIFlag,ImageFileName);
+
+        our_sigs[sig_index].saved = true;
+        if ( (res=AddSample(ImageSignatures)) < 0) {
+            std::cout << "Error in AddSample(ImageSignatures) occurred"<<std::endl;
+            //MM break;
+        }
+        our_sigs[sig_index].added = true;
+
+
         //MM Deallocating 2D Pointer
         if (strcmp(featureset->ROIPath,"")){
-            delete[] iIndexROIs, jIndexROIs;
+            delete[] iIndexROIs, jIndexROIs, tmpOutputData;
             for (int i = 0; i < imageLength; ++i) { delete [] LabeledImageMatrix[i]; }
             delete[] LabeledImageMatrix;
         }

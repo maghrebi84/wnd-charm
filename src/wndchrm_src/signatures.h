@@ -100,6 +100,8 @@ class signatures
  //MM   int SaveToFile(int save_feature_names, int Count, int i=0, bool ROIFlag=true, std::string MaskFilename="");
           int SaveToFile(int save_feature_names, int Count, int i=0, bool ROIFlag=true, std::string MaskFilename="", char * ImageTransformationName="", char *FeatureAlgorithmName="" );
 
+          int SaveToFile2(std::vector<double> * tmpOutputData, std::vector<double> uniqueClasses, bool ROIFlag=true, std::string MaskFilename="", char * ImageTransformationName="", char *FeatureAlgorithmName="" );
+
         
     int LoadFromFile(char *filename);
     //MM void LoadFromFilep (FILE *value_file); // implementation for LoadFromFile using a pre-existing FILE*
