@@ -1573,6 +1573,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 _TIFFfree(buf8tiled);
                 _TIFFfree(buf16tiled);
                 _TIFFfree(buf32tiled);
+                TIFFClose(tif);
             }
             else cout<<" The format of Labeled Image is not tiled-tiff"<<endl;
 
@@ -1925,10 +1926,13 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
         //MM Deallocating 2D Pointer
         if (strcmp(featureset->ROIPath,"")){
-            delete[] iIndexROIs, jIndexROIs, tmpOutputData;
+            delete [] iIndexROIs;
+            delete [] jIndexROIs;
+            delete [] tmpOutputData;
             for (int i = 0; i < imageLength; ++i) { delete [] LabeledImageMatrix[i]; }
             delete[] LabeledImageMatrix;
         }
+        delete [] LabeledImageFullPath;
     }
     
     // don't release any locks until we're done with this image

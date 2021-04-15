@@ -429,7 +429,9 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[43]=MinFeretDiameter;
     ratios[44]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
-    delete [] MaxDistanceArray, Point1Index, Point2Index;
+    delete [] MaxDistanceArray;
+    delete [] Point1Index;
+    delete [] Point2Index;
 
     //----------------------Finding Neighbors for the Current ROI-----------------
     uint32_t imageWidth, imageLength;
