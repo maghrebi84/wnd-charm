@@ -438,8 +438,8 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     int  PixelDistance=5;  //Search Distance from each side
 
-    int bufferx=Im.ROIHeightBeg-Im.ROIHeightBegLabel;
-    int buffery=Im.ROIWidthBeg-Im.ROIWidthBegLabel;
+    int buffery=Im.ROIHeightBeg-Im.ROIHeightBegLabel;
+    int bufferx=Im.ROIWidthBeg-Im.ROIWidthBegLabel;
     vector<int> NeighborIDs;
 
     for (int i = 0; i < contours.size(); i++) {
