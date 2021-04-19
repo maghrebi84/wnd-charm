@@ -273,7 +273,7 @@ static bool FractalFeaturesReg = ComputationTaskInstances::add (new FractalFeatu
 
 //===========================================================================
 
-PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 5) {
+PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 10) {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
@@ -290,6 +290,8 @@ std::vector<double> PixelIntensityStatistics::execute (const ImageMatrix &IN_mat
 	coeffs[2] = stats.std();
 	coeffs[3] = stats.min();
 	coeffs[4] = stats.max();
+
+        IN_matrix.OtherStatistics(coeffs.data());
 
 	return coeffs;
 }

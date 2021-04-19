@@ -91,7 +91,7 @@ In addition to the above changes, unit tests for the current implementations in 
 In addition to the above changes, the state of the art functionality "Region Of Interest (ROI)" was implemented in WND-CHARM. If Mask (Labeled) Image is provided as an input argument, WND-CHARM automatically computes the features for ROIs (non-zeor labels) instead of the entire image. The ROI performance was significantly improved by confining the feature computations to a rectangular bounding box around ROI.
 Furthermore, the performance of ROI implementation was improved by multi-threading at the ROI level where each thread picks one ROI and computes the entire features for it. The input parameters to WND-CHARM were modified according to the requirements of a WIPP plugin. The outputs were also formatted according to the desired formats for WIPP plugins. WND-CHARM can now be executive using the following command and sets of input arguments.
 
-./wndchrm --DataPath /PATH/to/Input Intensity Image/Directory --output /PATH/to/Output/Directory --LabeledData /PATH/to/Mask Image/Directory --ImageTransformationName Original  --FeatureAlgorithmName PixelStatistics
+./wndchrm --DataPath /PATH/to/Input Intensity Image/Directory --output /PATH/to/Output/Directory --LabeledData /PATH/to/Mask Image/Directory --ImageTransformationName Original  --FeatureAlgorithmName PixelIntensityStatistics
 
 In the above command:
 

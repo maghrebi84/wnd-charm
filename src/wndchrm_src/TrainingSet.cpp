@@ -1678,7 +1678,7 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
 
         std::vector<double> *tmpOutputData = new std::vector<double>[uniqueClasses.size()];
 
-        #pragma omp parallel for //private (cnt)//MM
+        #pragma omp parallel for //schedule(dynamic) was not much effective in O3, but was good for O2
         for (int ii=0; ii<uniqueClasses.size(); ++ii) { //MM
 
         int ROI_ID= uniqueClasses[ii];
@@ -1686,8 +1686,8 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
   //          if (strcmp(featureset->ROIPath,""))  cout<<" Working on ROI = "<<ii<<"  out of "<< uniqueClasses.size() <<" ROIs "<<endl;
    //         else cout<<" Working on Features Computation for the entire Image (w/o ROI selection) "<<endl;
 
-            if (cnt%500==0) printf(" cnt per processor == %d  \n", cnt);
-            cnt++;
+            if (++cnt % 100==0) printf(" ROI Iteration == %d  \n", cnt);
+
 
 #if DEBUG
             printf( "Image size=(%d,%d)\n", image_matrix.width, image_matrix.height );

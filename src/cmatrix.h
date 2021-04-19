@@ -351,6 +351,7 @@ public:
 	void TamuraTexture2D(double *vec) const;
 	void zernike2D(double *zvalues, long *output_size) const;
     void Morphology (double *ratios) const; //MM
+    void OtherStatistics(double * output) const; //MM
     
 	// disable the copy constructor
 private:

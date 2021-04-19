@@ -368,7 +368,7 @@ const FeatureComputationPlan *StdFeatureComputationPlans::getFeatureSetbyName (c
     else if (!strcmp(FeatureAlgorithmName,"Tamura")) FeatureName= "TamuraTextures";
     else if (!strcmp(FeatureAlgorithmName,"Radon")) FeatureName= "RadonCoefficients";
     else if (!strcmp(FeatureAlgorithmName,"Fractal")) FeatureName= "FractalFeatures";
-    else if (!strcmp(FeatureAlgorithmName,"PixelStatistics")) FeatureName= "PixelIntensityStatistics";
+    else if (!strcmp(FeatureAlgorithmName,"PixelIntensityStatistics")) FeatureName= "PixelIntensityStatistics";
     else if (!strcmp(FeatureAlgorithmName,"Gini")) FeatureName= "GiniCoefficient";
     else if (!strcmp(FeatureAlgorithmName,"Morphological")) FeatureName= "Morphological";
     else (std::cout<< "Error: Unrecognized FeatureAlgorithmName");

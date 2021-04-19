@@ -752,8 +752,8 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             tmp2.push_back(ratios[31]);
             tmp2.push_back(ratios[32]); //Extrema ends here
             tmp2.push_back(extent);
-            tmp2.push_back(xWCentroid);
             tmp2.push_back(yWCentroid);
+            tmp2.push_back(xWCentroid);
             tmp2.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
             tmp2.push_back(MinFeretAngle);  //No MinFeret Coordinates
             tmp2.push_back(entropy);

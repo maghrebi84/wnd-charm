@@ -39,7 +39,7 @@ ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/fftw/lib:/usr/lib/x86_64-linux-gnu:/h
 ENV LDFLAGS="-L/home/fftw/lib -L/usr/lib/x86_64-linux-gnu -L/home/OpenCV/build/lib"
 ENV CPPFLAGS="-I/home/fftw/include -I/home/OpenCV/opencv-master/modules/highgui/include -I/home/OpenCV/opencv-master/modules/imgproc/include -I/home/OpenCV/opencv-master/modules/core/include -I/home/OpenCV/build -I/home/OpenCV/opencv-master/modules/imgcodecs/include -I/home/OpenCV/opencv-master/modules/videoio/include"
 
-RUN ./configure --prefix=/home/ LIBS='-L/home/OpenCV/build/lib -lopencv_imgproc -lopencv_highgui -lopencv_core -L/usr/lib/x86_64-linux-gnu/ -lboost_iostreams -lboost_system -lboost_filesystem' CXXFLAGS='-g -O2 -fopenmp -I/home/OpenCV/opencv-master/modules/highgui/include -I/home/OpenCV/opencv-master/modules/imgproc/include -I/home/OpenCV/opencv-master/modules/core/include -I/home/OpenCV/build -I/home/OpenCV/opencv-master/modules/imgcodecs/include -I/home/OpenCV/opencv-master/modules/videoio/include'
+RUN ./configure --prefix=/home/ LIBS='-L/home/OpenCV/build/lib -lopencv_imgproc -lopencv_highgui -lopencv_core -L/usr/lib/x86_64-linux-gnu/ -lboost_iostreams -lboost_system -lboost_filesystem' CXXFLAGS='-g -O3 -fopenmp -I/home/OpenCV/opencv-master/modules/highgui/include -I/home/OpenCV/opencv-master/modules/imgproc/include -I/home/OpenCV/opencv-master/modules/core/include -I/home/OpenCV/build -I/home/OpenCV/opencv-master/modules/imgcodecs/include -I/home/OpenCV/opencv-master/modules/videoio/include'
 
 RUN make install
 

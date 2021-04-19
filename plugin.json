@@ -77,7 +77,7 @@
             "type": "enum",
 			"options": {
 				"values": [
-					"PixelStatistics",
+					"PixelIntensityStatistics",
 					"Morphological",
                     "Edge",
   					"Otsu",

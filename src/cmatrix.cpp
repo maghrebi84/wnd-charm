@@ -917,6 +917,68 @@ double ImageMatrix::update_median () {
     return _median;
 }
 
+
+void ImageMatrix::OtherStatistics(double * output ) const {
+readOnlyPixels pix_plane = ReadablePixels();
+
+double SqrdTmp=0;
+double TrpdTmp=0;
+double QuadTmp=0;
+
+for (unsigned int y = 0; y < height; ++y)
+    for (unsigned int x = 0; x < width; ++x){
+        if(isnan(pix_plane (y,x))) continue;
+            double tmp= pix_plane (y,x)-stats.mean();
+            SqrdTmp += tmp*tmp;
+            TrpdTmp += tmp*tmp*tmp;
+            QuadTmp += tmp*tmp*tmp*tmp;
+        }
+
+double Variance= SqrdTmp/stats.n();
+double STDEV= sqrt(Variance);
+double Skewness= (TrpdTmp/stats.n())/pow(STDEV,3);
+double Kurtosis= (QuadTmp/stats.n())/pow(Variance,2);
+
+output[5]=STDEV;
+output[6]=Skewness;
+output[7]=Kurtosis;
+
+int intMax=(int)stats.max();
+int intMin=(int)stats.min();
+int Size=intMax-intMin+1;
+int* histBins =new int [Size];
+
+for (int i=0; i<Size; ++i) histBins[i]=0;
+
+for (unsigned int y = 0; y < height; ++y)
+    for (unsigned int x = 0; x < width; ++x){
+        if (!std::isnan(pix_plane (y,x))) {
+            int bin = floor(pix_plane (y,x));
+            ++ histBins[bin-intMin];
+        }
+    }
+
+float MaxValue=0;
+int maxBinIndex=-1;
+double entropy = 0.0;
+for (int i=0; i<Size; i++) {
+    float binEntry = (float)histBins[i]/stats.n();
+    if (fabs(binEntry) > 1e-6){  //if bin is not empty
+        entropy -= binEntry * log2(binEntry);
+        if (binEntry>MaxValue) {MaxValue=binEntry; maxBinIndex=i;}
+    }
+}
+
+int ModeValue=maxBinIndex+intMin;
+
+output[8]=entropy;
+output[9]=(double)ModeValue;
+
+delete [] histBins;
+}
+
+
+
 double ImageMatrix::get_median () const {
     double median;
     size_t num = width * height;
