@@ -288,14 +288,6 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "polygonality_score",
         "hexagonality_score",
         "hexagonality_sd",
-        "kurtosis",
-        "maximum",
-        "mean",
-        "median",
-        "minimum",
-        "mode",
-        "standard_deviation",
-        "skewness",
         "circularity",
         "extremap1x",
         "extremap2x",
@@ -317,8 +309,7 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "weightedcentroid_y",
         "weightedcentroid_x",
         "maxferetangle",
-        "minferetangle",
-        "entropy"
+        "minferetangle"
     };
 
     if (ROIFlag) fprintf( wf_fp, "%s,%s,", "label", "maskfilename");
@@ -435,14 +426,6 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
             "polygonality_score",
             "hexagonality_score",
             "hexagonality_sd",
-            "kurtosis",
-            "maximum",
-            "mean",
-            "median",
-            "minimum",
-            "mode",
-            "standard_deviation",
-            "skewness",
             "circularity",
             "extremap1x",
             "extremap2x",
@@ -464,8 +447,7 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
             "weightedcentroid_y",
             "weightedcentroid_x",
             "maxferetangle",
-            "minferetangle",
-            "entropy"
+            "minferetangle"
         };
 
         //    if (ROIcounts==1){

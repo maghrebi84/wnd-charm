@@ -206,22 +206,22 @@ void Extrema (const ImageMatrix& Im, double *ratios){
     float P8y = LeftMost_Top-0.5+Im.ROIHeightBeg;
     float P8x = LeftMostIndex-0.5+Im.ROIWidthBeg;
 
-    ratios[17]=P1x;
-    ratios[18]=P2x;
-    ratios[19]=P3x;
-    ratios[20]=P4x;
-    ratios[21]=P5x;
-    ratios[22]=P6x;
-    ratios[23]=P7x;
-    ratios[24]=P8x;
-    ratios[25]=P1y;
-    ratios[26]=P2y;
-    ratios[27]=P3y;
-    ratios[28]=P4y;
-    ratios[29]=P5y;
-    ratios[30]=P6y;
-    ratios[31]=P7y;
-    ratios[32]=P8y;
+    ratios[10]=P1x;
+    ratios[11]=P2x;
+    ratios[12]=P3x;
+    ratios[13]=P4x;
+    ratios[14]=P5x;
+    ratios[15]=P6x;
+    ratios[16]=P7x;
+    ratios[17]=P8x;
+    ratios[18]=P1y;
+    ratios[19]=P2y;
+    ratios[20]=P3y;
+    ratios[21]=P4y;
+    ratios[22]=P5y;
+    ratios[23]=P6y;
+    ratios[24]=P7y;
+    ratios[25]=P8y;
 
     return;
 }
@@ -258,47 +258,16 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[8]=xWCentroid;
     ratios[9]=yWCentroid;
 
-    //--------------Statistics and Moments-----------
-    double mean= Im.stats.mean();
-    double max= Im.stats.max();
-    double min= Im.stats.min();
-    double median=Im.get_median();
-
+    //--------------Make a binary array-----------
     uchar * arr = new uchar[Im.height*Im.width];
 
     readOnlyPixels in_plane = Im.ReadablePixels();
 
-    double SqrdTmp=0;
-    double TrpdTmp=0;
-    double QuadTmp=0;
-
     for (unsigned int y = 0; y < Im.height; ++y)
         for (unsigned int x = 0; x < Im.width; ++x){
-            double PixelVal= in_plane (y,x);
-            if (std::isnan(PixelVal)) arr[y*Im.width+x]=0;
-            else
-            {
-                arr[y*Im.width+x]=1;
-                double tmp= PixelVal-mean;
-                SqrdTmp += tmp*tmp;
-                TrpdTmp += tmp*tmp*tmp;
-                QuadTmp += tmp*tmp*tmp*tmp;
-            }
+            if (std::isnan(in_plane (y,x))) arr[y*Im.width+x]=0;
+            else arr[y*Im.width+x]=1;
         }
-
-    double Variance= SqrdTmp/Im.stats.n();
-    double STDEV= sqrt(Variance);
-    double Skewness= (TrpdTmp/Im.stats.n())/pow(STDEV,3);
-    double Kurtosis= (QuadTmp/Im.stats.n())/pow(Variance,2);
-
-    ratios[10]=mean;
-    ratios[11]=min;
-    ratios[12]=max;
-    ratios[13]=median;
-    ratios[14]=STDEV;
-    ratios[15]=Skewness;
-    ratios[16]=Kurtosis;
-
     //--------------Fitting an Ellipse--------------------------------
     //Reference: https://www.mathworks.com/matlabcentral/mlc-downloads/downloads/submissions/19028/versions/1/previews/regiondata.m/index.html
 
@@ -361,7 +330,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //------------------------Euler Number------------------------------------------
     long Euler= EulerNumber(arr,8,Im.height,Im.width);
-    ratios[33]=Euler;
+    ratios[26]=Euler;
     delete [] arr;
 
     //------------------------------Some Other Statistics--------
@@ -379,13 +348,13 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     double Circularity=4*M_PI*PixelsCount/(ROIPerimeter*ROIPerimeter);
 
-    ratios[34]=extent;
-    ratios[35]=convexHullArea;
-    ratios[36]=solidity;
-    ratios[37]=AspectRatio;
-    ratios[38]=EquivalentDiameter;
-    ratios[39]=ROIPerimeter;
-    ratios[40]=Circularity;
+    ratios[27]=extent;
+    ratios[28]=convexHullArea;
+    ratios[29]=solidity;
+    ratios[30]=AspectRatio;
+    ratios[31]=EquivalentDiameter;
+    ratios[32]=ROIPerimeter;
+    ratios[33]=Circularity;
 
     //---------------------Min/Max Feret Diameter/Angle-----------------------
     double * MaxDistanceArray = new double [180];
@@ -423,11 +392,11 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretAngle=i;}
     }
 
-    ratios[41]=MaxFeretDiameter;
-    ratios[42]=MaxFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
+    ratios[34]=MaxFeretDiameter;
+    ratios[35]=MaxFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
-    ratios[43]=MinFeretDiameter;
-    ratios[44]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
+    ratios[36]=MinFeretDiameter;
+    ratios[37]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
     delete [] MaxDistanceArray;
     delete [] Point1Index;
@@ -471,7 +440,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     std::vector<int> NeighborUniqueIDs;
     std::unique_copy(NeighborIDs.begin(), NeighborIDs.end(), std::back_inserter(NeighborUniqueIDs));
 
-    ratios[45]=NeighborUniqueIDs.size();
+    ratios[38]=NeighborUniqueIDs.size();
 
     //--------------------------------Hexagonality/Polygonality-------------------
     //This section is a translation from the following Python code
@@ -586,9 +555,9 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_sd=sqrt((area_ratio_sd*area_ratio_sd+perim_ratio_sd*perim_ratio_sd)/2);
         double hex_ave = 10*(hex_area_ratio + hex_size_ratio)/2;
 
-        ratios[46]=poly_ave;
-        ratios[47]=hex_ave;
-        ratios[48]=hex_sd;
+        ratios[39]=poly_ave;
+        ratios[40]=hex_ave;
+        ratios[41]=hex_sd;
 
     }
     else if (neighbors <3 ){
@@ -596,113 +565,15 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_ave = std::numeric_limits<double>::quiet_NaN();
         double hex_sd = std::numeric_limits<double>::quiet_NaN();
 
-        ratios[46]=poly_ave;
-        ratios[47]=hex_ave;
-        ratios[48]=hex_sd;
+        ratios[39]=poly_ave;
+        ratios[40]=hex_ave;
+        ratios[41]=hex_sd;
     }
 
-    //------------------------------Mode and Entropy-----------------------------
-    int intMax=(int)max;
-    int intMin=(int)min;
-    int Size=intMax-intMin+1;
-    int* histBins =new int [Size];
-
-    for (int i=0; i<Size; ++i) histBins[i]=0;
-
-    for (unsigned int y = 0; y < Im.height; ++y)
-        for (unsigned int x = 0; x < Im.width; ++x){
-            if (!std::isnan(in_plane (y,x))) {
-                int bin = floor(in_plane (y,x));
-                ++ histBins[bin-intMin];
-            }
-        }
-
-    float MaxValue=0;
-    int maxBinIndex=-1;
-    double entropy = 0.0;
-    for (int i=0; i<Size; i++) {
-        float binEntry = (float)histBins[i]/Im.stats.n();
-        if (fabs(binEntry) > 1e-6){  //if bin is not empty
-            entropy -= binEntry * log2(binEntry);
-            if (binEntry>MaxValue) {MaxValue=binEntry; maxBinIndex=i;}
-        }
-    }
-
-    int ModeValue=maxBinIndex+intMin; //Mode value of the ROI pixels
-
-    ratios[49]=entropy;
-    ratios[50]=(double)ModeValue;
-
-    delete [] histBins;
     //  cout << "Finished Morphological Computations!\n" << endl;
-
-    //Now Lets Change the Order of the outputs accroding to MATLAB and then Jayapriya's Python Code
- /*       vector<double> tmp;
-        //Lets Start with the MATLAB Features (regionpropos). The order of the following features matches MATLAB's order
-        tmp.push_back((double)PixelsCount); //Area
-        tmp.push_back(xCentroid);
-        tmp.push_back(yCentroid);
-        tmp.push_back(BoundingBoxWidthBeg);
-        tmp.push_back(BoundingBoxHeightBeg);
-        tmp.push_back(Im.ROIWidthActual);
-        tmp.push_back(Im.ROIHeightActual);
-        tmp.push_back(MajorAxisLength);
-        tmp.push_back(MinorAxisLength);
-        tmp.push_back(Eccentricity);
-        tmp.push_back(Orientation);
-        tmp.push_back(convexHullArea);
-        tmp.push_back(Circularity);
-        tmp.push_back((double)PixelsCount); //Filled Area which is the same as Area
-        tmp.push_back(Euler);
-        tmp.push_back(ratios[17]); //Extrema begins here
-        tmp.push_back(ratios[18]);
-        tmp.push_back(ratios[19]);
-        tmp.push_back(ratios[20]);
-        tmp.push_back(ratios[21]);
-        tmp.push_back(ratios[22]);
-        tmp.push_back(ratios[23]);
-        tmp.push_back(ratios[24]);
-        tmp.push_back(ratios[25]);
-        tmp.push_back(ratios[26]);
-        tmp.push_back(ratios[27]);
-        tmp.push_back(ratios[28]);
-        tmp.push_back(ratios[29]);
-        tmp.push_back(ratios[30]);
-        tmp.push_back(ratios[31]);
-        tmp.push_back(ratios[32]); //Extrema ends here
-        tmp.push_back(EquivalentDiameter);
-        tmp.push_back(solidity);
-        tmp.push_back(extent);
-        tmp.push_back(ROIPerimeter);
-        tmp.push_back(xWCentroid);
-        tmp.push_back(yWCentroid);
-        tmp.push_back(mean);
-        tmp.push_back(min);
-        tmp.push_back(max);
-        tmp.push_back(MaxFeretDiameter);
-        tmp.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
-        tmp.push_back(MinFeretDiameter);
-        tmp.push_back(MinFeretAngle);  //No MinFeret Coordinates
-        tmp.push_back(NeighborUniqueIDs.size());  //Jayapriya's specific Features comes After MATLAB's
-        tmp.push_back(ratios[46]); //poly_ave
-        tmp.push_back(ratios[47]); //hex_ave
-        tmp.push_back(ratios[48]); //hex_sd
-        tmp.push_back(Kurtosis);
-        tmp.push_back(median);
-        tmp.push_back((double)ModeValue);
-        tmp.push_back(STDEV);
-        tmp.push_back(Skewness);
-        tmp.push_back(entropy);
-
-        for (int i=0; i<tmp.size(); ++i){
-            ratios[i] = tmp[i];
-        }
-*/
-
 
         //Now Lets Rearrange outputs to match Jayapriya's Python Code
             vector<double> tmp2;
-            //Lets Start with the MATLAB Features (regionpropos). The order of the following features matches MATLAB's order
             tmp2.push_back((double)PixelsCount); //Area
             tmp2.push_back(yCentroid);
             tmp2.push_back(xCentroid);
@@ -721,21 +592,20 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             tmp2.push_back(ROIPerimeter);
             tmp2.push_back(MaxFeretDiameter);
             tmp2.push_back(MinFeretDiameter);
-            tmp2.push_back(NeighborUniqueIDs.size());  //Jayapriya's specific Features comes After MATLAB's
-            tmp2.push_back(ratios[46]); //poly_ave
-            tmp2.push_back(ratios[47]); //hex_ave
-            tmp2.push_back(ratios[48]); //hex_sd
-            tmp2.push_back(Kurtosis);
-            tmp2.push_back(max);
-            tmp2.push_back(mean);
-            tmp2.push_back(median);
-            tmp2.push_back(min);
-            tmp2.push_back((double)ModeValue);
-            tmp2.push_back(STDEV);
-            tmp2.push_back(Skewness);
+            tmp2.push_back(NeighborUniqueIDs.size());
+            tmp2.push_back(ratios[39]); //poly_ave
+            tmp2.push_back(ratios[40]); //hex_ave
+            tmp2.push_back(ratios[41]); //hex_sd
 
             tmp2.push_back(Circularity);  //MATLAB Features start here
-            tmp2.push_back(ratios[17]); //Extrema begins here
+            tmp2.push_back(ratios[10]); //Extrema begins here
+            tmp2.push_back(ratios[11]);
+            tmp2.push_back(ratios[12]);
+            tmp2.push_back(ratios[13]);
+            tmp2.push_back(ratios[14]);
+            tmp2.push_back(ratios[15]);
+            tmp2.push_back(ratios[16]);
+            tmp2.push_back(ratios[17]);
             tmp2.push_back(ratios[18]);
             tmp2.push_back(ratios[19]);
             tmp2.push_back(ratios[20]);
@@ -743,20 +613,12 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             tmp2.push_back(ratios[22]);
             tmp2.push_back(ratios[23]);
             tmp2.push_back(ratios[24]);
-            tmp2.push_back(ratios[25]);
-            tmp2.push_back(ratios[26]);
-            tmp2.push_back(ratios[27]);
-            tmp2.push_back(ratios[28]);
-            tmp2.push_back(ratios[29]);
-            tmp2.push_back(ratios[30]);
-            tmp2.push_back(ratios[31]);
-            tmp2.push_back(ratios[32]); //Extrema ends here
+            tmp2.push_back(ratios[25]); //Extrema ends here
             tmp2.push_back(extent);
             tmp2.push_back(yWCentroid);
             tmp2.push_back(xWCentroid);
             tmp2.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
             tmp2.push_back(MinFeretAngle);  //No MinFeret Coordinates
-            tmp2.push_back(entropy);
 
             for (int i=0; i<tmp2.size(); ++i){
                 ratios[i] = tmp2[i];
