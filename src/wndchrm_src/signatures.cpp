@@ -312,7 +312,19 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "minferetangle"
     };
 
-    if (ROIFlag) fprintf( wf_fp, "%s,%s,", "label", "maskfilename");
+    const char* TitlesPixelStatistics[] = {
+        "mean",
+        "median",
+        "std",
+        "min",
+        "max",
+        "skewness",
+        "kurtosis",
+        "entropy",
+        "mode"
+    };
+
+    if (ROIFlag) fprintf( wf_fp, "%s,%s,%s,", "label", "Intensityfilename", "maskfilename");
     for (sig_index=0; sig_index < count; sig_index++) {
         if (sig_index == count -1){
             if (!strcmp(FeatureAlgorithmName,"Morphological")) {  //If Morphological
@@ -323,7 +335,17 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
                     strcat(FullTitle, Titles[sig_index]);
                     fprintf( wf_fp, "%s\n", FullTitle);
                 } else  fprintf( wf_fp, "%s\n", Titles[sig_index]); //If Original
-            } else fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]); //If Not Morphological
+            }
+            else if (!strcmp(FeatureAlgorithmName,"PixelIntensityStatistics")) {
+                if (strcmp(ImageTransformationName,"Original")) { //If not Original
+                    char* FullTitle = (char*)malloc(strlen(ImageTransformationName)+strlen(TitlesPixelStatistics[sig_index])+2);
+                    strcpy(FullTitle, ImageTransformationName);
+                    strcat(FullTitle, "-");
+                    strcat(FullTitle, TitlesPixelStatistics[sig_index]);
+                    fprintf( wf_fp, "%s\n", FullTitle);
+                } else  fprintf( wf_fp, "%s\n", TitlesPixelStatistics[sig_index]); //If Original
+            }
+            else fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]); //If Not Morphological
 
         }else{
             if (!strcmp(FeatureAlgorithmName,"Morphological")) {
@@ -334,7 +356,17 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
                     strcat(FullTitle, Titles[sig_index]);
                     fprintf( wf_fp, "%s", FullTitle);
                 } else fprintf( wf_fp, "%s,", Titles[sig_index]);
-            } else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]);  //If Not Morphological
+            }
+            else if (!strcmp(FeatureAlgorithmName,"PixelIntensityStatistics")) {
+                if (strcmp(ImageTransformationName,"Original")) { //If not Original
+                    char* FullTitle = (char*)malloc(strlen(ImageTransformationName)+strlen(TitlesPixelStatistics[sig_index])+2);
+                    strcpy(FullTitle, ImageTransformationName);
+                    strcat(FullTitle, "-");
+                    strcat(FullTitle, TitlesPixelStatistics[sig_index]);
+                    fprintf( wf_fp, "%s,", FullTitle);
+                } else  fprintf( wf_fp, "%s,", TitlesPixelStatistics[sig_index]); //If Original
+            }
+            else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]);  //If Not Morphological
         }
 
         //if (sig_index == count -1) fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );
@@ -345,9 +377,7 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
 
 
     for (int i=0; i<uniqueClasses.size(); ++i){
-
-
-        if (ROIFlag) fprintf( wf_fp, "%d,%s,", (int)uniqueClasses[i], MaskFilename.c_str());
+        if (ROIFlag) fprintf( wf_fp, "%d,%s,%s,", (int)uniqueClasses[i], MaskFilename.c_str(), MaskFilename.c_str());
         for (sig_index=0; sig_index < count; sig_index++) {
             if (sig_index == count -1) fprintf( wf_fp, "%.8g\n", tmpOutputData[i][sig_index]);
             else fprintf( wf_fp, "%.8g,", tmpOutputData[i][sig_index] );
@@ -450,6 +480,18 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
             "minferetangle"
         };
 
+        const char* TitlesPixelStatistics[] = {
+            "mean",
+            "median",
+            "std",
+            "min",
+            "max",
+            "skewness",
+            "kurtosis",
+            "entropy",
+            "mode"
+        };
+
         //    if (ROIcounts==1){
         if (Count==1){
             //MM if (ROIFlag) fprintf( wf_fp, "%s,", "label" );
@@ -464,7 +506,17 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
                             strcat(FullTitle, Titles[sig_index]);
                             fprintf( wf_fp, "%s\n", FullTitle);
                         } else  fprintf( wf_fp, "%s\n", Titles[sig_index]); //If Original
-                    } else fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]); //If Not Morphological
+                    }
+                    else if (!strcmp(FeatureAlgorithmName,"PixelIntensityStatistics")) {
+                        if (strcmp(ImageTransformationName,"Original")) { //If not Original
+                            char* FullTitle = (char*)malloc(strlen(ImageTransformationName)+strlen(TitlesPixelStatistics[sig_index])+2);
+                            strcpy(FullTitle, ImageTransformationName);
+                            strcat(FullTitle, "-");
+                            strcat(FullTitle, TitlesPixelStatistics[sig_index]);
+                            fprintf( wf_fp, "%s\n", FullTitle);
+                        } else  fprintf( wf_fp, "%s\n", TitlesPixelStatistics[sig_index]); //If Original
+                    }
+                    else fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]); //If Not Morphological
 
                 }else{
                     if (!strcmp(FeatureAlgorithmName,"Morphological")) {
@@ -475,7 +527,17 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
                             strcat(FullTitle, Titles[sig_index]);
                             fprintf( wf_fp, "%s", FullTitle);
                         } else fprintf( wf_fp, "%s,", Titles[sig_index]);
-                    } else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]);  //If Not Morphological
+                    }
+                    else if (!strcmp(FeatureAlgorithmName,"PixelIntensityStatistics")) {
+                        if (strcmp(ImageTransformationName,"Original")) { //If not Original
+                            char* FullTitle = (char*)malloc(strlen(ImageTransformationName)+strlen(TitlesPixelStatistics[sig_index])+2);
+                            strcpy(FullTitle, ImageTransformationName);
+                            strcat(FullTitle, "-");
+                            strcat(FullTitle, TitlesPixelStatistics[sig_index]);
+                            fprintf( wf_fp, "%s,", FullTitle);
+                        } else  fprintf( wf_fp, "%s,", TitlesPixelStatistics[sig_index]); //If Original
+                    }
+                    else fprintf( wf_fp, "%s,", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index]);  //If Not Morphological
                 }
 
                 //if (sig_index == count -1) fprintf( wf_fp, "%s\n", ((TrainingSet *)NamesTrainingSet)->SignatureNames[sig_index] );

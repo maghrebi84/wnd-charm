@@ -273,7 +273,7 @@ static bool FractalFeaturesReg = ComputationTaskInstances::add (new FractalFeatu
 
 //===========================================================================
 
-PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 10) {
+PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 9) {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 

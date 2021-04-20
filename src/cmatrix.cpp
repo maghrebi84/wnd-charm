@@ -939,9 +939,8 @@ double STDEV= sqrt(Variance);
 double Skewness= (TrpdTmp/stats.n())/pow(STDEV,3);
 double Kurtosis= (QuadTmp/stats.n())/pow(Variance,2);
 
-output[5]=STDEV;
-output[6]=Skewness;
-output[7]=Kurtosis;
+output[5]=Skewness;
+output[6]=Kurtosis;
 
 int intMax=(int)stats.max();
 int intMin=(int)stats.min();
@@ -971,8 +970,8 @@ for (int i=0; i<Size; i++) {
 
 int ModeValue=maxBinIndex+intMin;
 
-output[8]=entropy;
-output[9]=(double)ModeValue;
+output[7]=entropy;
+output[8]=(double)ModeValue;
 
 delete [] histBins;
 }
