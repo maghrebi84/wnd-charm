@@ -175,13 +175,12 @@ private:
 
 public:
 
-    bool BoundingBoxFlag; //MM
-    int ROIHeightBeg,ROIWidthBeg; //MM
-    int ROIHeightBegActual,ROIWidthBegActual; //MM0203
-    int ROIHeightActual, ROIWidthActual; //MM0203
-    char* ROIPath;  //MM0114
- 
-    int ROIHeightEnd; //0408
+    bool BoundingBoxFlag; 
+    int ROIHeightBeg,ROIWidthBeg;
+    int ROIHeightBegActual,ROIWidthBegActual;
+    int ROIHeightActual, ROIWidthActual; 
+    char* ROIPath;   
+    int ROIHeightEnd; 
     int ROIWidthEnd;
     double ** ROI_Bounding_Box_Labels;
     int ROIHeightBegLabel;
@@ -190,7 +189,8 @@ public:
     int ROIWidthEndLabel;
     int ROIExtraBufferLabel;
     int LabelID; 
-    
+    double PixelsUnit;
+        
 	// N.B.: Re: ctor, see note in implementation
 	ImageMatrix () : _pix_plane (NULL,0,0), _clr_plane (NULL,0,0), downsampled(0),
         norm_mean(0), norm_stdev(0) { init(); };

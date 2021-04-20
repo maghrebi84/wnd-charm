@@ -228,6 +228,7 @@ void Extrema (const ImageMatrix& Im, double *ratios){
 
 
 void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
+    double UnitConversion=Im.PixelsUnit;
 
     //----------Total Number of ROI Pixels--------------
     int PixelsCount=Im.stats.n();
@@ -574,49 +575,49 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
         //Now Lets Rearrange outputs to match Jayapriya's Python Code
             vector<double> tmp2;
-            tmp2.push_back((double)PixelsCount); //Area
-            tmp2.push_back(yCentroid);
-            tmp2.push_back(xCentroid);
-            tmp2.push_back(BoundingBoxHeightBeg);
-            tmp2.push_back(BoundingBoxWidthBeg);
-            tmp2.push_back(Im.ROIHeightActual);
-            tmp2.push_back(Im.ROIWidthActual);  
-            tmp2.push_back(MajorAxisLength);
-            tmp2.push_back(MinorAxisLength);
+            tmp2.push_back((double)PixelsCount*UnitConversion*UnitConversion); //Area
+            tmp2.push_back(yCentroid*UnitConversion);
+            tmp2.push_back(xCentroid*UnitConversion);
+            tmp2.push_back(BoundingBoxHeightBeg*UnitConversion);
+            tmp2.push_back(BoundingBoxWidthBeg*UnitConversion);
+            tmp2.push_back(Im.ROIHeightActual*UnitConversion);
+            tmp2.push_back(Im.ROIWidthActual*UnitConversion);
+            tmp2.push_back(MajorAxisLength*UnitConversion);
+            tmp2.push_back(MinorAxisLength*UnitConversion);
             tmp2.push_back(Eccentricity);
             tmp2.push_back(Orientation);
-            tmp2.push_back(convexHullArea);
+            tmp2.push_back(convexHullArea*UnitConversion*UnitConversion);
             tmp2.push_back(Euler);
-            tmp2.push_back(EquivalentDiameter);
+            tmp2.push_back(EquivalentDiameter*UnitConversion);
             tmp2.push_back(solidity);
-            tmp2.push_back(ROIPerimeter);
-            tmp2.push_back(MaxFeretDiameter);
-            tmp2.push_back(MinFeretDiameter);
+            tmp2.push_back(ROIPerimeter*UnitConversion);
+            tmp2.push_back(MaxFeretDiameter*UnitConversion);
+            tmp2.push_back(MinFeretDiameter*UnitConversion);
             tmp2.push_back(NeighborUniqueIDs.size());
             tmp2.push_back(ratios[39]); //poly_ave
             tmp2.push_back(ratios[40]); //hex_ave
             tmp2.push_back(ratios[41]); //hex_sd
 
             tmp2.push_back(Circularity);  //MATLAB Features start here
-            tmp2.push_back(ratios[10]); //Extrema begins here
-            tmp2.push_back(ratios[11]);
-            tmp2.push_back(ratios[12]);
-            tmp2.push_back(ratios[13]);
-            tmp2.push_back(ratios[14]);
-            tmp2.push_back(ratios[15]);
-            tmp2.push_back(ratios[16]);
-            tmp2.push_back(ratios[17]);
-            tmp2.push_back(ratios[18]);
-            tmp2.push_back(ratios[19]);
-            tmp2.push_back(ratios[20]);
-            tmp2.push_back(ratios[21]);
-            tmp2.push_back(ratios[22]);
-            tmp2.push_back(ratios[23]);
-            tmp2.push_back(ratios[24]);
-            tmp2.push_back(ratios[25]); //Extrema ends here
+            tmp2.push_back(ratios[10]*UnitConversion); //Extrema begins here
+            tmp2.push_back(ratios[11]*UnitConversion);
+            tmp2.push_back(ratios[12]*UnitConversion);
+            tmp2.push_back(ratios[13]*UnitConversion);
+            tmp2.push_back(ratios[14]*UnitConversion);
+            tmp2.push_back(ratios[15]*UnitConversion);
+            tmp2.push_back(ratios[16]*UnitConversion);
+            tmp2.push_back(ratios[17]*UnitConversion);
+            tmp2.push_back(ratios[18]*UnitConversion);
+            tmp2.push_back(ratios[19]*UnitConversion);
+            tmp2.push_back(ratios[20]*UnitConversion);
+            tmp2.push_back(ratios[21]*UnitConversion);
+            tmp2.push_back(ratios[22]*UnitConversion);
+            tmp2.push_back(ratios[23]*UnitConversion);
+            tmp2.push_back(ratios[24]*UnitConversion);
+            tmp2.push_back(ratios[25]*UnitConversion); //Extrema ends here
             tmp2.push_back(extent);
-            tmp2.push_back(yWCentroid);
-            tmp2.push_back(xWCentroid);
+            tmp2.push_back(yWCentroid*UnitConversion);
+            tmp2.push_back(xWCentroid*UnitConversion);
             tmp2.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
             tmp2.push_back(MinFeretAngle);  //No MinFeret Coordinates
 

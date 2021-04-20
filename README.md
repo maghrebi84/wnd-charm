@@ -104,59 +104,53 @@ In the above command:
 
 If ImageTransformationName and FeatureAlgorithmName are not specified, WND-CHARM computes the features for a short list of FeatureAlgorithmName and ImageTransformationName. Also, the long set of features can be alternatively selected using the input argument "--DesiredFeatures LongSet".
 
-In addition to the above changes, a comprehensive list of Morphological algorithms was implemented in WND-CHARM at src/MorphologicalAlgorithms.cpp and can be invoked as an input argument using "--FeatureAlgorithmName Morphological". Morphological Features output the computed values for a total of 54 parameters which are described in the order below. It should be noted that for the common parameters with MATLAB's regionprops module, the computed values were converted to produce the same results as MATLAB.
+* PixelsUnitConversion: For Morphological features only, one more optioanl input argument named "PixelsUnitConversion" can be passed to the model to convert the relevant results from pixels to a desired meaningful unit. The Morphological features which are in length units such as centroids and Min/Max Feret dimensions are multiplied by this input argument for the conversion to happen. Similarly, the Morphological features in the area units such as ROI area and convex Hull area are multiplied by this input argument twice. This parameter is optional and defaulted to 1 if it is not passed by the user.
+
+In addition to the above changes, a comprehensive list of Morphological algorithms was implemented in WND-CHARM at src/MorphologicalAlgorithms.cpp and can be invoked as an input argument using "--FeatureAlgorithmName Morphological". Morphological Features output the computed values for a total of 44 parameters which are described in the order below. It should be noted that for the common parameters with MATLAB's regionprops module, the computed values were converted to produce the same results as MATLAB. 
 
 0-Total number of the ROI (Region of Interest) pixels
-1-x coordinate of the ROI's centroid
-2-y coordinate of the ROI's centroid
-3-x coordinate where the rectangular bounding box encompassing the ROI begins
-4-y coordinate where the rectangular bounding box encompassing the ROI begins
-5-Width of the rectangular bounding box encompassing the ROI
-6-Height of the rectangular bounding box encompassing the ROI
+1-y coordinate of the ROI's centroid
+2-x coordinate of the ROI's centroid
+3-y coordinate where the rectangular bounding box encompassing the ROI begins
+4-x coordinate where the rectangular bounding box encompassing the ROI begins
+5-Height of the rectangular bounding box encompassing the ROI
+6-Width of the rectangular bounding box encompassing the ROI
 7-MajorAxisLength: the length of major axis of the ellipse that has the same normalized second central moments as the region.
 8-MinorAxisLength: the length of minor axis of the ellipse that has the same normalized second central moments as the region.
 9-Eccentricity: ratio of focal distance over the major axis length.
 10-Orientation: angle between the x axis and the major axis of the ellipse that has same second moments as the region.
 11-Area of the convex hull
-12-Circularity: roundness of the ROI which is computed as (4*Area*pi)/(Perimeter2). For a perfect circle, the circularity value is 1.
-13-Filled Area: the same as the first feature. It is repeated here solely for consistency with MATLAB
-14-Euler number: Euler characteristic of the ROI
-15-x coordinate of the Extrema point at top-left
-16-x coordinate of the Extrema point at top-right
-17-x coordinate of the Extrema point at right-top
-18-x coordinate of the Extrema point at right-bottom
-19-x coordinate of the Extrema point at bottom-right
-20-x coordinate of the Extrema point at bottom-left
-21-x coordinate of the Extrema point at left-bottom
-22-x coordinate of the Extrema point at left-top
-23-y coordinate of the Extrema point at top-left
-24-y coordinate of the Extrema point at top-right
-25-y coordinate of the Extrema point at right-top
-26-y coordinate of the Extrema point at right-bottom
-27-y coordinate of the Extrema point at bottom-right
-28-y coordinate of the Extrema point at bottom-left
-29-y coordinate of the Extrema point at left-bottom
-30-y coordinate of the Extrema point at left-top
-31-Equivalent diameter: the diameter of a circle with the same area as the ROI
-32-Solidity: the ratio of the pixel counts in the ROI to the pixel counts in the convex hull
-33-Extent: the ratio of the pixel counts in the ROI to the pixel counts in the bounding box encompassing the ROI 
-34-Perimeter length of the ROI
-35-x coordinate of the ROI's weighted centroid
-36-y coordinate of the ROI's weighted centroid 
-37-Mean of the ROI pixels
-38-Min of the ROI pixels
-39-Max of the ROI pixels
-40-Max Feret diamater
-41-Max Feret angle
-42-Min Feret diamater
+12-Euler number: Euler characteristic of the ROI
+13-Equivalent diameter: the diameter of a circle with the same area as the ROI
+14-Solidity: the ratio of the pixel counts in the ROI to the pixel counts in the convex hull
+15-Perimeter length of the ROI
+16-Max Feret diamater
+17-Min Feret diamater
+18-Neighbors: the number of neighbors touching the ROI
+19-Polygonality score: the score ranges from -infinity to 10. Score 10 indicates the object shape is polygon and score -infinity indicates the object shape is not polygon.
+20-Hexagonality score: the score ranges from -infinity to 10. Score 10 indicates the object shape is hexagon and score -infinity indicates the object shape is not hexagon.
+21-Hexagonality standard deviation: dispersion of hexagonality score relative to its mean.
+22-Circularity: roundness of the ROI which is computed as (4*Area*pi)/(Perimeter2). For a perfect circle, the circularity value is 1.
+23-x coordinate of the Extrema point at top-left
+24-x coordinate of the Extrema point at top-right
+25-x coordinate of the Extrema point at right-top
+26-x coordinate of the Extrema point at right-bottom
+27-x coordinate of the Extrema point at bottom-right
+28-x coordinate of the Extrema point at bottom-left
+29-x coordinate of the Extrema point at left-bottom
+30-x coordinate of the Extrema point at left-top
+31-y coordinate of the Extrema point at top-left
+32-y coordinate of the Extrema point at top-right
+33-y coordinate of the Extrema point at right-top
+34-y coordinate of the Extrema point at right-bottom
+35-y coordinate of the Extrema point at bottom-right
+36-y coordinate of the Extrema point at bottom-left
+37-y coordinate of the Extrema point at left-bottom
+38-y coordinate of the Extrema point at left-top
+39-Extent: the ratio of the pixel counts in the ROI to the pixel counts in the bounding box encompassing the ROI 
+40-y coordinate of the ROI's weighted centroid
+41-x coordinate of the ROI's weighted centroid 
+42-Max Feret angle
 43-Min Feret angle
-44-Neighbors: the number of neighbors touching the ROI
-45-Polygonality score: the score ranges from -infinity to 10. Score 10 indicates the object shape is polygon and score -infinity indicates the object shape is not polygon.
-46-Hexagonality score: the score ranges from -infinity to 10. Score 10 indicates the object shape is hexagon and score -infinity indicates the object shape is not hexagon.
-47-Hexagonality standard deviation: dispersion of hexagonality score relative to its mean.
-48-Kurtosis of the ROI pixels
-49-Median of the ROI pixels
-50-Mode of the ROI pixels
-51-Standard deviation of the ROI pixels 
-52-Skewness of the ROI pixels
-53-Entropy: a measure of randomness. It is the amount of information in the ROI.
+
+It should also be noted that for the sake of completeness, WND-CHARM PixelIntensityStatistics features were extended to include the following extra parameters: Skewness, Kurtosis, entropy, and mode. These four extra features will be computed whenever PixelIntensityStatistics is invoked in the code. 

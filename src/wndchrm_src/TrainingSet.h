@@ -109,6 +109,7 @@ typedef struct {
 	char * FeatureAlgorithmName; //MM
     char * ImageTransformationName; //MM
     char * output; //MM
+    double PixelsUnit;
 } featureset_t;
 
 

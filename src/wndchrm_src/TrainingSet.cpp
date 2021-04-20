@@ -1865,7 +1865,10 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
             }
             
             if (strcmp(featureset->ImageTransformationName,""))
-                if (!strcmp(featureset->FeatureAlgorithmName,"Morphological")) tile_matrix_p->ROIPath=LabeledImageFullPath;
+                if (!strcmp(featureset->FeatureAlgorithmName,"Morphological")) {
+                    tile_matrix_p->PixelsUnit =featureset->PixelsUnit;
+                    tile_matrix_p->ROIPath=LabeledImageFullPath;
+                }
 
             // all hope is lost - compute sigs.
             if (!res) {

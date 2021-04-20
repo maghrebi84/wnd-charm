@@ -1,5 +1,5 @@
 {
-    "name": "WNDCHARM-ROI-Alpha",
+    "name": "WNDCHARM-ROI-Alpha00",
     "version": "0.1.0-alpha2",
     "title": "Multi-threaded WND-CHARM with ROI Capability",
     "description": "Multi-threaded WND-CHARM with support for Region of Interest (ROI)",
@@ -97,6 +97,12 @@
             },
             "description": "The desired feature extraction algorithm (Optional)",
             "required": "False"
+        },
+        {
+        "name": "PixelsUnitConversion",
+        "type": "number",
+        "description": "Optional pixel's unit conversion (for Morphological features only)",
+        "required": "False"
         }
     ],
     "outputs": [
@@ -133,6 +139,12 @@
             "title": "Desired feature extraction algorithm ",  
             "description": "Select the desired feature extraction algorithm",
             "condition": "model.inputs.DesiredFeatures==SpecificAlgorithm"           
+        },
+        {
+            "key": "inputs.PixelsUnitConversion",
+            "title": "Optional pixel's unit conversion (for Morphological features only)",
+            "description": "Enter a value for the pixel's unit convertion (Default value: 1)",
+            "condition": "model.inputs.DesiredFeatures==SpecificAlgorithm"
         }
     ]
 }
