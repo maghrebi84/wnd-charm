@@ -600,20 +600,20 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
             tmp2.push_back(Circularity);  //MATLAB Features start here
             tmp2.push_back(ratios[10]*UnitConversion); //Extrema begins here
-            tmp2.push_back(ratios[11]*UnitConversion);
-            tmp2.push_back(ratios[12]*UnitConversion);
-            tmp2.push_back(ratios[13]*UnitConversion);
-            tmp2.push_back(ratios[14]*UnitConversion);
-            tmp2.push_back(ratios[15]*UnitConversion);
-            tmp2.push_back(ratios[16]*UnitConversion);
-            tmp2.push_back(ratios[17]*UnitConversion);
             tmp2.push_back(ratios[18]*UnitConversion);
+            tmp2.push_back(ratios[11]*UnitConversion);
             tmp2.push_back(ratios[19]*UnitConversion);
+            tmp2.push_back(ratios[12]*UnitConversion);
             tmp2.push_back(ratios[20]*UnitConversion);
+            tmp2.push_back(ratios[13]*UnitConversion);
             tmp2.push_back(ratios[21]*UnitConversion);
+            tmp2.push_back(ratios[14]*UnitConversion);
             tmp2.push_back(ratios[22]*UnitConversion);
+            tmp2.push_back(ratios[15]*UnitConversion);
             tmp2.push_back(ratios[23]*UnitConversion);
+            tmp2.push_back(ratios[16]*UnitConversion);
             tmp2.push_back(ratios[24]*UnitConversion);
+            tmp2.push_back(ratios[17]*UnitConversion);            
             tmp2.push_back(ratios[25]*UnitConversion); //Extrema ends here
             tmp2.push_back(extent);
             tmp2.push_back(yWCentroid*UnitConversion);

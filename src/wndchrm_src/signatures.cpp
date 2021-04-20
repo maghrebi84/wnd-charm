@@ -282,34 +282,34 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "equivalent_diameter",
         "solidity",
         "perimeter",
-        "maxferet",
-        "minferet",
+        "max_feret",
+        "min_feret",
         "neighbors",
         "polygonality_score",
         "hexagonality_score",
         "hexagonality_sd",
         "circularity",
-        "extremap1x",
-        "extremap2x",
-        "extremap3x",
-        "extremap4x",
-        "extremap5x",
-        "extremap6x",
-        "extremap7x",
-        "extremap8x",
-        "extremap1y",
-        "extremap2y",
-        "extremap3y",
-        "extremap4y",
-        "extremap5y",
-        "extremap6y",
-        "extremap7y",
-        "extremap8y",
+        "extremap1_x",
+        "extremap1_y",
+        "extremap2_x",
+        "extremap2_y",
+        "extremap3_x",
+        "extremap3_y",
+        "extremap4_x",
+        "extremap4_y",
+        "extremap5_x",
+        "extremap5_y",
+        "extremap6_x",
+        "extremap6_y",
+        "extremap7_x",
+        "extremap7_y",
+        "extremap8_x",
+        "extremap8_y",
         "extent",
-        "weightedcentroid_y",
-        "weightedcentroid_x",
-        "maxferetangle",
-        "minferetangle"
+        "weighted_centroid_y",
+        "weighted_centroid_x",
+        "max_feret_angle",
+        "min_feret_angle"
     };
 
     const char* TitlesPixelStatistics[] = {
@@ -324,7 +324,7 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "mode"
     };
 
-    if (ROIFlag) fprintf( wf_fp, "%s,%s,%s,", "label", "Intensityfilename", "maskfilename");
+    if (ROIFlag) fprintf( wf_fp, "%s,%s,%s,", "Intensityfilename", "maskfilename", "label");
     for (sig_index=0; sig_index < count; sig_index++) {
         if (sig_index == count -1){
             if (!strcmp(FeatureAlgorithmName,"Morphological")) {  //If Morphological
@@ -377,7 +377,7 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
 
 
     for (int i=0; i<uniqueClasses.size(); ++i){
-        if (ROIFlag) fprintf( wf_fp, "%d,%s,%s,", (int)uniqueClasses[i], MaskFilename.c_str(), MaskFilename.c_str());
+        if (ROIFlag) fprintf( wf_fp, "%d,%s,%s,", MaskFilename.c_str(), MaskFilename.c_str(), (int)uniqueClasses[i]);
         for (sig_index=0; sig_index < count; sig_index++) {
             if (sig_index == count -1) fprintf( wf_fp, "%.8g\n", tmpOutputData[i][sig_index]);
             else fprintf( wf_fp, "%.8g,", tmpOutputData[i][sig_index] );
@@ -450,34 +450,34 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
             "equivalent_diameter",
             "solidity",
             "perimeter",
-            "maxferet",
-            "minferet",
+            "max_feret",
+            "min_feret",
             "neighbors",
             "polygonality_score",
             "hexagonality_score",
             "hexagonality_sd",
             "circularity",
-            "extremap1x",
-            "extremap2x",
-            "extremap3x",
-            "extremap4x",
-            "extremap5x",
-            "extremap6x",
-            "extremap7x",
-            "extremap8x",
-            "extremap1y",
-            "extremap2y",
-            "extremap3y",
-            "extremap4y",
-            "extremap5y",
-            "extremap6y",
-            "extremap7y",
-            "extremap8y",
+            "extremap1_x",
+            "extremap1_y",
+            "extremap2_x",
+            "extremap2_y",
+            "extremap3_x",
+            "extremap3_y",
+            "extremap4_x",
+            "extremap4_y",
+            "extremap5_x",
+            "extremap5_y",
+            "extremap6_x",
+            "extremap6_y",
+            "extremap7_x",
+            "extremap7_y",
+            "extremap8_x",
+            "extremap8_y",
             "extent",
-            "weightedcentroid_y",
-            "weightedcentroid_x",
-            "maxferetangle",
-            "minferetangle"
+            "weighted_centroid_y",
+            "weighted_centroid_x",
+            "max_feret_angle",
+            "min_feret_angle"
         };
 
         const char* TitlesPixelStatistics[] = {
@@ -495,7 +495,7 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
         //    if (ROIcounts==1){
         if (Count==1){
             //MM if (ROIFlag) fprintf( wf_fp, "%s,", "label" );
-            if (ROIFlag) fprintf( wf_fp, "%s,%s,", "label", "maskfilename");
+            if (ROIFlag) fprintf( wf_fp, "%s,%s,", "maskfilename", "label");
             for (sig_index=0; sig_index < count; sig_index++) {
                 if (sig_index == count -1){
                     if (!strcmp(FeatureAlgorithmName,"Morphological")) {  //If Morphological
@@ -546,7 +546,7 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
         }
 
     //MM if (ROIFlag) fprintf( wf_fp, "%d,", i);
-    if (ROIFlag) fprintf( wf_fp, "%d,%s,", i, MaskFilename.c_str());
+    if (ROIFlag) fprintf( wf_fp, "%s,%d,", MaskFilename.c_str(), i);
     for (sig_index=0; sig_index < count; sig_index++) {
         if (sig_index == count -1) fprintf( wf_fp, "%.8g\n", data[sig_index] );
         else fprintf( wf_fp, "%.8g,", data[sig_index] );

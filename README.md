@@ -132,20 +132,20 @@ In addition to the above changes, a comprehensive list of Morphological algorith
 21-Hexagonality standard deviation: dispersion of hexagonality score relative to its mean.
 22-Circularity: roundness of the ROI which is computed as (4*Area*pi)/(Perimeter2). For a perfect circle, the circularity value is 1.
 23-x coordinate of the Extrema point at top-left
-24-x coordinate of the Extrema point at top-right
-25-x coordinate of the Extrema point at right-top
-26-x coordinate of the Extrema point at right-bottom
-27-x coordinate of the Extrema point at bottom-right
-28-x coordinate of the Extrema point at bottom-left
-29-x coordinate of the Extrema point at left-bottom
-30-x coordinate of the Extrema point at left-top
-31-y coordinate of the Extrema point at top-left
-32-y coordinate of the Extrema point at top-right
-33-y coordinate of the Extrema point at right-top
-34-y coordinate of the Extrema point at right-bottom
-35-y coordinate of the Extrema point at bottom-right
-36-y coordinate of the Extrema point at bottom-left
-37-y coordinate of the Extrema point at left-bottom
+24-y coordinate of the Extrema point at top-left
+25-x coordinate of the Extrema point at top-right
+26-y coordinate of the Extrema point at top-right
+27-x coordinate of the Extrema point at right-top
+28-y coordinate of the Extrema point at right-top
+29-x coordinate of the Extrema point at right-bottom
+30-y coordinate of the Extrema point at right-bottom
+31-x coordinate of the Extrema point at bottom-right
+32-y coordinate of the Extrema point at bottom-right
+33-x coordinate of the Extrema point at bottom-left
+34-y coordinate of the Extrema point at bottom-left
+35-x coordinate of the Extrema point at left-bottom
+36-y coordinate of the Extrema point at left-bottom
+37-x coordinate of the Extrema point at left-top
 38-y coordinate of the Extrema point at left-top
 39-Extent: the ratio of the pixel counts in the ROI to the pixel counts in the bounding box encompassing the ROI 
 40-y coordinate of the ROI's weighted centroid
