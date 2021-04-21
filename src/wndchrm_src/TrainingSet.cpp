@@ -1286,13 +1286,34 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 
     // N.B.: A call to AddClass must already have occurred, otherwise AddSample called from AddImageFile will fail.
 
+    ofstream outputStream;
+    outputStream.open("output.csv");
+
     // Process the files in sort order
     for (file_index=0; file_index<n_img_basenames; file_index++) {
         sprintf(buffer,"%s/%s",path,base_names_vec[file_index].c_str());
         res = AddImageFile(buffer, sample_class, sample_value, save_sigs, featureset);
         if (res < 0) return (res);
         else files_in_class_count += res; // May be zero
+
+        //MM:
+        string Sigfilename=base_names_vec[file_index].substr(0,base_names_vec[file_index].find_last_of('.'))+".sig";
+        string line;
+        ifstream fin;
+        fin.open(Sigfilename);
+
+        //Keep the header only for the first file
+        if(file_index >0) getline(fin, line);
+
+        while (getline(fin, line)){
+            outputStream << line << endl;
+        }
+
+        fin.close();
+
+        std::remove(Sigfilename.c_str());
     }
+    outputStream.close();
     return (files_in_class_count);
 }
 

@@ -1160,7 +1160,7 @@ int main(int argc, char *argv[])
         showError(1,"An input parameter must be specified.\n");
     }
 
-
+/*
    //MM: Converting .sig output files to .csv
     std::string tmp= featureset.output;
     std::string cmd1= "cd " +tmp ;
@@ -1170,6 +1170,7 @@ int main(int argc, char *argv[])
 
     system(cmd3.c_str());
     system(cmdNew.c_str());
+*/
     return(0);
     //MM: WIPP Plugin fails with non-zero return
     //MM return(1);
