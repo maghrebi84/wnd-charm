@@ -377,7 +377,7 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
 
 
     for (int i=0; i<uniqueClasses.size(); ++i){
-        if (ROIFlag) fprintf( wf_fp, "%d,%s,%s,", MaskFilename.c_str(), MaskFilename.c_str(), (int)uniqueClasses[i]);
+        if (ROIFlag) fprintf( wf_fp, "%s,%s,%d,", MaskFilename.c_str(), MaskFilename.c_str(), (int)uniqueClasses[i]);
         for (sig_index=0; sig_index < count; sig_index++) {
             if (sig_index == count -1) fprintf( wf_fp, "%.8g\n", tmpOutputData[i][sig_index]);
             else fprintf( wf_fp, "%.8g,", tmpOutputData[i][sig_index] );
