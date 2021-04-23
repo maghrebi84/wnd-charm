@@ -1029,13 +1029,30 @@ int main(int argc, char *argv[])
 
         //MM
         std::cout<<"------------The following Input Arguments were read------------"<<std::endl;
-        std::cout<<"The path to the directory of input intensity image: "<< dataset_path<<std::endl;
+        if (dataset_path != NULL) std::cout<<"The path to the directory of input intensity image: "<< dataset_path<<std::endl;
         std::cout<<"The path to the directory of input mask image: "<< featureset.ROIPath<<std::endl;
         std::cout<<"The feature extraction set (Long set?): "<< feature_opts->large_set <<std::endl;
         std::cout<<"The desired image transformation algorithm: "<< featureset.ImageTransformationName <<std::endl;
         std::cout<<"The desired feature extraction algorithm: "<< featureset.FeatureAlgorithmName <<std::endl;
         std::cout<<"The path to the directory of output file: "<< featureset.output<<std::endl;
+        std::cout<<"Pixels unit conversion for Morphological Algorithms: "<< featureset.PixelsUnit<<std::endl;
 
+        //MM
+        if (!strcmp(featureset.FeatureAlgorithmName,"Morphological")){
+            if (!strcmp(featureset.ROIPath,"")){
+                std::cout<<"Error: Labeled image is needed for computations of the Morphological features."<< std::endl;
+                return(0);
+            }
+            if (dataset_path != NULL){
+                std::cout<<"Warning: Morphological features are independent of intensity image and do not need such an input. WND-CHARM now runs regardless of intensity image. "<< std::endl;
+            }
+             dataset_path=featureset.ROIPath;
+        } else{
+            if (dataset_path == NULL){
+                std::cout<<"Error: intensity image is needed for computations of the Non-Morphological features."<< std::endl;
+                return(0);
+            }
+        }
 
         TrainingSet *dataset=new TrainingSet(MAX_SAMPLES,MAX_CLASS_NUM);
 

@@ -1287,7 +1287,8 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
     // N.B.: A call to AddClass must already have occurred, otherwise AddSample called from AddImageFile will fail.
 
     ofstream outputStream;
-    outputStream.open("output.csv");
+    string CSVFilePath= (string)featureset->output + "/" + "output.csv";
+    outputStream.open(CSVFilePath);
 
     // Process the files in sort order
     for (file_index=0; file_index<n_img_basenames; file_index++) {
@@ -1298,10 +1299,10 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
 
         //MM:
         string Sigfilename=base_names_vec[file_index].substr(0,base_names_vec[file_index].find_last_of('.'))+".sig";
+        string SigFilePath= (string)featureset->output + "/" + Sigfilename;
         string line;
         ifstream fin;
-        fin.open(Sigfilename);
-
+        fin.open(SigFilePath.c_str());
         //Keep the header only for the first file
         if(file_index >0) getline(fin, line);
 
@@ -1310,8 +1311,8 @@ int TrainingSet::LoadFromFilesDir(char *path, unsigned short sample_class, doubl
         }
 
         fin.close();
+        std::remove(SigFilePath.c_str());
 
-        std::remove(Sigfilename.c_str());
     }
     outputStream.close();
     return (files_in_class_count);
@@ -1641,22 +1642,24 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
         }
 
         ImageMatrix image_matrix; //MM
-        // Open the image once for the first sample
-        if (sig_index == 0) {
-            // any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
-            // One of these could be reachable if the image is not in the same directory as the sigs.
-            // There is no support for this now though - its an error for the image not to exist together with the sigs
-            // if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
 
-            //MM if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
-            if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
+        if (strcmp(featureset->FeatureAlgorithmName,"Morphological")) {
+            // Open the image once for the first sample
+            if (sig_index == 0) {
+                // any pre-existing sig files may have different paths for the image (i.e. different NFS mountpoints, etc.)
+                // One of these could be reachable if the image is not in the same directory as the sigs.
+                // There is no support for this now though - its an error for the image not to exist together with the sigs
+                // if we need to open the image to recalculate sigs (which we only need if one or more sigs is missing).
 
-                catError ("Error: Could not read image file '%s' to recalculate sigs.\n",filename);
-                res = -1; // make sure its negative for cleanup below
-                //MM  break;
+                //MM if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
+                if ( (res = image_matrix.OpenImage(filename,preproc_opts->downsample,&(preproc_opts->bounding_rect),(double)preproc_opts->mean,(double)preproc_opts->stddev)) < 1) {
+
+                    catError ("Error: Could not read image file '%s' to recalculate sigs.\n",filename);
+                    res = -1; // make sure its negative for cleanup below
+                    //MM  break;
+                }
             }
         }
-
 
         //MM
         // if (sig_index == 0 && ii==0){
@@ -1757,12 +1760,21 @@ int TrainingSet::AddImageFile(char *filename, unsigned short sample_class, doubl
                 writeablePixels pix_plane = ROI_Bounding_Box.WriteablePixels();
                 readOnlyPixels in_plane = image_matrix.ReadablePixels();
 
-                for (unsigned int y = 0; y < ROIHeightEnd - ROIHeightBeg+1; ++y)
-                    for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
-                      //  pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
-                        if (abs(LabeledImageMatrix[ROIHeightBeg+y][ROIWidthBeg+x]-ROI_ID)>1e-6) pix_plane (y,x) = ROI_Bounding_Box.stats.add (std::numeric_limits<double>::quiet_NaN());
-                        else pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
-                    }
+                if (strcmp(featureset->FeatureAlgorithmName,"Morphological")) {
+                    for (unsigned int y = 0; y < ROIHeightEnd - ROIHeightBeg+1; ++y)
+                        for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
+                            //  pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
+                            if (abs(LabeledImageMatrix[ROIHeightBeg+y][ROIWidthBeg+x]-ROI_ID)>1e-6) pix_plane (y,x) = ROI_Bounding_Box.stats.add (std::numeric_limits<double>::quiet_NaN());
+                            else pix_plane (y,x) = ROI_Bounding_Box.stats.add (in_plane(ROIHeightBeg+y,ROIWidthBeg+x));
+                        }
+                }
+                else {
+                    for (unsigned int y = 0; y < ROIHeightEnd - ROIHeightBeg+1; ++y)
+                        for (unsigned int x = 0; x < ROIWidthEnd - ROIWidthBeg+1; ++x){
+                            if (abs(LabeledImageMatrix[ROIHeightBeg+y][ROIWidthBeg+x]-ROI_ID)>1e-6) pix_plane (y,x) = ROI_Bounding_Box.stats.add (std::numeric_limits<double>::quiet_NaN());
+                            else pix_plane (y,x) = ROI_Bounding_Box.stats.add (LabeledImageMatrix[ROIHeightBeg+y][ROIWidthBeg+x]);
+                        }
+                }
 
                 if (!strcmp(featureset->FeatureAlgorithmName,"Morphological")) {
 
