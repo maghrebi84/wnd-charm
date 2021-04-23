@@ -306,8 +306,6 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "extremap8_x",
         "extremap8_y",
         "extent",
-        "weighted_centroid_y",
-        "weighted_centroid_x",
         "max_feret_angle",
         "min_feret_angle"
     };
@@ -321,7 +319,9 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "skewness",
         "kurtosis",
         "entropy",
-        "mode"
+        "mode",
+        "weighted_centroid_y",
+        "weighted_centroid_x"
     };
 
     if (ROIFlag) fprintf( wf_fp, "%s,%s,%s,", "Intensityfilename", "maskfilename", "label");
@@ -474,8 +474,6 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
             "extremap8_x",
             "extremap8_y",
             "extent",
-            "weighted_centroid_y",
-            "weighted_centroid_x",
             "max_feret_angle",
             "min_feret_angle"
         };
@@ -489,7 +487,9 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
             "skewness",
             "kurtosis",
             "entropy",
-            "mode"
+            "mode",
+            "weighted_centroid_y",
+            "weighted_centroid_x"
         };
 
         //    if (ROIcounts==1){

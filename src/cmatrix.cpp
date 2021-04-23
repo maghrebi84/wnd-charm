@@ -918,6 +918,29 @@ double ImageMatrix::update_median () {
 }
 
 
+void ImageMatrix::WeightedGlobalCentroid(double * output ) const {
+readOnlyPixels pix_plane = ReadablePixels();
+
+unsigned int x,y,w =width, h = height;
+double x_mass=0,y_mass=0,mass=0, x_centroid, y_centroid;
+
+for (y = 0; y < h; y++)
+    for (x = 0; x < w; x++)
+        if (!std::isnan(pix_plane(y,x))){
+            x_mass=x_mass+(x+1)*pix_plane(y,x);    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
+            y_mass=y_mass+(y+1)*pix_plane(y,x);    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
+            mass+=pix_plane(y,x);
+        }
+if (mass) {
+    x_centroid=x_mass/mass+ROIWidthBeg;
+    y_centroid=y_mass/mass+ROIHeightBeg;
+} else x_centroid=y_centroid=0;
+
+output[9]=y_centroid;
+output[10]=x_centroid;
+}
+
+
 void ImageMatrix::OtherStatistics(double * output ) const {
 readOnlyPixels pix_plane = ReadablePixels();
 

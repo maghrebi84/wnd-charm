@@ -273,7 +273,7 @@ static bool FractalFeaturesReg = ComputationTaskInstances::add (new FractalFeatu
 
 //===========================================================================
 
-PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 9) {
+PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 11) {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
@@ -292,6 +292,7 @@ std::vector<double> PixelIntensityStatistics::execute (const ImageMatrix &IN_mat
 	coeffs[4] = stats.max();
 
         IN_matrix.OtherStatistics(coeffs.data());
+        IN_matrix.WeightedGlobalCentroid(coeffs.data());
 
 	return coeffs;
 }
@@ -542,7 +543,7 @@ static bool ColorHistogramReg = ComputationTaskInstances::add (new ColorHistogra
 //MM:
 //===========================================================================
 
-Morphological::Morphological() : FeatureAlgorithm ("Morphological", 44) {
+Morphological::Morphological() : FeatureAlgorithm ("Morphological", 42) {
     //cout << "Instantiating new " << name << " object." << endl;
 }
 

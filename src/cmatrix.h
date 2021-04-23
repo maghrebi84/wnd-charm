@@ -352,7 +352,8 @@ public:
 	void zernike2D(double *zvalues, long *output_size) const;
     void Morphology (double *ratios) const; //MM
     void OtherStatistics(double * output) const; //MM
-    
+    void WeightedGlobalCentroid(double * output ) const; //MM
+        
 	// disable the copy constructor
 private:
 	ImageMatrix(const ImageMatrix &matrix) : _pix_plane (NULL,0,0), _clr_plane (NULL,0,0) {

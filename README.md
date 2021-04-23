@@ -106,7 +106,7 @@ If ImageTransformationName and FeatureAlgorithmName are not specified, WND-CHARM
 
 * PixelsUnitConversion: For Morphological features only, one more optioanl input argument named "PixelsUnitConversion" can be passed to the model to convert the relevant results from pixels to a desired meaningful unit. The Morphological features which are in length units such as centroids and Min/Max Feret dimensions are multiplied by this input argument for the conversion to happen. Similarly, the Morphological features in the area units such as ROI area and convex Hull area are multiplied by this input argument twice. This parameter is optional and defaulted to 1 if it is not passed by the user.
 
-In addition to the above changes, a comprehensive list of Morphological algorithms was implemented in WND-CHARM at src/MorphologicalAlgorithms.cpp and can be invoked as an input argument using "--FeatureAlgorithmName Morphological". Morphological Features output the computed values for a total of 44 parameters which are described in the order below. It should be noted that for the common parameters with MATLAB's regionprops module, the computed values were converted to produce the same results as MATLAB. 
+In addition to the above changes, a comprehensive list of Morphological algorithms was implemented in WND-CHARM at src/MorphologicalAlgorithms.cpp and can be invoked as an input argument using "--FeatureAlgorithmName Morphological". Morphological Features output the computed values for a total of 42 parameters which are described in the order below. It should be noted that for the common parameters with MATLAB's regionprops module, the computed values were converted to produce the same results as MATLAB. 
 
 0-Total number of the ROI (Region of Interest) pixels
 1-y coordinate of the ROI's centroid
@@ -148,9 +148,7 @@ In addition to the above changes, a comprehensive list of Morphological algorith
 37-x coordinate of the Extrema point at left-top
 38-y coordinate of the Extrema point at left-top
 39-Extent: the ratio of the pixel counts in the ROI to the pixel counts in the bounding box encompassing the ROI 
-40-y coordinate of the ROI's weighted centroid
-41-x coordinate of the ROI's weighted centroid 
-42-Max Feret angle
-43-Min Feret angle
+40-Max Feret angle
+41-Min Feret angle
 
-It should also be noted that for the sake of completeness, WND-CHARM PixelIntensityStatistics features were extended to include the following extra parameters: Skewness, Kurtosis, entropy, and mode. These four extra features will be computed whenever PixelIntensityStatistics is invoked in the code. 
+It should also be noted that for the sake of completeness, WND-CHARM PixelIntensityStatistics features were extended to include the following extra parameters: Skewness, Kurtosis, entropy, mode, y and x coordinates of the weighted centroid. These four extra features will be computed whenever PixelIntensityStatistics is invoked in the code. 

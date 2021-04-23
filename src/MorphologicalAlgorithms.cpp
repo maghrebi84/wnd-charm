@@ -99,25 +99,6 @@ void GlobalCentroid2(const ImageMatrix &Im, double * x_centroid, double * y_cent
     } else *x_centroid=*y_centroid=0;
 }
 
-/* the input should be a binary image */
-void WeightedGlobalCentroid(const ImageMatrix &Im, double * x_centroid, double * y_centroid) {
-    unsigned int x,y,w = Im.width, h = Im.height;
-    double x_mass=0,y_mass=0,mass=0;
-    readOnlyPixels pix_plane = Im.ReadablePixels();
-
-    for (y = 0; y < h; y++)
-        for (x = 0; x < w; x++)
-            if (!std::isnan(pix_plane(y,x))){
-                x_mass=x_mass+(x+1)*pix_plane(y,x);    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-                y_mass=y_mass+(y+1)*pix_plane(y,x);    /* the "+1" is only for compatability with matlab code (where index starts from 1) */
-                mass+=pix_plane(y,x);
-            }
-    if (mass) {
-        *x_centroid=x_mass/mass+Im.ROIWidthBeg;
-        *y_centroid=y_mass/mass+Im.ROIHeightBeg;
-    } else *x_centroid=*y_centroid=0;
-}
-
 void Extrema (const ImageMatrix& Im, double *ratios){
 
     int TopMostIndex=Im.height;
@@ -206,22 +187,22 @@ void Extrema (const ImageMatrix& Im, double *ratios){
     float P8y = LeftMost_Top-0.5+Im.ROIHeightBeg;
     float P8x = LeftMostIndex-0.5+Im.ROIWidthBeg;
 
-    ratios[10]=P1x;
-    ratios[11]=P2x;
-    ratios[12]=P3x;
-    ratios[13]=P4x;
-    ratios[14]=P5x;
-    ratios[15]=P6x;
-    ratios[16]=P7x;
-    ratios[17]=P8x;
-    ratios[18]=P1y;
-    ratios[19]=P2y;
-    ratios[20]=P3y;
-    ratios[21]=P4y;
-    ratios[22]=P5y;
-    ratios[23]=P6y;
-    ratios[24]=P7y;
-    ratios[25]=P8y;
+    ratios[8]=P1x;
+    ratios[9]=P2x;
+    ratios[10]=P3x;
+    ratios[11]=P4x;
+    ratios[12]=P5x;
+    ratios[13]=P6x;
+    ratios[14]=P7x;
+    ratios[15]=P8x;
+    ratios[16]=P1y;
+    ratios[17]=P2y;
+    ratios[18]=P3y;
+    ratios[19]=P4y;
+    ratios[20]=P5y;
+    ratios[21]=P6y;
+    ratios[22]=P7y;
+    ratios[23]=P8y;
 
     return;
 }
@@ -252,12 +233,6 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     GlobalCentroid2(Im,&xCentroid,&yCentroid);
     ratios[6]=xCentroid;
     ratios[7]=yCentroid;
-
-    //Weighted Centroid
-    double xWCentroid,yWCentroid;
-    WeightedGlobalCentroid(Im,&xWCentroid,&yWCentroid);
-    ratios[8]=xWCentroid;
-    ratios[9]=yWCentroid;
 
     //--------------Make a binary array-----------
     uchar * arr = new uchar[Im.height*Im.width];
@@ -331,7 +306,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //------------------------Euler Number------------------------------------------
     long Euler= EulerNumber(arr,8,Im.height,Im.width);
-    ratios[26]=Euler;
+    ratios[24]=Euler;
     delete [] arr;
 
     //------------------------------Some Other Statistics--------
@@ -349,13 +324,13 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     double Circularity=4*M_PI*PixelsCount/(ROIPerimeter*ROIPerimeter);
 
-    ratios[27]=extent;
-    ratios[28]=convexHullArea;
-    ratios[29]=solidity;
-    ratios[30]=AspectRatio;
-    ratios[31]=EquivalentDiameter;
-    ratios[32]=ROIPerimeter;
-    ratios[33]=Circularity;
+    ratios[25]=extent;
+    ratios[26]=convexHullArea;
+    ratios[27]=solidity;
+    ratios[28]=AspectRatio;
+    ratios[29]=EquivalentDiameter;
+    ratios[30]=ROIPerimeter;
+    ratios[31]=Circularity;
 
     //---------------------Min/Max Feret Diameter/Angle-----------------------
     double * MaxDistanceArray = new double [180];
@@ -393,11 +368,11 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         if (MaxDistanceArray[i] < MinFeretDiameter) {MinFeretDiameter = MaxDistanceArray[i]; MinFeretAngle=i;}
     }
 
-    ratios[34]=MaxFeretDiameter;
-    ratios[35]=MaxFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
+    ratios[32]=MaxFeretDiameter;
+    ratios[33]=MaxFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
-    ratios[36]=MinFeretDiameter;
-    ratios[37]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
+    ratios[34]=MinFeretDiameter;
+    ratios[35]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
     delete [] MaxDistanceArray;
     delete [] Point1Index;
@@ -441,7 +416,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     std::vector<int> NeighborUniqueIDs;
     std::unique_copy(NeighborIDs.begin(), NeighborIDs.end(), std::back_inserter(NeighborUniqueIDs));
 
-    ratios[38]=NeighborUniqueIDs.size();
+    ratios[36]=NeighborUniqueIDs.size();
 
     //--------------------------------Hexagonality/Polygonality-------------------
     //This section is a translation from the following Python code
@@ -556,9 +531,9 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_sd=sqrt((area_ratio_sd*area_ratio_sd+perim_ratio_sd*perim_ratio_sd)/2);
         double hex_ave = 10*(hex_area_ratio + hex_size_ratio)/2;
 
-        ratios[39]=poly_ave;
-        ratios[40]=hex_ave;
-        ratios[41]=hex_sd;
+        ratios[37]=poly_ave;
+        ratios[38]=hex_ave;
+        ratios[39]=hex_sd;
 
     }
     else if (neighbors <3 ){
@@ -566,9 +541,9 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         double hex_ave = std::numeric_limits<double>::quiet_NaN();
         double hex_sd = std::numeric_limits<double>::quiet_NaN();
 
-        ratios[39]=poly_ave;
-        ratios[40]=hex_ave;
-        ratios[41]=hex_sd;
+        ratios[37]=poly_ave;
+        ratios[38]=hex_ave;
+        ratios[39]=hex_sd;
     }
 
     //  cout << "Finished Morphological Computations!\n" << endl;
@@ -594,12 +569,16 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             tmp2.push_back(MaxFeretDiameter*UnitConversion);
             tmp2.push_back(MinFeretDiameter*UnitConversion);
             tmp2.push_back(NeighborUniqueIDs.size());
-            tmp2.push_back(ratios[39]); //poly_ave
-            tmp2.push_back(ratios[40]); //hex_ave
-            tmp2.push_back(ratios[41]); //hex_sd
+            tmp2.push_back(ratios[37]); //poly_ave
+            tmp2.push_back(ratios[38]); //hex_ave
+            tmp2.push_back(ratios[39]); //hex_sd
 
             tmp2.push_back(Circularity);  //MATLAB Features start here
-            tmp2.push_back(ratios[10]*UnitConversion); //Extrema begins here
+            tmp2.push_back(ratios[8]*UnitConversion); //Extrema begins here
+            tmp2.push_back(ratios[16]*UnitConversion);
+            tmp2.push_back(ratios[9]*UnitConversion);
+            tmp2.push_back(ratios[17]*UnitConversion);
+            tmp2.push_back(ratios[10]*UnitConversion);
             tmp2.push_back(ratios[18]*UnitConversion);
             tmp2.push_back(ratios[11]*UnitConversion);
             tmp2.push_back(ratios[19]*UnitConversion);
@@ -610,14 +589,8 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             tmp2.push_back(ratios[14]*UnitConversion);
             tmp2.push_back(ratios[22]*UnitConversion);
             tmp2.push_back(ratios[15]*UnitConversion);
-            tmp2.push_back(ratios[23]*UnitConversion);
-            tmp2.push_back(ratios[16]*UnitConversion);
-            tmp2.push_back(ratios[24]*UnitConversion);
-            tmp2.push_back(ratios[17]*UnitConversion);            
-            tmp2.push_back(ratios[25]*UnitConversion); //Extrema ends here
+            tmp2.push_back(ratios[23]*UnitConversion); //Extrema ends here
             tmp2.push_back(extent);
-            tmp2.push_back(yWCentroid*UnitConversion);
-            tmp2.push_back(xWCentroid*UnitConversion);
             tmp2.push_back(MaxFeretAngle);  //No MaxFeret Coordinates
             tmp2.push_back(MinFeretAngle);  //No MinFeret Coordinates
 
