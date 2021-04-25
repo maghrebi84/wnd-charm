@@ -965,8 +965,8 @@ double Kurtosis= (QuadTmp/stats.n())/pow(Variance,2);
 output[5]=Skewness;
 output[6]=Kurtosis;
 
-int intMax=(int)stats.max();
-int intMin=(int)stats.min();
+int intMax=ceil(stats.max());
+int intMin=floor(stats.min());
 int Size=intMax-intMin+1;
 int* histBins =new int [Size];
 
@@ -975,8 +975,7 @@ for (int i=0; i<Size; ++i) histBins[i]=0;
 for (unsigned int y = 0; y < height; ++y)
     for (unsigned int x = 0; x < width; ++x){
         if (!std::isnan(pix_plane (y,x))) {
-            int bin = floor(pix_plane (y,x));
-            ++ histBins[bin-intMin];
+            ++ histBins[(int)floor(pix_plane (y,x))-intMin];
         }
     }
 
