@@ -257,6 +257,11 @@ double coarseness(const ImageMatrix &image, double *hist,unsigned int nbins) {
     Sbest->allocate (image.width,image.height);
 
 
+    int y0=image.ROIHeightBegActual;
+    int y1=image.ROIHeightBegActual+image.ROIHeightActual;
+    int x0=image.ROIWidthBegActual;
+    int x1=image.ROIWidthBegActual+image.ROIWidthActual;
+
     //step 1
     int lenOfk = 1;
     for(k = 1; k <= K_VALUE; ++k) {
@@ -295,9 +300,14 @@ double coarseness(const ImageMatrix &image, double *hist,unsigned int nbins) {
 
                 double sum=0;
                 for(int jj = starty; jj < stopy+1; ++jj){
+                    if (jj < y0  ||  jj > y1) continue;
                     for(int ii = startx; ii < stopx+1; ++ii){
-                        if(std::isnan(image_pix_plane(jj,ii)))  continue;
-                        sum+= image_pix_plane(jj,ii);
+                        if (ii < x0  ||  ii > x1) continue;
+                        auto tmp=image_pix_plane(jj,ii);
+                        if(std::isnan(tmp)) continue;
+                        sum+=tmp;
+                    //    if(std::isnan(image_pix_plane(jj,ii)))  continue;
+                    //    sum+= image_pix_plane(jj,ii);
                     }
                 }
 
@@ -430,6 +440,11 @@ void Tamura3Sigs2D(const ImageMatrix &Im, double *vec) {
     normImg.WriteablePixels() = ((Im.ReadablePixels().array() - min_val) / max_val).unaryExpr (Moments2func(normImg.stats));
 
     normImg.BoundingBoxFlag= Im.BoundingBoxFlag; //MM
+
+    normImg.ROIHeightBegActual= Im.ROIHeightBegActual; //MM
+    normImg.ROIHeightActual= Im.ROIHeightActual; //MM
+    normImg.ROIWidthActual= Im.ROIWidthActual; //MM
+    normImg.ROIWidthBegActual= Im.ROIWidthBegActual; //MM
 
     temp[0] = coarseness(normImg,&(temp[1]),3);
     temp[4] = directionality(normImg);

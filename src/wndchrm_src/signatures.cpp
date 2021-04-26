@@ -324,7 +324,7 @@ int signatures::SaveToFile2 (std::vector<double>* tmpOutputData, std::vector<dou
         "weighted_centroid_x"
     };
 
-    if (ROIFlag) fprintf( wf_fp, "%s,%s,%s,", "Intensityfilename", "maskfilename", "label");
+    if (ROIFlag) fprintf( wf_fp, "%s,%s,%s,", "intensity_filename", "mask_filename", "label");
     for (sig_index=0; sig_index < count; sig_index++) {
         if (sig_index == count -1){
             if (!strcmp(FeatureAlgorithmName,"Morphological")) {  //If Morphological
@@ -495,7 +495,7 @@ int signatures::SaveToFile (int save_feature_names, int Count, int i, bool ROIFl
         //    if (ROIcounts==1){
         if (Count==1){
             //MM if (ROIFlag) fprintf( wf_fp, "%s,", "label" );
-            if (ROIFlag) fprintf( wf_fp, "%s,%s,", "maskfilename", "label");
+            if (ROIFlag) fprintf( wf_fp, "%s,%s,", "mask_filename", "label");
             for (sig_index=0; sig_index < count; sig_index++) {
                 if (sig_index == count -1){
                     if (!strcmp(FeatureAlgorithmName,"Morphological")) {  //If Morphological

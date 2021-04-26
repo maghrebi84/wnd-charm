@@ -10,14 +10,14 @@
         {
             "name": "DataPath",
             "type": "collection",
-            "description": "The full path to input tiled-tiff image",
-            "required": "True"
+            "description": "The full path to input tiled-tiff image (Required except for Morphological features)",
+            "required": "False"
         },
         {
             "name": "LabeledData",
             "type": "collection",
             "description": "The full path to input tiled-tiff mask for ROI computations (Optional)",
-            "required": "True"
+            "required": "False"
         },      
         {
             "name": "DesiredFeatures",
@@ -116,7 +116,7 @@
         {
             "key": "inputs.DataPath",
             "title": "Input tiled-tiff image",
-            "description": "Insert the path to the image collection"
+            "description": "Insert the path to the image collection (Required except for Morphological features)"
         },
         {
             "key": "inputs.LabeledData",
