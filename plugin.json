@@ -1,11 +1,11 @@
 {
-    "name": "WNDCHARM-ROI-Alpha00",
-    "version": "0.1.0-alpha2",
+    "name": "WNDCHARM-ROI-Alpha15",
+    "version": "0.1.0-alpha15",
     "title": "Multi-threaded WND-CHARM with ROI Capability",
     "description": "Multi-threaded WND-CHARM with support for Region of Interest (ROI)",
     "author": "Mahdi Maghrebi",
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
-    "containerId": "labshare/polus-wnd-charm-plugin:0.1.0-alpha2",
+    "containerId": "labshare/polus-wnd-charm-plugin:0.1.0-alpha15",
     "inputs": [    
         {
             "name": "DataPath",
@@ -115,8 +115,8 @@
     "ui": [
         {
             "key": "inputs.DataPath",
-            "title": "Input tiled-tiff image",
-            "description": "Insert the path to the image collection (Required except for Morphological features)"
+            "title": "Input tiled-tiff image (Required except for Morphological features)",
+            "description": "Insert the path to the image collection"
         },
         {
             "key": "inputs.LabeledData",
