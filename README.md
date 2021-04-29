@@ -151,4 +151,28 @@ In addition to the above changes, a comprehensive list of Morphological algorith
 40-Max Feret angle
 41-Min Feret angle
 
-It should also be noted that for the sake of completeness, WND-CHARM PixelIntensityStatistics features were extended to include the following extra parameters: Skewness, Kurtosis, entropy, mode, y and x coordinates of the weighted centroid. These four extra features will be computed whenever PixelIntensityStatistics is invoked in the code. 
+It should also be noted that for the sake of completeness, WND-CHARM PixelIntensityStatistics features were extended to include many more extra parameters. These extra features will be computed whenever PixelIntensityStatistics is invoked in the code. The complete list of the PixelIntensityStatistics features are now as follows and their descriptions are available at https://pyradiomics.readthedocs.io/en/latest/features.html#module-radiomics.firstorder.
+
+0-Mean
+1-Median
+2-Min
+3-Max
+4-Range
+5-Standard Deviation
+6-Skewness
+7-Kurtosis
+8-Mean Absolute Deviation
+9-Energy
+10-Root Mean Squared
+11-Entropy
+12-Mode
+13-Uniformity
+14-10th Percentile
+15-25th Percentile
+16-75th Percentile
+17-90th Percentile
+18-Interquartile Range
+19-Robust Mean Absolute Deviation
+20-Weighted Centroid in y direction
+21-Weighted Centroid in x direction
+

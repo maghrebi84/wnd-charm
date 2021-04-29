@@ -273,7 +273,7 @@ static bool FractalFeaturesReg = ComputationTaskInstances::add (new FractalFeatu
 
 //===========================================================================
 
-PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 11) {
+PixelIntensityStatistics::PixelIntensityStatistics() : FeatureAlgorithm ("PixelIntensityStatistics", 22) {
 	//cout << "Instantiating new " << name << " object." << endl;
 }
 
@@ -287,9 +287,11 @@ std::vector<double> PixelIntensityStatistics::execute (const ImageMatrix &IN_mat
 	IN_matrix.GetStats (stats);
 	coeffs[0] = stats.mean();
 	coeffs[1] = IN_matrix.get_median();
-	coeffs[2] = stats.std();
-	coeffs[3] = stats.min();
-	coeffs[4] = stats.max();
+        coeffs[2] = stats.min();
+        coeffs[3] = stats.max();
+
+        double Range = stats.max() - stats.min();
+        coeffs[4]=Range;
 
         IN_matrix.OtherStatistics(coeffs.data());
         IN_matrix.WeightedGlobalCentroid(coeffs.data());

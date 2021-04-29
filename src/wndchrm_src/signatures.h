@@ -38,7 +38,7 @@
 #include "cmatrix.h"
 #include "Tasks.h"
 
-#define MAX_SIGNATURE_NUM 6000
+#define MAX_SIGNATURE_NUM 7000
 #define SIGNATURE_NAME_LENGTH 80
 #define TRANSFORM_NAME_LENGTH 32
 #define MAX_TRANSFORM_DEPTH 6
