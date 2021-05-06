@@ -285,7 +285,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     //--------------Coordinates of the Extrema Pixels--------
     Extrema (Im, ratios);
 
-    //--------------convexHull--------------------------------
+    //--------------Computing dimensions features--------------------------------
     cv::Mat matrix = cv::Mat(Im.height,Im.width,CV_8UC1,arr);
 
     if( matrix.empty() ) {
@@ -293,6 +293,72 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         return ;
     }
 
+
+    //Store all the LongestChords, one per theta
+    vector<int> LongestChordAll;
+
+    //First we need to rotate the image
+    //https://stackoverflow.com/questions/22041699/rotate-an-image-without-cropping-in-opencv-in-c
+    for (int theta=0; theta<180;theta=theta+9){
+
+        //To avoid cropping of the rotated image, a large enough dimension should be considered for it.
+        //diagonal of the non-rotated image is large enough for this purpose
+        int diagonal = (int)sqrt(matrix.cols*matrix.cols+matrix.rows*matrix.rows);
+        int newWidth = diagonal;
+        int newHeight =diagonal;
+
+        int offsetX = (newWidth - matrix.cols) / 2;
+        int offsetY = (newHeight - matrix.rows) / 2;
+        Mat targetMat(newWidth, newHeight, matrix.type());
+        Point2f matrix_center(targetMat.cols/2.0F, targetMat.rows/2.0F);
+
+        matrix.copyTo(targetMat.rowRange(offsetY, offsetY + matrix.rows).colRange(offsetX, offsetX + matrix.cols));
+        Mat rot_mat = getRotationMatrix2D(matrix_center, theta, 1.0);
+
+        Mat RotatedImage;
+        warpAffine(targetMat, RotatedImage, rot_mat, targetMat.size());
+
+        vector<Point> nz;
+        findNonZero(RotatedImage,nz); //non-zero elements of the rotated image
+
+        vector<int> * yCoordinatePoints ; //y coordinates of the start/end points of chords in each row of the rotated image
+        yCoordinatePoints = new vector<int> [RotatedImage.rows];
+
+        for (int i = 0; i < nz.size(); i++){  //nz[i].y = row index, nz[i].x= column index
+            yCoordinatePoints[nz[i].y].push_back(nz[i].x);
+        }
+
+        //Now, lets compute Longest Chord
+        int LongestChord =-1;
+
+        int Chord;
+        for (int i = 0; i < RotatedImage.rows; i++){
+            if (yCoordinatePoints[i].size() == 0) continue;
+            //If no discontinuty exists
+            int min_y = *min_element(yCoordinatePoints[i].begin(), yCoordinatePoints[i].end());
+            int max_y = *max_element(yCoordinatePoints[i].begin(), yCoordinatePoints[i].end());
+            if ((max_y-min_y+1) == yCoordinatePoints[i].size()) {Chord= max_y-min_y+1; if (LongestChord < Chord) LongestChord = Chord;}
+            //If discontinuity exists in each row of the image
+            else {
+                std::sort(yCoordinatePoints[i].begin(),yCoordinatePoints[i].end());//Sorting the vector
+                Chord=0;
+                for (int j = 0; j < yCoordinatePoints[i].size()-1; j++){
+                    //If continuity persists
+                    if (yCoordinatePoints[i][j] + 1 == yCoordinatePoints[i][j+1]) Chord++;
+                    else {
+                        //reset the chord length as soon as the first discontinuity met in the row
+                        if (LongestChord < Chord) LongestChord = Chord;
+                        Chord=0;
+                    }
+                }
+                if (LongestChord < Chord) LongestChord = Chord;
+            }
+        }
+        LongestChordAll.push_back(LongestChord);
+    }
+
+
+    //--------------convexHull--------------------------------
     vector<vector<cv::Point>> contours;
     findContours( matrix, contours, RETR_CCOMP, CHAIN_APPROX_TC89_KCOS ); //CHAIN_APPROX_TC89_KCOS had better performance when validated against MATLAB
     vector<vector<Point>> hull(1);
