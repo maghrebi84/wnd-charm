@@ -297,10 +297,13 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     //Store all the Features in one vector, one per theta (rotation angel)
     vector<int> LongestChordAll;
     vector<int> MartinLengthAll;
+    vector<int> NassensteinDiameterAll;
 
-    //First we need to rotate the image
-    //https://stackoverflow.com/questions/22041699/rotate-an-image-without-cropping-in-opencv-in-c
+
     for (int theta=0; theta<180;theta=theta+9){
+
+        //First we need to rotate the image
+        //https://stackoverflow.com/questions/22041699/rotate-an-image-without-cropping-in-opencv-in-c
 
         //To avoid cropping of the rotated image, a large enough dimension should be considered for it.
         //diagonal of the non-rotated image is large enough for this purpose
@@ -329,6 +332,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             yCoordinatePoints[nz[i].y].push_back(nz[i].x);
         }
 
+        //----------------------------------------------
         //Now, lets compute Longest Chord
         int LongestChord =-1;
 
@@ -342,14 +346,14 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             //If discontinuity exists in each row of the image
             else {
                 std::sort(yCoordinatePoints[i].begin(),yCoordinatePoints[i].end());//Sorting the vector
-                Chord=0;
+                Chord=1;
                 for (int j = 0; j < yCoordinatePoints[i].size()-1; j++){
                     //If continuity persists
                     if (yCoordinatePoints[i][j] + 1 == yCoordinatePoints[i][j+1]) Chord++;
                     else {
                         //reset the chord length as soon as the first discontinuity met in the row
                         if (LongestChord < Chord) LongestChord = Chord;
-                        Chord=0;
+                        Chord=1;
                     }
                 }
                 if (LongestChord < Chord) LongestChord = Chord;
@@ -357,6 +361,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         }
         LongestChordAll.push_back(LongestChord);
 
+        //----------------------------------------------
         //Now, lets compute Martin Length
         int MartinLength;
 
@@ -377,6 +382,58 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             }
         }
         MartinLengthAll.push_back(MartinLength);
+
+        //----------------------------------------------
+        //Now, lets compute Nassenstein Diameter
+        int lowestRowIndex=-1;
+        for (int i = RotatedImage.rows-1; i >= 0 ; i--){
+            if (yCoordinatePoints[i].size() != 0) {
+                lowestRowIndex = i;
+                break;
+            }
+        }
+
+        if (lowestRowIndex == -1) cout<<" Error in Nassenstein Diameter algorithm: No lowestRowIndex found"<<endl;
+
+        std::sort(yCoordinatePoints[lowestRowIndex].begin(),yCoordinatePoints[lowestRowIndex].end()); //Sorting the vector
+
+        if (yCoordinatePoints[lowestRowIndex].size() == 0) cout<<"Error in Nassenstein Diameter algorithm: No element found in the lowest row"<<endl;
+
+        //Accroding to imea library: There might be several touching points in the lowest row and
+        // thus the center of first continuous contact surface from left is selected here
+
+        //BeginningYIndex is the first element touching the bottom in the lowest row of the rotated image
+        int BeginningYIndex = yCoordinatePoints[lowestRowIndex][0];
+
+        int ContinuingPixelsCounts=0;
+        for (int j = 0; j < yCoordinatePoints[lowestRowIndex].size()-1; j++){
+            if (yCoordinatePoints[lowestRowIndex][j] + 1 == yCoordinatePoints[lowestRowIndex][j+1]) ContinuingPixelsCounts++;
+        }
+        //Now find TargetColumn where Nassenstein Diameter is coming from it
+        int TargetColumn= (int) ceil(BeginningYIndex + ((float)ContinuingPixelsCounts/2));
+
+        //Now, identify the non-zero elements in TargetColumn
+        cv::Mat TargetColumnMat = RotatedImage.col(TargetColumn);
+
+        vector<Point> nz_TargetColumnMat;
+        findNonZero(TargetColumnMat,nz_TargetColumnMat); //non-zero elements in TargetColumn of the rotated image
+
+        vector<int> xCoordinatePoints ;
+
+        for (int i = 0; i < nz_TargetColumnMat.size(); i++){  //nz_TargetColumnMat[i].y = row index
+            xCoordinatePoints.push_back(nz_TargetColumnMat[i].y);
+        }
+
+        std::sort(xCoordinatePoints.begin(), xCoordinatePoints.end()); //Sorting the vector
+
+        int NassensteinDiameter=1;
+        for (int j = xCoordinatePoints.size()-1; j >= 0; j--){
+            if (xCoordinatePoints[j] - 1 == xCoordinatePoints[j-1]) NassensteinDiameter++;
+            else break;
+        }
+
+        NassensteinDiameterAll.push_back(NassensteinDiameter);
+
     }
 
 
