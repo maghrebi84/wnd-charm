@@ -294,8 +294,9 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     }
 
 
-    //Store all the LongestChords, one per theta
+    //Store all the Features in one vector, one per theta (rotation angel)
     vector<int> LongestChordAll;
+    vector<int> MartinLengthAll;
 
     //First we need to rotate the image
     //https://stackoverflow.com/questions/22041699/rotate-an-image-without-cropping-in-opencv-in-c
@@ -355,6 +356,27 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             }
         }
         LongestChordAll.push_back(LongestChord);
+
+        //Now, lets compute Martin Length
+        int MartinLength;
+
+        float MartinSplitRatio=0.5;
+        int RequiredObjectArea= (int) ceil(MartinSplitRatio * nz.size());
+        int MetObjectArea=0;
+
+        for (int i = 0; i < RotatedImage.rows; i++){
+            MetObjectArea += yCoordinatePoints[i].size();
+
+            if (MetObjectArea > RequiredObjectArea){
+                //Martin Diameter is on this row of the image
+
+                int min_y = *min_element(yCoordinatePoints[i].begin(), yCoordinatePoints[i].end());
+                int max_y = *max_element(yCoordinatePoints[i].begin(), yCoordinatePoints[i].end());
+                MartinLength= max_y-min_y+1;
+                break;
+            }
+        }
+        MartinLengthAll.push_back(MartinLength);
     }
 
 
