@@ -475,7 +475,40 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[28]=AspectRatio;
     ratios[29]=EquivalentDiameter;
     ratios[30]=ROIPerimeter;
-    ratios[31]=Circularity;
+    ratios[31]=Circularity;  
+
+    //------------------------------Geodetic Length and Thickness------------
+    /*
+    * Accroding to imea code: https://git.rwth-aachen.de/ants/sensorlab/imea/-/blob/master/imea/measure_2d/macro.py#L244
+    * the definitions of Geodetic Length and Thickness are as follows.
+    The geodetic lengths and thickness are approximated by a rectangle
+    with the same area and perimeter:
+    (1) `area = geodeticlength * thickness`
+    (2) `perimeter = 2 * (geodetic_length + thickness)`
+
+    # White the help of Equation (1) we can rewrite Equation (2) to:
+    # `geodetic_length**2 - 0.5 * perimeter * geodetic_length + area = 0`
+    # Which we can solve with the pq-formula:
+    # `geodetic_length = perimeter/4 +- sqrt((perimeter/4)**2 - area)`
+    # since only the positive solution makes sense in our application
+    */
+
+    if (ROIPerimeter <= 0) cout<<" Perimeter should be a positive value greater than zero"<<endl;
+    if (PixelsCount <= 0) cout<<" Area should be a positive value greater than zero"<<endl;
+
+    double SqRootTmp = ROIPerimeter*ROIPerimeter/16 - (double)PixelsCount;
+
+    //Make sure value under SqRootTmp is always positive
+    if (SqRootTmp <0) SqRootTmp=0;
+
+    //Calcuate geodetic_length with pq-formula (see above):
+    double geodetic_length = ROIPerimeter/4 + sqrt(SqRootTmp);
+
+    //Calculate thickness by rewriting Equation (2):
+    double thickness = ROIPerimeter/2 - geodetic_length;
+
+    ratios[30]=geodetic_length;
+    ratios[31]=thickness;
 
     //---------------------Min/Max Feret Diameter/Angle-----------------------
     double * MaxDistanceArray = new double [180];
