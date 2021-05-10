@@ -449,6 +449,18 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     convexHull(AllPointsOnContours, hull[0]);
 
+    //Perimeter of the convex hull
+    double convexHullPerimeter= arcLength(hull[0] , true);
+    ratios[31]=convexHullPerimeter;
+
+    // Find the minimum enclosing circle of an object
+    Point2f center;
+    float radius = 0;
+    minEnclosingCircle(AllPointsOnContours, center, radius);
+    //Diameter of the minimum circumference of the projection area.
+    double diameter_min_enclosing_circle = 2*radius;
+    ratios[30]=diameter_min_enclosing_circle;
+
     //------------------------Euler Number------------------------------------------
     long Euler= EulerNumber(arr,8,Im.height,Im.width);
     ratios[24]=Euler;
