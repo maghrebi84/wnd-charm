@@ -605,6 +605,37 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double diameter_min_enclosing_circle = 2*radius;
     ratios[30]=diameter_min_enclosing_circle;
 
+    //--------------Rotated Bounding Box--------------------------------
+    //Computing Rotated Bounding Box
+    //https://git.rwth-aachen.de/ants/sensorlab/imea/-/blob/master/imea/measure_2d/macro.py#L44
+    RotatedRect rotatedBoundingBox= minAreaRect(AllPointsOnContours);
+
+    //For Consistency with imea, we will only report Height and Width of the Bounding Box
+    //and the other following parameters are only being reported for the sake of completeness
+    double BBHeight=rotatedBoundingBox.size.width+1;
+    double BBWidth=rotatedBoundingBox.size.height+1;
+    ratios[31]=BBHeight;
+    ratios[31]=BBWidth;
+
+    //Followings are optional
+    double BufferCorrectionY= Im.ROIHeightBegActual - Im.ROIHeightBeg;
+    double BufferCorrectionX= Im.ROIWidthBegActual - Im.ROIWidthBeg;
+
+    double CenterHeight= rotatedBoundingBox.center.y+0.5-BufferCorrectionY;
+    double CenterWidth= rotatedBoundingBox.center.x+0.5-BufferCorrectionX;
+
+    //Coordinates of the 4 points of the rotated bounding box
+    vector<Point2f> boxPts(4);
+    rotatedBoundingBox.points(boxPts.data());
+
+    double P1Height=boxPts[0].y-BufferCorrectionY;
+    double P1Width=boxPts[0].x-BufferCorrectionX;
+    double P2Height=boxPts[1].y-BufferCorrectionY;
+    double P2Width=boxPts[1].x+1-BufferCorrectionX;
+    double P3Height=boxPts[2].y+1-BufferCorrectionY;
+    double P3Width=boxPts[2].x+1-BufferCorrectionX;
+    double P4Height=boxPts[3].y+1-BufferCorrectionY;
+    double P4Width=boxPts[3].x-BufferCorrectionX;
     //------------------------Euler Number------------------------------------------
     long Euler= EulerNumber(arr,8,Im.height,Im.width);
     ratios[24]=Euler;
