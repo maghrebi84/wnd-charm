@@ -207,6 +207,108 @@ void Extrema (const ImageMatrix& Im, double *ratios){
     return;
 }
 
+Statistics ComputeCommonStatistics (vector<int> Data){
+
+    Statistics output;
+
+    output.max = *max_element(Data.begin(), Data.end());
+    output.min = *min_element(Data.begin(), Data.end());
+
+    double sum = 0;
+    for (int i=0; i< Data.size(); i++) sum += Data[i];
+    output.mean = sum / Data.size();
+
+    double sumSqrd=0;
+    for (int i=0; i< Data.size(); i++) sumSqrd += (Data[i]-output.mean)*(Data[i]-output.mean);
+    output.stdev = sqrt(sumSqrd/Data.size());
+
+    //Make a Histogram
+    int intMax=(int)ceil(output.max);
+    int intMin=(int)floor(output.min);
+    int binCounts=intMax-intMin+1;
+    int* histBins =new int [binCounts];
+
+    for (int i=0; i<binCounts; ++i) histBins[i]=0;
+    for (int i=0; i<Data.size(); i++) ++ histBins[Data[i]-intMin];
+
+    double MaxValue=0;
+    int maxBinIndex=-1;
+    //Loop over all the bins
+    for (int i=0; i<binCounts; i++) {
+        if (histBins[i] > MaxValue) {MaxValue=histBins[i]; maxBinIndex=i;}
+    }
+    output.mode = maxBinIndex+intMin;
+
+
+    std::sort(Data.begin(),Data.end());
+    double median;
+    size_t half = Data.size() / 2;
+    if (Data.size() % 2 == 0) {
+        nth_element(Data.begin(), Data.begin()+half, Data.end());
+        median = Data[half];
+        nth_element(Data.begin(), Data.begin()+half-1, Data.end());
+        median += (Data[half-1]);
+        median /= 2.0;
+    } else {
+        nth_element(Data.begin(), Data.begin()+half, Data.end());
+        median = Data[half];
+    }
+    output.median=median;
+
+    return output;
+}
+
+Statistics ComputeCommonStatistics2 (vector<double> Data){
+
+    Statistics output;
+
+    output.max = *max_element(Data.begin(), Data.end());
+    output.min = *min_element(Data.begin(), Data.end());
+
+    double sum = 0;
+    for (int i=0; i< Data.size(); i++) sum += Data[i];
+    output.mean = sum / Data.size();
+
+    double sumSqrd=0;
+    for (int i=0; i< Data.size(); i++) sumSqrd += (Data[i]-output.mean)*(Data[i]-output.mean);
+    output.stdev = sqrt(sumSqrd/Data.size());
+
+    //Make a Histogram
+    int intMax=(int)ceil(output.max);
+    int intMin=(int)floor(output.min);
+    int binCounts=intMax-intMin+1;
+    int* histBins =new int [binCounts];
+
+    for (int i=0; i<binCounts; ++i) histBins[i]=0;
+    for (int i=0; i<Data.size(); i++) ++ histBins[(int)Data[i]-intMin];
+
+    double MaxValue=0;
+    int maxBinIndex=-1;
+    //Loop over all the bins
+    for (int i=0; i<binCounts; i++) {
+        if (histBins[i] > MaxValue) {MaxValue=histBins[i]; maxBinIndex=i;}
+    }
+    output.mode = maxBinIndex+intMin;
+
+    std::sort(Data.begin(),Data.end());
+    double median;
+
+    size_t half = Data.size() / 2;
+    if (Data.size() % 2 == 0) {
+        nth_element(Data.begin(), Data.begin()+half, Data.end());
+        median = Data[half];
+        nth_element(Data.begin(), Data.begin()+half-1, Data.end());
+        median += (Data[half-1]);
+        median /= 2.0;
+    } else {
+        nth_element(Data.begin(), Data.begin()+half, Data.end());
+        median = Data[half];
+    }
+
+    output.median=median;
+
+    return output;
+}
 
 void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double UnitConversion=Im.PixelsUnit;
@@ -300,7 +402,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     vector<int> NassensteinDiameterAll;
 
 
-    for (int theta=0; theta<180;theta=theta+9){
+    for (int theta=0; theta<180;theta++){
 
         //First we need to rotate the image
         //https://stackoverflow.com/questions/22041699/rotate-an-image-without-cropping-in-opencv-in-c
@@ -433,9 +535,51 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         }
 
         NassensteinDiameterAll.push_back(NassensteinDiameter);
-
     }
 
+    //Now, Extract the statistics of the already computed features
+    Statistics structStat;
+    structStat = ComputeCommonStatistics (LongestChordAll);
+    int min_Longest_Chord = structStat.min;
+    int max_Longest_Chord = structStat.max;
+    double mean_Longest_Chord = structStat.mean;
+    double median_Longest_Chord = structStat.median;
+    double std_Longest_Chord =  structStat.stdev;
+    int mode_Longest_Chord = structStat.mode;
+    ratios[31]=min_Longest_Chord;
+    ratios[31]=max_Longest_Chord;
+    ratios[31]=mean_Longest_Chord;
+    ratios[31]=median_Longest_Chord;
+    ratios[31]=std_Longest_Chord;
+    ratios[31]=mode_Longest_Chord;
+
+    structStat = ComputeCommonStatistics (MartinLengthAll);
+    int min_Martin_Length = structStat.min;
+    int max_Martin_Length = structStat.max;
+    double mean_Martin_Length = structStat.mean;
+    double median_Martin_Length = structStat.median;
+    double std_Martin_Length =  structStat.stdev;
+    int mode_Martin_Length = structStat.mode;
+    ratios[31]=min_Martin_Length;
+    ratios[31]=max_Martin_Length;
+    ratios[31]=mean_Martin_Length;
+    ratios[31]=median_Martin_Length;
+    ratios[31]=std_Martin_Length;
+    ratios[31]=mode_Martin_Length;
+
+    structStat = ComputeCommonStatistics (NassensteinDiameterAll);
+    int min_Nassenstein_Diameter = structStat.min;
+    int max_Nassenstein_Diameter = structStat.max;
+    double mean_Nassenstein_Diameter = structStat.mean;
+    double median_Nassenstein_Diameter = structStat.median;
+    double std_Nassenstein_Diameter =  structStat.stdev;
+    int mode_Nassenstein_Diameter = structStat.mode;
+    ratios[31]=min_Nassenstein_Diameter;
+    ratios[31]=max_Nassenstein_Diameter;
+    ratios[31]=mean_Nassenstein_Diameter;
+    ratios[31]=median_Nassenstein_Diameter;
+    ratios[31]=std_Nassenstein_Diameter;
+    ratios[31]=mode_Nassenstein_Diameter;
 
     //--------------convexHull--------------------------------
     vector<vector<cv::Point>> contours;
@@ -524,8 +668,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //---------------------Min/Max Feret Diameter/Angle-----------------------
     double * MaxDistanceArray = new double [180];
-    int * Point1Index = new int [180];
-    int * Point2Index = new int [180];
+    vector <double> FeretDiameterAll;
 
     for (int i=0; i<180; ++i){
         float theta=i*M_PI/180;
@@ -544,8 +687,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
         //1 (2x0.5) was added in the below line for consistency with MATLAB as the side of the pixel is 0.5 off from the center.
         MaxDistanceArray[i]=  MaxXCoord-MinXCoord+1;
-        Point1Index[i]= MinIndex;
-        Point2Index[i]= MaxIndex;
+        FeretDiameterAll.push_back(MaxXCoord-MinXCoord+1);
     }
 
     double MaxFeretDiameter=0;
@@ -565,8 +707,21 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[35]=MinFeretAngle; //The angle is between 0 to 180. MATLAB reports -180 to 180 instead.
 
     delete [] MaxDistanceArray;
-    delete [] Point1Index;
-    delete [] Point2Index;
+
+    //Now, compute Feret Statistics
+    structStat = ComputeCommonStatistics2 (FeretDiameterAll);
+    int min_Feret_Diameter = structStat.min;
+    int max_Feret_Diameter = structStat.max;
+    double mean_Feret_Diameter = structStat.mean;
+    double median_Feret_Diameter = structStat.median;
+    double std_Feret_Diameter =  structStat.stdev;
+    int mode_Feret_Diameter = structStat.mode;
+    ratios[31]=min_Feret_Diameter;
+    ratios[31]=max_Feret_Diameter;
+    ratios[31]=mean_Feret_Diameter;
+    ratios[31]=median_Feret_Diameter;
+    ratios[31]=std_Feret_Diameter;
+    ratios[31]=mode_Feret_Diameter;
 
     //----------------------Finding Neighbors for the Current ROI-----------------
     uint32_t imageWidth, imageLength;
