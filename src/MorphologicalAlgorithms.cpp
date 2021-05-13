@@ -402,9 +402,10 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     vector<int> LongestChordAll;
     vector<int> MartinLengthAll;
     vector<int> NassensteinDiameterAll;
-
+    vector<int> thetas;
 
     for (int theta=0; theta<180;theta++){
+        thetas.push_back(theta);
 
         //First we need to rotate the image
         //https://stackoverflow.com/questions/22041699/rotate-an-image-without-cropping-in-opencv-in-c
@@ -599,6 +600,28 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[31]=median_Nassenstein_Diameter;
     ratios[31]=std_Nassenstein_Diameter;
     ratios[31]=mode_Nassenstein_Diameter;
+
+    //------------------------x_max and y_max------------------------------------------------------
+    //https://git.rwth-aachen.de/ants/sensorlab/imea/-/blob/master/imea/measure_2d/macro.py#L304
+    // x_max is the overall max chord of the object in all possible orientations
+    // y_max is the longest chord orthogonal to `x_max`
+
+    if (thetas.size()==0 || LongestChordAll.size()==0) std::cout<<"Error: Can not compute x_max and y_max as Input arrays are empty"<<std::endl;
+
+    int x_max = *std::max_element(LongestChordAll.begin(), LongestChordAll.end());
+    int idx_x_max = std::max_element(LongestChordAll.begin(),LongestChordAll.end()) - LongestChordAll.begin();
+
+    int angle_x_max= thetas[idx_x_max];
+    int angle_y_max = (angle_x_max + 90) % 180;
+
+    std::vector<int>::iterator it = std::find(thetas.begin(), thetas.end(), angle_y_max);
+    if (it == thetas.end())  std::cout << "Error: Cannot find theta element in computing x_max and y_max" << std::endl;
+
+    int idx_y_max = std::distance(thetas.begin(), it);
+    int y_max=LongestChordAll[idx_y_max];
+
+    ratios[31]=x_max;
+    ratios[31]=y_max;
 
     //--------------convexHull--------------------------------
     vector<vector<cv::Point>> contours;
