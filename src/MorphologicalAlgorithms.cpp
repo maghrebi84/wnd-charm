@@ -398,6 +398,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
 
     //Store all the Features in one vector, one per theta (rotation angel)
+    vector<int> ChordAll;
     vector<int> LongestChordAll;
     vector<int> MartinLengthAll;
     vector<int> NassensteinDiameterAll;
@@ -445,7 +446,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
             //If no discontinuty exists
             int min_y = *min_element(yCoordinatePoints[i].begin(), yCoordinatePoints[i].end());
             int max_y = *max_element(yCoordinatePoints[i].begin(), yCoordinatePoints[i].end());
-            if ((max_y-min_y+1) == yCoordinatePoints[i].size()) {Chord= max_y-min_y+1; if (LongestChord < Chord) LongestChord = Chord;}
+            if ((max_y-min_y+1) == yCoordinatePoints[i].size()) {Chord= max_y-min_y+1; if (LongestChord < Chord) LongestChord = Chord; ChordAll.push_back(Chord);}
             //If discontinuity exists in each row of the image
             else {
                 std::sort(yCoordinatePoints[i].begin(),yCoordinatePoints[i].end());//Sorting the vector
@@ -456,9 +457,11 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
                     else {
                         //reset the chord length as soon as the first discontinuity met in the row
                         if (LongestChord < Chord) LongestChord = Chord;
+                        ChordAll.push_back(Chord);
                         Chord=1;
                     }
                 }
+                ChordAll.push_back(Chord);
                 if (LongestChord < Chord) LongestChord = Chord;
             }
         }
@@ -540,6 +543,21 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     //Now, Extract the statistics of the already computed features
     Statistics structStat;
+
+    structStat = ComputeCommonStatistics (ChordAll);
+    int min_Chord_All = structStat.min;
+    int max_Chord_All = structStat.max;
+    double mean_Chord_All = structStat.mean;
+    double median_Chord_All = structStat.median;
+    double std_Chord_All =  structStat.stdev;
+    int mode_Chord_All = structStat.mode;
+    ratios[31]=min_Chord_All;
+    ratios[31]=max_Chord_All;
+    ratios[31]=mean_Chord_All;
+    ratios[31]=median_Chord_All;
+    ratios[31]=std_Chord_All;
+    ratios[31]=mode_Chord_All;
+
     structStat = ComputeCommonStatistics (LongestChordAll);
     int min_Longest_Chord = structStat.min;
     int max_Longest_Chord = structStat.max;
