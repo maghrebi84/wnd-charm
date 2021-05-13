@@ -624,7 +624,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     vector<Point> erosion_dst_nonZero_Complement;
     Mat element_Complement = Mat();
 
-    //Continue the erosion process until object vanishes
+    //Continue the erosion process until the area vanishes
     while (Pixels_erosion_Complement[Pixels_erosion_Complement.size()-1] !=0 ){
         erode( finalComplementImage, erosion_dst_Complement, element_Complement); //Apply erosion on the binary image
 
@@ -640,18 +640,39 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[31]=Pixels_erosion_Complement.size();
 
 
+    //------------------------Erosion of the object------------------------------------------
 
+    vector <int> Pixels_erosion; //Vector to store pixel counts at each erosion iteration
 
+    vector<Point> matrix_nonZero;
+    findNonZero(matrix , matrix_nonZero);
+    Pixels_erosion.push_back(matrix_nonZero.size());
 
+    Mat erosion_dst;
+    vector<Point> erosion_dst_nonZero;
 
+    Mat element = Mat();
 
+    //matrix.setTo(255, matrix==1);
+    //imwrite("1.tiff", matrix);
+    //Continue the erosion process until the object vanishes
+    while (Pixels_erosion[Pixels_erosion.size()-1] !=0 ){
+        erode( matrix, erosion_dst, element);//Apply erosion on the binary image
 
+        findNonZero(erosion_dst , erosion_dst_nonZero); //count number of white pixels
+        Pixels_erosion.push_back(erosion_dst_nonZero.size()); //Store the counts of the white pixels
 
+       // erosion_dst.setTo(255, erosion_dst==1);
+       // int counter=Pixels_erosion.size();
+       // string filename = to_string(counter)  +".tiff";
+       // imwrite(filename, erosion_dst);
 
+        matrix=erosion_dst;
+    }
 
+    ratios[31]=Pixels_erosion.size();
 
-
-
+    //------------------------Minimum enclosing circle------------------------------------------
     // Find the minimum enclosing circle of an object
     Point2f center;
     float radius = 0;
