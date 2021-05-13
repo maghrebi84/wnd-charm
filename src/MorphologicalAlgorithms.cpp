@@ -742,6 +742,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     double AspectRatio=(float)Im.ROIWidthActual/(float)Im.ROIHeightActual;
 
+    //Diameter of a circle of equal area
     double EquivalentDiameter= sqrt(4/M_PI*PixelsCount);
     double ROIPerimeter=0;
 
@@ -757,6 +758,10 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     ratios[29]=EquivalentDiameter;
     ratios[30]=ROIPerimeter;
     ratios[31]=Circularity;  
+
+    //Diameter of a circle of equal perimeter
+    double diameter_equal_perimeter=ROIPerimeter/M_PI;
+    ratios[31]=diameter_equal_perimeter;
 
     //------------------------------Geodetic Length and Thickness------------
     /*
