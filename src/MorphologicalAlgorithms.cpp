@@ -8,6 +8,7 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgcodecs.hpp"
+//#include <opencv2/imgcodecs.hpp>
 #include <iostream>
 #include <vector>
 #include <math.h>
@@ -596,6 +597,60 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     //Perimeter of the convex hull
     double convexHullPerimeter= arcLength(hull[0] , true);
     ratios[31]=convexHullPerimeter;
+
+
+    //------------------------Erosion of the complement area between Convex Hul and the object------------------------------------------
+    //Make the image for the complement area between Convex Hull and the object
+    //First, fill the convex Hull interiors
+    Mat ConvexHullFilledArea = Mat::zeros(matrix.rows, matrix.cols, CV_8UC1);
+    drawContours( ConvexHullFilledArea, hull, -1, 255, FILLED);
+
+    //Second, find the inverse area of the original matrix
+    matrix.setTo(255, matrix==1);
+    Mat matrix_inverse = Mat::zeros(matrix.rows, matrix.cols, CV_8UC1);
+    bitwise_not(matrix, matrix_inverse);
+
+    //Third, find the logical AND area between the two matrix above
+    Mat finalComplementImage = Mat::zeros(matrix.rows, matrix.cols, CV_8UC1);
+    bitwise_and(matrix_inverse, ConvexHullFilledArea, finalComplementImage);
+   // imwrite("1.tiff", finalComplementImage);
+
+    vector <int> Pixels_erosion_Complement; //Vector to store pixel counts at each erosion iteration
+    vector<Point> finalComplementImage_nonZero;
+    findNonZero(finalComplementImage , finalComplementImage_nonZero);
+    Pixels_erosion_Complement.push_back(finalComplementImage_nonZero.size());
+
+    Mat erosion_dst_Complement;
+    vector<Point> erosion_dst_nonZero_Complement;
+    Mat element_Complement = Mat();
+
+    //Continue the erosion process until object vanishes
+    while (Pixels_erosion_Complement[Pixels_erosion_Complement.size()-1] !=0 ){
+        erode( finalComplementImage, erosion_dst_Complement, element_Complement); //Apply erosion on the binary image
+
+        findNonZero(erosion_dst_Complement , erosion_dst_nonZero_Complement);  //count number of white pixels
+        Pixels_erosion_Complement.push_back(erosion_dst_nonZero_Complement.size()); //Store the counts of the white pixels
+
+        //erosion_dst_Complement.setTo(255, erosion_dst_Complement==1);
+        //string filename = to_string(Pixels_erosion_Complement.size())  +".tiff";
+        //imwrite(filename, erosion_dst_Complement);
+        finalComplementImage=erosion_dst_Complement;
+    }
+
+    ratios[31]=Pixels_erosion_Complement.size();
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     // Find the minimum enclosing circle of an object
     Point2f center;
