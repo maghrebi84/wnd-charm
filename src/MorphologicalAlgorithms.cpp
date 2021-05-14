@@ -753,6 +753,31 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double P3Width=boxPts[2].x+1-BufferCorrectionX;
     double P4Height=boxPts[3].y+1-BufferCorrectionY;
     double P4Width=boxPts[3].x-BufferCorrectionX;
+
+
+    //------------------------Maximum Inclosing Circle------------------------------------------
+    //https://git.rwth-aachen.de/ants/sensorlab/imea/-/blob/master/imea/measure_2d/macro.py#L124
+    //First, make a padding with the size of 2 pixels all around the object
+    int paddingWidth2=2;
+    Mat matrix_Padded2;
+    copyMakeBorder(matrix, matrix_Padded2, paddingWidth2, paddingWidth2, paddingWidth2, paddingWidth2, BORDER_CONSTANT,0);
+
+    //Second, make sure the image is not empty
+    vector<Point> matrix_Padded2_nonZero;
+    findNonZero(matrix_Padded2 , matrix_Padded2_nonZero);
+    if (matrix_Padded2_nonZero.size() == 0) std::cout<<"Error in computing max inclosing circle"<<std::endl;
+
+    //Third, compute the distance of each pixel to the nearest black pixel
+    Mat DistMat;
+    distanceTransform(matrix_Padded2,  DistMat, DIST_L2, DIST_MASK_PRECISE);
+
+    //Last, find the maximum distance among all the pixels of the image as well as its location
+    double maxElementValue;
+    Point maxElement; // circle center at row=maxElement.y-1 and col=maxElement.x-1 (We are not reporting it)
+    minMaxLoc(DistMat, NULL, &maxElementValue, NULL, &maxElement);
+    double max_inclosing_circle_diameter = 2*abs(maxElementValue);
+    ratios[31]=max_inclosing_circle_diameter;
+
     //------------------------Euler Number------------------------------------------
     long Euler= EulerNumber(arr,8,Im.height,Im.width);
     ratios[24]=Euler;
