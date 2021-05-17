@@ -964,6 +964,22 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
 
     ratios[36]=NeighborUniqueIDs.size();
 
+    //--------------------------------Filled area-------------------
+    Mat matrixFilled = Mat::zeros(w, w, CV_8UC1);
+    vector<vector<cv::Point>> matrixExternalContours;
+
+    //Only identify the external contours
+    findContours( matrix, matrixExternalContours, RETR_EXTERNAL, CHAIN_APPROX_TC89_KCOS );
+
+    //Fill inside the contours which also includes the possible holes
+    for (int i=0; i<matrixExternalContours.size(); i++) drawContours( matrixFilled, matrixExternalContours, i, 255, FILLED);
+
+    //Now, count the number of white (non-zero) pixels
+    vector<Point> matrixFilled_nonZeros;
+    findNonZero(matrixFilled , matrixFilled_nonZeros);
+    int filled_area_pixels = matrixFilled_nonZeros.size();
+    ratios[31]=filled_area_pixels;
+
     //--------------------------------Hexagonality/Polygonality-------------------
     //This section is a translation from the following Python code
     //https://github.com/LabShare/polus-plugins/blob/master/polus-feature-extraction-plugin/src/main.py
