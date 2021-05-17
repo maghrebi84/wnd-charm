@@ -778,6 +778,29 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     double max_inclosing_circle_diameter = 2*abs(maxElementValue);
     ratios[31]=max_inclosing_circle_diameter;
 
+    //-----------------circumscribing and inscribing circle ---------------------------
+    //https://git.rwth-aachen.de/ants/sensorlab/imea/-/blob/master/imea/measure_2d/macro.py#L199
+
+    double yCentroid2 = yCentroid -1;
+    double xCentroid2 = xCentroid -1;
+    vector <double> distances;
+
+    for (size_t j = 0; j < contours[0].size(); j++){
+      double tmpx = (contours[0][j].x - xCentroid2);
+      double tmpy = (contours[0][j].y - yCentroid2);
+      double distance= sqrt(tmpx*tmpx + tmpy*tmpy);
+      distances.push_back(distance);
+    }
+
+    double radius_circumscribing_circle = *std::max_element(distances.begin(), distances.end());
+    double radius_inscribing_circle = *std::min_element(distances.begin(), distances.end());
+
+    double diameter_circumscribing_circle = 2 * radius_circumscribing_circle;
+    double diameter_inscribing_circle = 2 * radius_inscribing_circle;
+
+    ratios[31]=diameter_circumscribing_circle;
+    ratios[31]=diameter_inscribing_circle;
+
     //------------------------Euler Number------------------------------------------
     long Euler= EulerNumber(arr,8,Im.height,Im.width);
     ratios[24]=Euler;
