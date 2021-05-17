@@ -969,7 +969,7 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     vector<vector<cv::Point>> matrixExternalContours;
 
     //Only identify the external contours
-    findContours( matrix, matrixExternalContours, RETR_EXTERNAL, CHAIN_APPROX_TC89_KCOS );
+    findContours( matrix, matrixExternalContours, RETR_EXTERNAL, CHAIN_APPROX_NONE);
 
     //Fill inside the contours which also includes the possible holes
     for (int i=0; i<matrixExternalContours.size(); i++) drawContours( matrixFilled, matrixExternalContours, i, 255, FILLED);
