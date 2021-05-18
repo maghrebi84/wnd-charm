@@ -25,5 +25,7 @@ Statistics ComputeCommonStatistics (std::vector<int> Data);
 
 Statistics ComputeCommonStatistics2 (std::vector<double> Data);
 
+double RegressionSlope(std::vector<double>& x, std::vector<double>& y);
+
 #endif
 

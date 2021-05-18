@@ -18,6 +18,33 @@
 using namespace std;
 using namespace cv;
 
+
+double RegressionSlope(vector<double>& x, vector<double>& y){
+    if(x.size() != y.size()) std::cout<< "Error: Number of points do not match in computing the regression slope"<<std::endl;
+
+    double avgX=0,avgY=0;
+
+    for (int i=0; i<x.size(); i++) {
+        avgX += x[i];
+        avgY += y[i];
+    }
+    avgX /= x.size();
+    avgY /= y.size();
+
+    double numerator = 0.0;
+    double denominator = 0.0;
+
+    for(size_t i=0; i<x.size(); ++i){
+        numerator += (x[i] - avgX) * (y[i] - avgY);
+        denominator += (x[i] - avgX) * (x[i] - avgX);
+    }
+
+    if(denominator == 0.0) std::cout<< "Error: denominator cannot be zero in computing the regression slope"<<std::endl;
+
+    return numerator / denominator;
+}
+
+
 long EulerNumber(unsigned char * arr, int mode, int height, int width) {
     unsigned long x, y;
     size_t i;
@@ -1107,6 +1134,99 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
         ratios[38]=hex_ave;
         ratios[39]=hex_sd;
     }
+
+    //-----------------------------------------fractal_dimension_boxcounting----------------------------------------------------
+    double Fractal_Dimension;
+
+    cv::Mat Mymatrix = cv::Mat(Im.height,Im.width,CV_8UC1,arr);  //?? This can be substituted with just matrix if placed appropriately in the code
+    vector<Point> matrix_Fractal_nonZeros;
+    findNonZero(Mymatrix , matrix_Fractal_nonZeros);
+
+    //If less than 2 white pixels are in the image, Fractal Dimension is zero
+    if (matrix_Fractal_nonZeros.size() <= 1) Fractal_Dimension=0;
+
+    //First, make a padding around the object, following imea algorithm
+    int paddingWidth_Fractal=1;
+    Mat matrix_Padded_Fractal;
+    copyMakeBorder(matrix, matrix_Padded_Fractal, paddingWidth_Fractal, paddingWidth_Fractal, paddingWidth_Fractal, paddingWidth_Fractal, BORDER_CONSTANT,0);
+
+    //Transform binary image into matrix_Padded_Fractal2 image of size (2**n, 2**n) with a black background
+    int max_img_size = std::max(matrix_Padded_Fractal.rows, matrix_Padded_Fractal.cols);
+    int exponent_bw_shape = (int)std::ceil(std::log2(max_img_size));
+    int padded_bw_size = std::pow(2,exponent_bw_shape);
+
+    int Buffer_Rows = padded_bw_size- matrix_Padded_Fractal.rows;
+    int Buffer_Cols = padded_bw_size- matrix_Padded_Fractal.cols;
+
+    Mat matrix_Padded_Fractal2;
+    copyMakeBorder(matrix_Padded_Fractal, matrix_Padded_Fractal2, Buffer_Rows/2, Buffer_Rows-Buffer_Rows/2, Buffer_Cols/2, Buffer_Cols-Buffer_Cols/2, BORDER_CONSTANT,0);
+
+    //min and max of the box sizes
+    int max_box_size = matrix_Padded_Fractal2.rows/2;
+    int min_box_size = 2; //Default value
+    int exp_max_box = int(log2(max_box_size));
+    int exp_min_box = int(log2(min_box_size));
+
+    //make a vector of box sizes
+    vector <int> box_sizes;
+    int n_steps = exp_max_box - exp_min_box + 1;
+    for (int i=0; i<n_steps; i++) box_sizes.push_back(pow(2,exp_min_box+i));
+
+    //determine number of boxes for different box size
+    int start_index_i, end_index_i, start_index_j, end_index_j;
+    vector <int> number_of_boxes;
+
+    for (int n=0; n<box_sizes.size(); n++){
+        int boxSize = box_sizes[n];
+        int boxCounts = matrix_Padded_Fractal2.rows / boxSize;
+        int NonZeroNonFullBoxes = 0;
+
+        for (int i=0; i<boxCounts; i++){
+            start_index_i = i * boxSize;
+            end_index_i = (i+1) * boxSize;
+
+            for (int j=0; j<boxCounts; j++){
+                start_index_j = j * boxSize;
+                end_index_j = (j+1) * boxSize;
+                // Store the pixels within the desired box in a submatrix
+                cv::Mat subMatrix = matrix_Padded_Fractal2(cv::Range(start_index_i, end_index_i), cv::Range(start_index_j, end_index_j));
+                //Count number of white (non-zero) pixels
+                vector<Point> subMatrix_nonZeros;
+                findNonZero(subMatrix , subMatrix_nonZeros);
+                if (subMatrix_nonZeros.size() > 0 && subMatrix_nonZeros.size() < boxSize*boxSize) NonZeroNonFullBoxes++;
+            }
+        }
+        //Save the number of pixels in the box and move on to the next box
+        number_of_boxes.push_back(NonZeroNonFullBoxes);
+    }
+
+    vector <double> measurements_log2;
+    vector <double> step_sizes_log2;
+
+    if (number_of_boxes.size() == 0 || box_sizes.size() == 0) {
+        cout<<" Fractal Dimension is zero for just a point"<<endl;
+        Fractal_Dimension=0;
+    }
+    else { // Approximate fractal dimension using log/log Richardson plot
+        for (int i=0; i<number_of_boxes.size(); i++) {
+            if (number_of_boxes[i] > 0) {
+                measurements_log2.push_back(log2(number_of_boxes[i]));
+                step_sizes_log2.push_back(log2(box_sizes[i]));
+            }
+        }
+    }
+
+    double slope= RegressionSlope(step_sizes_log2,measurements_log2);
+
+    if (abs(slope) < 1e-15) {
+        std::cout<<" Warning: Slope is zero, thus, setting Fractal Dimension to zero"<<std::endl;
+        Fractal_Dimension=0;
+    } else {
+        Fractal_Dimension = 1- slope;
+    }
+
+    ratios[31]=Fractal_Dimension;
+    //---------------------------------------------------------------------------------------------
 
     //  cout << "Finished Morphological Computations!\n" << endl;
 
