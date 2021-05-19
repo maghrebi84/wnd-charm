@@ -1226,6 +1226,83 @@ void MorphologicalAlgorithms(const ImageMatrix &Im, double *ratios){
     }
 
     ratios[31]=Fractal_Dimension;
+
+    //-------------------------------------fractal_dimension_perimeter--------------------------------------------------------
+    //https://git.rwth-aachen.de/ants/sensorlab/imea/-/blob/master/imea/measure_2d/micro.py#L56
+
+    double step_size_min=2.0; //Default Value
+    double step_size_max = 0.3 * MaxFeretDiameter; //According to the reference
+
+    int n_stepsizes=10; //Default Value
+
+    double step_size_min_log2= log2(step_size_min);
+    double step_size_max_log2= log2(step_size_max);
+
+    vector <double> step_sizes;
+
+    for (int i=0; i<n_stepsizes; i++){
+        double logStep = (step_size_max_log2-step_size_min_log2)/(n_stepsizes-1);
+        double logVal = step_size_min_log2 + logStep * i;
+        step_sizes.push_back(pow(2,logVal));
+    }
+
+    vector<double> perimeters;
+    vector<double> perimeters_normed;
+
+    //walk around contour with different stepsizes
+    for (int i=0; i< step_sizes.size(); i++){
+        vector<double> walked_distances;
+        cv::Point start_point = contours[0][0];
+
+        for (int j=0; j<contours[0].size()-1; j++){
+            cv::Point end_point = contours[0][j+1];
+
+            double distance = sqrt((start_point.x-end_point.x)*(start_point.x-end_point.x)+(start_point.y-end_point.y)*(start_point.y-end_point.y));
+            if (distance >= step_sizes[i]) {
+                walked_distances.push_back(distance);
+                start_point = end_point;
+            }
+        }
+
+        double Sum=0;
+        for (int k=0; k<walked_distances.size(); k++) Sum += walked_distances[k];
+
+        perimeters.push_back(Sum);
+    }
+
+    double fractal_dimension_perimeter;
+    double slope_fractal_dimension_perimeter;
+
+    double Sum=0;
+    for (int i=0; i< perimeters.size(); i++) Sum += perimeters[i];
+
+    if (Sum ==0) {
+        std::cout<<" Only a point is present: Fractal Dimension is set to zero"<<std::endl;
+        fractal_dimension_perimeter=0;
+    }
+    else {
+        //Normalize by maximum feret diameter
+        for (int i=0; i< perimeters.size(); i++) perimeters_normed.push_back(perimeters[i]/MaxFeretDiameter);
+
+        vector<double> perimeters_normed_NonZeros;
+        vector <double> step_sizes_NonZeros;
+        for (int i=0; i< perimeters_normed.size(); i++) {
+            if (perimeters_normed[i] > 0) {
+                step_sizes_NonZeros.push_back(log2(step_sizes[i]));
+                perimeters_normed_NonZeros.push_back(log2(perimeters_normed[i]));
+            }
+        }
+        slope_fractal_dimension_perimeter= RegressionSlope(step_sizes_NonZeros,perimeters_normed_NonZeros);
+    }
+
+    if (abs(slope) < 1e-15) {
+        std::cout<<" Warning: Slope is zero, thus, setting Fractal Dimension to zero"<<std::endl;
+        fractal_dimension_perimeter=0;
+    } else {
+        fractal_dimension_perimeter = 1- slope_fractal_dimension_perimeter;
+    }
+
+    ratios[31]=fractal_dimension_perimeter;
     //---------------------------------------------------------------------------------------------
 
     //  cout << "Finished Morphological Computations!\n" << endl;
