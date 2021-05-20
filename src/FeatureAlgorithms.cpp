@@ -545,7 +545,7 @@ static bool ColorHistogramReg = ComputationTaskInstances::add (new ColorHistogra
 //MM:
 //===========================================================================
 
-Morphological::Morphological() : FeatureAlgorithm ("Morphological", 42) {
+Morphological::Morphological() : FeatureAlgorithm ("Morphological", 89) {
     //cout << "Instantiating new " << name << " object." << endl;
 }
 
