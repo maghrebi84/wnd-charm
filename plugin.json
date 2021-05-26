@@ -1,11 +1,11 @@
 {
-    "name": "WNDCHARM-ROI-Alpha15",
-    "version": "0.1.0-alpha15",
+    "name": "WNDCHARM-ROI-Alpha16",
+    "version": "0.1.0-alpha16",
     "title": "Multi-threaded WND-CHARM with ROI Capability",
     "description": "Multi-threaded WND-CHARM with support for Region of Interest (ROI)",
     "author": "Mahdi Maghrebi",
     "institution": "National Center for Advancing Translational Sciences, National Institutes of Health",
-    "containerId": "labshare/polus-wnd-charm-plugin:0.1.0-alpha15",
+    "containerId": "labshare/polus-wnd-charm-plugin:0.1.0-alpha16",
     "inputs": [    
         {
             "name": "DataPath",
